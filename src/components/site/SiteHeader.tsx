@@ -6,9 +6,10 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const EASE = [0.19, 1, 0.22, 1] as const;
 const MENU = [
-  { href: "#features", label: "What it does" },
-  { href: "#complaints", label: "Built from complaints" },
-  { href: "#pricing", label: "Pricing" },
+  { href: "/#features", label: "What it does" },
+  { href: "/#complaints", label: "Built from complaints" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/guides", label: "Guides" },
   { href: "/login", label: "Log in" },
   { href: "/signup", label: "Start free trial" },
 ];
@@ -39,8 +40,9 @@ export function SiteHeader({ name, signedIn }: { name: string; signedIn: boolean
 
         <div className="flex items-center gap-6">
           <nav className={`hidden items-center gap-6 transition-all duration-700 xl:flex ${scrolled && !open ? "pointer-events-none -translate-y-2 opacity-0" : ""}`}>
-            <a href="#features" className="label-caps hover:opacity-50 transition-opacity duration-500">Features</a>
-            <a href="#pricing" className="label-caps hover:opacity-50 transition-opacity duration-500">Pricing</a>
+            <a href="/#features" className="label-caps hover:opacity-50 transition-opacity duration-500">Features</a>
+            <a href="/#pricing" className="label-caps hover:opacity-50 transition-opacity duration-500">Pricing</a>
+            <Link href="/guides" className="label-caps hover:opacity-50 transition-opacity duration-500">Guides</Link>
             {signedIn ? <Link href="/app" className="btn-secondary">Dashboard</Link> : <><Link href="/login" className="label-caps hover:opacity-50 transition-opacity duration-500">Log in</Link><Link href="/signup" className="btn-secondary">Start free trial</Link></>}
           </nav>
           <button onClick={() => setOpen(!open)} className="btn-secondary btn-sm md:hidden" aria-label="Open menu (mobile)">{open ? "Close" : "Menu"}</button>

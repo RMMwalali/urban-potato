@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth";
 import { accessState, getSettings } from "@/lib/platform";
 import { fmtDate } from "@/lib/format";
 import { PageHeader } from "@/components/ui";
+import { foundingOffer, monthlyPriceFor } from "@/lib/offer";
 
 export const metadata = { title: "Plan & billing" };
 
@@ -20,7 +21,8 @@ export default async function BillingPage() {
   const b = user.business;
   const s = accessState(b);
   const { general } = await getSettings();
-  const wa = general.supportWhatsApp ? `https://wa.me/${general.supportWhatsApp}?text=${encodeURIComponent(`Hi, I'd like to subscribe ${b.name} (${b.slug}) to ${general.siteName}.`)}` : null;
+  const [offer, pay] = await Promise.all([foundingOffer(), monthlyPriceFor(b)]);
+  const wa = general.supportWhatsApp ? `https://wa.me/${general.supportWhatsApp}?text=${encodeURIComponent(`Hi, I'd like to subscribe ${b.name} (${b.slug}) to ${general.siteName}${!b.foundingMember && offer.enabled ? " with the founding offer" : ""}.`)}` : null;
   const headline = {
     trial: `${s.daysLeft} ${s.daysLeft === 1 ? "day" : "days"} left in your free trial`,
     trial_over: "Your free trial has ended",
@@ -43,8 +45,15 @@ export default async function BillingPage() {
       <div className="grid gap-12 lg:grid-cols-5">
         <div className="lg:col-span-3">
           <p className="label-caps">{general.siteName} standard</p>
-          <p className="mt-6 text-[clamp(56px,8vw,112px)] leading-none tracking-[-0.02em]">{general.currency} {general.monthlyPrice.toLocaleString()}<span className="text-[18px] tracking-normal text-muted"> / month</span></p>
-          <p className="mt-3 text-[15px] text-muted">One flat price. No per-stylist fees, no commission, no surprises.</p>
+          <p className="mt-6 text-[clamp(56px,8vw,112px)] leading-none tracking-[-0.02em]">{general.currency} {pay.price.toLocaleString()}<span className="text-[18px] tracking-normal text-muted"> / month</span></p>
+          <p className="mt-3 text-[15px] text-muted">
+            {pay.discounted ? <>Founding member: {pay.percent}% off until {fmtDate(pay.until!, b.timezone)}, then {general.currency} {general.monthlyPrice.toLocaleString()} a month.</> : "One flat price. No per-stylist fees, no commission, no surprises."}
+          </p>
+          {!b.foundingMember && offer.enabled && (
+            <p className="mt-6 border-l-2 border-pink bg-panel px-4 py-3 text-[15px]">
+              Founding offer: subscribe now and pay <b className="font-medium">{offer.currency} {offer.offerPrice.toLocaleString()}</b> a month for your first {offer.months} months ({offer.percent}% off). {offer.left} of {offer.slots} places left.
+            </p>
+          )}
           <ol className="mt-10 border-t-2 border-ink">
             {INCLUDED.map((i, k) => (
               <li key={i} className="flex gap-4 border-b border-ink/30 py-3 text-[16px]"><sup className="pt-2 text-[11px]">{k + 1}</sup>{i}</li>

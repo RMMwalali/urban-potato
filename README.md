@@ -33,6 +33,13 @@ Feature choices are based on real complaints about existing salon software; see 
 - **Platform settings**: name, trial length, price, support contacts (shown to locked salons), sign-up switch, admin accounts, password change.
 - **Audit log**: every admin action.
 
+### Growth & marketing
+- **Guides** (`/guides`): 13 practical articles for salon, barbershop and spa owners (pricing and profit, no-shows, M-Pesa, clients, staff, choosing software), each with key points, FAQs and Article/FAQ/Breadcrumb structured data. Content lives in `src/content/guides/`.
+- **SEO & AI discovery:** sitemap with all guides, robots.txt that explicitly allows search and AI crawlers, `/llms.txt` + `/llms-full.txt`, Organization/WebSite/SoftwareApplication/FAQ schema on the home page, a text-only social card, Google + Bing verification and social `sameAs` links in Admin → SEO, and an IndexNow script (`npm run indexnow -- https://yourdomain.com`).
+- **Launch checklist:** step-by-step submissions for Cloudflare, Vercel, Google Search Console, Bing, IndexNow, Business Profile, directories and AI assistants. See [`docs/LAUNCH-CHECKLIST.md`](docs/LAUNCH-CHECKLIST.md).
+- **Founding offer:** the first N salons that actually subscribe get X% off for M months (default 50 places, 50%, 6 months; editable in Admin → Settings). Applied automatically when an admin activates a salon; places-left counter on the pricing section and billing page.
+- **Reel studio** (Admin → Reel studio): generates an HD (1080×1920, 1:1 or 16:9) video of the platform feature by feature, opening on SAY NO MORE (big → bigger → biggest), with an original opera-style score synthesised in the browser (based on the public-domain *Dies irae* chant) or your own licensed track. Records H.264 MP4 in desktop Chrome/Edge.
+
 ## Design
 Minimal and text-led, modelled on an editorial monochrome layout: light grey paper (#ededed), near-black ink (#1c1f24), white panels, thin black rules, small uppercase labels and very large uppercase display type. Blue (#1f5277) is the accent and pink (#d9468a) is used only for small highlights such as the active nav dot. **One font, Geist**, for everything (codes use tabular figures). No icons, no gradients, no images. Motion: lines slide up from masks, sections fade and rise on scroll (1s, `cubic-bezier(0.19, 1, 0.22, 1)`), outlined "lens" circles blur the type beneath them and drift slowly with mouse parallax, and the full-screen menu wipes in. All motion respects `prefers-reduced-motion`.
 

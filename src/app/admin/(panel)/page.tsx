@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { accessState, getSettings } from "@/lib/platform";
+import { foundingOffer } from "@/lib/offer";
 import { fmtDate } from "@/lib/format";
 import { BUSINESS_STATUS_STYLE, PageHeader, Stat } from "@/components/ui";
 
@@ -15,6 +16,7 @@ export default async function AdminHome() {
     db.apiCredential.count(),
     getSettings(),
   ]);
+  const offer = await foundingOffer();
   const states = businesses.map((b) => ({ b, s: accessState(b) }));
   const trials = states.filter((x) => x.s.reason === "trial");
   const expiring = trials.filter((x) => x.b.trialEndsAt < soon);
@@ -28,7 +30,7 @@ export default async function AdminHome() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat label="Salons" value={businesses.length} sub={`${newThisWeek} new this week`} />
         <Stat label="On trial" value={trials.length} sub={`${expiring.length} ending in 3 days`} />
-        <Stat label="Paying" value={paying.length} sub={`${locked.length} locked / expired`} />
+        <Stat label="Paying" value={paying.length} sub={`${locked.length} locked / expired · founding ${offer.used}/${offer.slots}`} />
         <Stat label="Users" value={users} sub={`${appts7} bookings · ${sales7} sales (7d)`} />
       </div>
 

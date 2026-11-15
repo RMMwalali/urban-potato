@@ -26,6 +26,16 @@ export default async function PlatformSettings({ searchParams }: { searchParams:
           <div><label className="label">Support phone</label><input name="supportPhone" defaultValue={general.supportPhone} className="input" /></div>
           <div><label className="label">Support WhatsApp (e.g. 254712345678)</label><input name="supportWhatsApp" defaultValue={general.supportWhatsApp} className="input" /></div>
           <label className="flex items-center gap-2 self-end pb-3 text-sm"><input type="checkbox" name="signupEnabled" defaultChecked={general.signupEnabled} className="accent-brand-600" /> Allow new salons to sign up</label>
+          <div className="border-t border-ink pt-4 sm:col-span-2">
+            <p className="label-caps mb-1">Founding offer</p>
+            <p className="mb-4 text-[13px] text-muted">The first salons that actually subscribe (not free trials) get a discount for a set number of months. It&apos;s applied automatically when you activate a salon.</p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div><label className="label">Places</label><input name="foundingSlots" type="number" min={0} defaultValue={general.foundingSlots} className="input" /></div>
+              <div><label className="label">Discount %</label><input name="foundingPercent" type="number" min={0} max={100} defaultValue={general.foundingPercent} className="input" /></div>
+              <div><label className="label">Months</label><input name="foundingMonths" type="number" min={0} max={36} defaultValue={general.foundingMonths} className="input" /></div>
+            </div>
+            <label className="mt-4 flex items-center gap-2 text-sm"><input type="checkbox" name="foundingOfferEnabled" defaultChecked={general.foundingOfferEnabled} /> Offer is open</label>
+          </div>
           <div className="sm:col-span-2"><button className="btn-primary">Save settings</button></div>
         </form>
       </section>

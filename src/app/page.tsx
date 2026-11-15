@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Logo } from "@/components/Logo";
 import { getSession } from "@/lib/auth";
 import { getSettings } from "@/lib/platform";
 import { pageMetadata } from "@/lib/seo";
@@ -7,6 +6,11 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { Hero } from "@/components/site/Hero";
 import { FeatureList, type Feature } from "@/components/site/FeatureList";
 import { Lines, Reveal } from "@/components/motion/Reveal";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { JsonLd } from "@/components/JsonLd";
+import { GUIDES } from "@/content/guides";
+import { appUrl } from "@/lib/url";
+import { foundingOffer } from "@/lib/offer";
 
 export async function generateMetadata() {
   const { seo } = await getSettings();
@@ -32,13 +36,46 @@ const COMPLAINTS = [
   { said: "Leaving means losing years of client history", where: "Reviews", answer: "CSV export, any time." },
 ];
 
+const FAQ = [
+  { q: "Do I need a website for my salon?", a: "Not to take bookings. Darling gives your salon a booking link for Instagram, TikTok and WhatsApp, so clients see your services and free times and book themselves." },
+  { q: "Does Darling work with M-Pesa?", a: "Yes. Record M-Pesa, cash, card and split payments. Connect a till or paybill and payments arrive automatically with the payer's name and amount; codes can only be used once. Pochi la Biashara payments can be added from the SMS." },
+  { q: "Do you take commission on my clients?", a: "No. Darling is one flat monthly price with unlimited staff, clients and bookings. Payments go straight to your own M-Pesa." },
+  { q: "How does Darling reduce no-shows?", a: "Automatic SMS or WhatsApp confirmations and reminders, optional M-Pesa deposits when clients book online, a link for clients to reschedule or cancel within your policy, and no-show tracking on each client." },
+  { q: "Can my staff see their own earnings?", a: "Yes. Each stylist sees their services, commission and tips for the month, and the owner gets a daily summary and reports." },
+  { q: "Can I export my data?", a: "Yes. Export clients, bookings and sales to a spreadsheet at any time." },
+  { q: "Is there a launch discount?", a: "Yes, while places last: the first salons that subscribe get a founding discount on their first months. The pricing section shows the current offer and how many places are left." },
+];
+
 export default async function Home() {
   const [session, { general }] = await Promise.all([getSession(), getSettings()]);
   const price = `${general.currency} ${general.monthlyPrice.toLocaleString()}`;
   const name = general.siteName;
+  const base = appUrl();
+  const offer = await foundingOffer();
+  const { seo } = await getSettings();
+  const sameAs = (seo.sameAs || "").split(/[\s,]+/).filter((u: string) => u.startsWith("http"));
 
   return (
     <main className="bg-paper">
+      <JsonLd
+        data={[
+          { "@context": "https://schema.org", "@type": "Organization", name, url: base, ...(sameAs.length ? { sameAs } : {}), ...(general.supportEmail ? { email: general.supportEmail } : {}), areaServed: "KE" },
+          { "@context": "https://schema.org", "@type": "WebSite", name, url: base },
+          {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name,
+            url: base,
+            applicationCategory: "BusinessApplication",
+            applicationSubCategory: "Salon and spa management software",
+            operatingSystem: "Web browser (Android, iOS, Windows, macOS)",
+            description: seo.description,
+            offers: { "@type": "Offer", price: general.monthlyPrice, priceCurrency: general.currency, description: `Monthly subscription, ${general.trialDays}-day free trial` },
+            featureList: FEATURES.map((f) => f.title).join(", "),
+          },
+          { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map((f) => ({ "@type": "Question", name: f.q.replace(/Darling/g, name), acceptedAnswer: { "@type": "Answer", text: f.a.replace(/Darling/g, name) } })) },
+        ]}
+      />
       <SiteHeader name={name} signedIn={!!session} />
       <Hero />
 
@@ -91,8 +128,27 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Guides */}
+      <section id="guides" className="px-5 pt-32 sm:px-8 md:pt-56">
+        <div className="grid gap-10 md:grid-cols-[1fr_2fr]">
+          <p className="label-caps">Guides</p>
+          <div>
+            <ul className="border-t-2 border-ink">
+              {GUIDES.slice(0, 5).map((g) => (
+                <li key={g.slug} className="border-b border-ink/40">
+                  <Link href={`/guides/${g.slug}`} className="group flex items-center justify-between gap-6 py-4 text-[clamp(18px,1.8vw,24px)] leading-tight">
+                    {g.title}<span className="shrink-0 transition-transform duration-700 group-hover:rotate-45">↗</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Reveal className="mt-8"><Link href="/guides" className="btn-secondary">All {GUIDES.length} guides</Link></Reveal>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
-      <section id="pricing" className="px-5 pt-32 pb-32 sm:px-8 md:pt-56 md:pb-48">
+      <section id="pricing" className="px-5 pt-32 sm:px-8 md:pt-56">
         <div className="grid gap-10 md:grid-cols-[1fr_2fr]">
           <p className="label-caps">Pricing</p>
           <div>
@@ -106,36 +162,37 @@ export default async function Home() {
               <Reveal>
                 <p className="mt-14 text-[clamp(56px,9vw,128px)] leading-none tracking-[-0.02em]">{price}<span className="text-[clamp(16px,1.6vw,22px)] tracking-normal text-muted"> / month</span></p>
                 <p className="mt-4 text-[15px] text-muted">{general.trialDays} days free. No card needed. Unlimited staff, clients and bookings.</p>
+                {offer.enabled && (
+                  <div className="mt-10 flex flex-wrap items-end justify-between gap-6 border-t border-ink pt-6">
+                    <div>
+                      <p className="label-caps text-pink">Founding offer · {offer.left} of {offer.slots} places left</p>
+                      <p className="mt-3 text-[clamp(22px,2.4vw,32px)] leading-tight">{offer.percent}% off for your first {offer.months} months: {offer.currency} {offer.offerPrice.toLocaleString()} a month.</p>
+                      <p className="mt-2 text-[14px] text-muted">For the first {offer.slots} salons that subscribe. Places count when you subscribe, not when you start the trial.</p>
+                    </div>
+                  </div>
+                )}
               </Reveal>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t-2 border-ink px-5 pt-12 pb-8 sm:px-8">
-        <div className="grid gap-10 text-[13px] uppercase tracking-[0.06em] sm:grid-cols-3">
-          <ul className="space-y-2">
-            <li className="text-muted">Product</li>
-            <li><a href="#features" className="hover:opacity-50">Features</a></li>
-            <li><a href="#pricing" className="hover:opacity-50">Pricing</a></li>
-            <li><Link href="/signup" className="hover:opacity-50">Start free trial</Link></li>
-          </ul>
-          <ul className="space-y-2">
-            <li className="text-muted">Account</li>
-            <li><Link href="/login" className="hover:opacity-50">Log in</Link></li>
-            <li><Link href="/signup" className="hover:opacity-50">Create a salon</Link></li>
-          </ul>
-          {(general.supportWhatsApp || general.supportEmail || general.supportPhone) && <ul className="space-y-2">
-            <li className="text-muted">Contact</li>
-            {general.supportWhatsApp && <li><a href={`https://wa.me/${general.supportWhatsApp}`} className="hover:opacity-50">WhatsApp</a></li>}
-            {general.supportEmail && <li><a href={`mailto:${general.supportEmail}`} className="hover:opacity-50 normal-case">{general.supportEmail}</a></li>}
-            {general.supportPhone && <li><a href={`tel:${general.supportPhone}`} className="hover:opacity-50">{general.supportPhone}</a></li>}
-          </ul>}
+      {/* FAQ */}
+      <section id="faq" className="px-5 pt-32 sm:px-8 md:pt-48">
+        <div className="grid gap-10 md:grid-cols-[1fr_2fr]">
+          <p className="label-caps">Questions</p>
+          <dl className="border-t-2 border-ink">
+            {FAQ.map((f) => (
+              <div key={f.q} className="border-b border-ink/40 py-5">
+                <dt className="text-[clamp(18px,1.6vw,22px)] leading-snug">{f.q.replace(/Darling/g, name)}</dt>
+                <dd className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">{f.a.replace(/Darling/g, name)}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
-        <p className="mt-20"><Logo name={name} className="block text-[clamp(64px,19vw,300px)] leading-[0.8] tracking-[-0.04em]" /></p>
-        <p className="mt-6 text-[12px] uppercase tracking-[0.06em] text-muted">© {new Date().getFullYear()} {name}</p>
-      </footer>
+      </section>
+
+      <SiteFooter />
     </main>
   );
 }

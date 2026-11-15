@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { accessState, getSettings } from "@/lib/platform";
 import { displayPhone, fmtDate, fmtDateTime, money, num } from "@/lib/format";
-import { adminSetRole, adminSetUserPassword, adminToggleUser, deleteBusiness, extendTrial, impersonate, resetTrial, saveBusinessNotes, setBusinessStatus } from "@/app/actions/admin";
+import { adminSetRole, adminSetUserPassword, adminToggleUser, deleteBusiness, extendTrial, impersonate, resetTrial, saveBusinessNotes, setBusinessStatus, toggleFounding } from "@/app/actions/admin";
+import { foundingOffer, monthlyPriceFor } from "@/lib/offer";
 import { ActionForm, ConfirmButton } from "@/components/ActionForm";
 import { Alert, BUSINESS_STATUS_STYLE, PageHeader, Stat } from "@/components/ui";
 
@@ -19,6 +20,7 @@ export default async function BusinessDetail({ params, searchParams }: { params:
   ]);
   const s = accessState(b);
   const tz = b.timezone;
+  const [offer, pay] = await Promise.all([foundingOffer(), monthlyPriceFor(b)]);
 
   return (
     <div className="max-w-6xl">
@@ -68,6 +70,12 @@ export default async function BusinessDetail({ params, searchParams }: { params:
             </div>
             {b.paidUntil && <p className="text-[13px] text-muted">Paid until {fmtDate(b.paidUntil, tz)}</p>}
           </form>
+          <div className="border-t border-ink/30 pt-4 text-[14px]">
+            <p className="label-caps text-muted">Monthly price</p>
+            <p className="mt-1 text-[20px]">{b.currency} {pay.price.toLocaleString()}{pay.discounted && <span className="text-[13px] text-muted"> · {pay.percent}% off until {fmtDate(pay.until!, tz)}</span>}</p>
+            <p className="mt-2 text-[13px] text-muted">{b.foundingMember ? "Founding member." : offer.enabled ? `Not a founding member. ${offer.left} of ${offer.slots} places left; granted automatically on activation.` : "Founding offer closed or full."}</p>
+            <form action={toggleFounding.bind(null, b.id, !b.foundingMember)} className="mt-3"><button className="btn-secondary btn-sm">{b.foundingMember ? "Remove founding offer" : "Grant founding offer"}</button></form>
+          </div>
           <div className="flex flex-wrap gap-2">
             {(["PAST_DUE", "SUSPENDED", "CANCELLED"] as const).map((st) => (
               <form key={st} action={setBusinessStatus}>

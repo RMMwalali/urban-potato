@@ -16,6 +16,11 @@ export const SETTING_DEFAULTS = {
     signupEnabled: true,
     monthlyPrice: 2500,
     currency: "KES",
+    // Founding offer: the first N salons that actually pay get X% off for M months
+    foundingOfferEnabled: true,
+    foundingSlots: 50,
+    foundingPercent: 50,
+    foundingMonths: 6,
   },
   seo: {
     defaultTitle: "Darling: booking engine and client management for salons and spas",
@@ -25,6 +30,8 @@ export const SETTING_DEFAULTS = {
     ogImage: "",
     twitterHandle: "",
     googleVerification: "",
+    bingVerification: "",
+    sameAs: "", // social profile URLs, one per line or comma separated (Instagram, TikTok, LinkedIn…)
     canonicalUrl: "",
   },
 };

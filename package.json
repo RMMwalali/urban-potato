@@ -12,7 +12,8 @@
     "postinstall": "prisma generate",
     "admin:create": "tsx scripts/create-admin.ts",
     "vercel-build": "node scripts/vercel-build.mjs",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "indexnow": "tsx scripts/indexnow.ts"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

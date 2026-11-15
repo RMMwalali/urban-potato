@@ -31,6 +31,8 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
             <div><label className="label">Social share image URL (1200×630)</label><input name="ogImage" defaultValue={seo.ogImage} className="input" placeholder="https://…/og.png" /></div>
             <div><label className="label">X / Twitter handle</label><input name="twitterHandle" defaultValue={seo.twitterHandle} className="input" placeholder="@yourbrand" /></div>
             <div><label className="label">Google Search Console verification</label><input name="googleVerification" defaultValue={seo.googleVerification} className="input" /></div>
+            <div><label className="label">Bing Webmaster verification (msvalidate.01)</label><input name="bingVerification" defaultValue={seo.bingVerification} className="input" /></div>
+            <div><label className="label">Social profiles (one URL per line)</label><textarea name="sameAs" defaultValue={seo.sameAs} rows={3} className="input" placeholder={"https://instagram.com/yourbrand\nhttps://www.tiktok.com/@yourbrand"} /></div>
             <div><label className="label">Canonical site URL</label><input name="canonicalUrl" defaultValue={seo.canonicalUrl} className="input" placeholder="https://yourdomain.com" /></div>
             <SeoPreview url={base} title={seo.defaultTitle} description={seo.description} />
           </div>

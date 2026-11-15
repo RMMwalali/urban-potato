@@ -8,6 +8,7 @@ import { audit, createAdminSession, destroyAdminSession, requireAdmin } from "@/
 import { createSession } from "@/lib/auth";
 import { encrypt } from "@/lib/crypto";
 import { getSettings, PROVIDERS, SETTING_DEFAULTS } from "@/lib/platform";
+import { grantFoundingIfEligible, setFounding } from "@/lib/offer";
 import type { BusinessStatus, Prisma } from "@prisma/client";
 
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
@@ -64,7 +65,15 @@ export async function setBusinessStatus(fd: FormData) {
   const data: Prisma.BusinessUpdateInput = { status };
   if (status === "ACTIVE") data.paidUntil = months ? new Date(Date.now() + months * 30 * 86400_000) : null;
   await db.business.update({ where: { id }, data });
-  await audit(a.email, "business.status", { type: "business", id }, { status, months });
+  const founding = status === "ACTIVE" ? await grantFoundingIfEligible(id) : false;
+  await audit(a.email, "business.status", { type: "business", id }, { status, months, ...(founding ? { foundingOffer: "granted" } : {}) });
+  revalidatePath("/admin", "layout");
+}
+
+export async function toggleFounding(businessId: string, on: boolean) {
+  const a = await requireAdmin();
+  await setFounding(businessId, on);
+  await audit(a.email, on ? "founding.grant" : "founding.remove", { type: "business", id: businessId });
   revalidatePath("/admin", "layout");
 }
 
@@ -164,7 +173,12 @@ export async function saveSettingsGroup(fd: FormData) {
     else if (typeof def === "number") value[k] = Number(str(fd, k)) || def;
     else value[k] = str(fd, k);
   }
-  if (group === "general") value.trialDays = Math.max(1, Math.min(90, Number(value.trialDays)));
+  if (group === "general") {
+    value.trialDays = Math.max(1, Math.min(90, Number(value.trialDays)));
+    // allow 0 places / 0% explicitly (the generic number parser treats 0 as "use default")
+    for (const k of ["foundingSlots", "foundingPercent", "foundingMonths"]) if (str(fd, k) === "0") value[k] = 0;
+    value.foundingPercent = Math.max(0, Math.min(100, Number(value.foundingPercent)));
+  }
   await db.platformSetting.upsert({ where: { key: group }, update: { value: value as Prisma.InputJsonValue }, create: { key: group, value: value as Prisma.InputJsonValue } });
   await audit(a.email, `settings.${group}`);
   revalidatePath("/", "layout");

@@ -8,6 +8,7 @@ const items = [
   { href: "/admin/users", label: "Users" },
   { href: "/admin/api-keys", label: "API keys" },
   { href: "/admin/seo", label: "SEO & meta" },
+  { href: "/admin/reel", label: "Reel studio" },
   { href: "/admin/settings", label: "Settings" },
   { href: "/admin/audit", label: "Audit log" },
 ];

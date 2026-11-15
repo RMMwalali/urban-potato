@@ -49,6 +49,10 @@ model Business {
   darajaEnv         String   @default("production")
   c2bToken          String   @unique @default(cuid()) // secret part of the callback URL
   c2bRegisteredAt   DateTime?
+  // Founding offer: first N paying salons get a discount for M months
+  foundingMember    Boolean  @default(false)
+  discountPercent   Int      @default(0)
+  discountUntil     DateTime?
   createdAt         DateTime @default(now())
 
   users        User[]
