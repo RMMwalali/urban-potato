@@ -39,12 +39,31 @@ Bold plum/magenta/coral palette with lime accents, Bricolage Grotesque display t
 ## Stack
 Next.js 15 · PostgreSQL + Prisma 6 · Tailwind CSS 4 · framer-motion · lucide-react · jose/bcrypt sessions · Luxon.
 
-## Setup
+## Deploy to Vercel
+
+1. **Import the repo:** on [vercel.com/new](https://vercel.com/new), import this GitHub repository. The framework is detected as Next.js. Vercel runs `npm run vercel-build`, which applies database migrations and then builds.
+2. **Add a database:** in the project, open **Storage → Marketplace → Neon (Postgres)** and connect it. This sets `DATABASE_URL` for you. Any other Postgres works too; paste its URL as `DATABASE_URL` (include `?sslmode=require`).
+3. **Add environment variables** (Settings → Environment Variables). Generate each secret with `openssl rand -base64 48`:
+
+   | Name | Value |
+   |---|---|
+   | `AUTH_SECRET` | random, 32+ characters |
+   | `ENCRYPTION_KEY` | random, 32+ characters. **Keep it forever:** changing it makes saved API keys unreadable |
+   | `CRON_SECRET` | random. Vercel sends it to the reminders cron automatically |
+   | `ADMIN_SETUP_TOKEN` | random, used once to create your admin account |
+   | `APP_URL` | your domain, e.g. `https://spadesk.co.ke` (optional; defaults to the Vercel production URL) |
+
+4. **Deploy**, then open `https://YOUR-APP/admin/setup?token=YOUR_ADMIN_SETUP_TOKEN` and create your platform admin. The page disables itself once an admin exists; you can then delete `ADMIN_SETUP_TOKEN`.
+5. In **/admin**, fill in Platform settings (support WhatsApp/phone, price), API keys (Africa's Talking / WhatsApp) and SEO.
+6. **Reminders:** `vercel.json` schedules `/api/cron/reminders` once a day, which is the most the Hobby plan allows. For reminders every 15 minutes, either upgrade to Pro and change the schedule to `*/15 * * * *`, or use the included GitHub Action (`.github/workflows/reminders.yml`): add repository secrets `APP_URL` and `CRON_SECRET` and it runs every 15 minutes for free.
+7. **M-Pesa C2B:** each salon connects in Settings → Payments. The callback URL uses your `https` domain automatically.
+
+## Local setup
 
 ```bash
 cp .env.example .env     # set DATABASE_URL, AUTH_SECRET (32+ chars), ENCRYPTION_KEY, APP_URL, CRON_SECRET
 npm install
-npx prisma db push
+npx prisma migrate deploy
 ```
 
 Create your platform admin account. Credentials come from the environment and are never stored in code:

@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
+import { appUrl } from "@/lib/url";
 import { db } from "@/lib/db";
 import { accessState } from "@/lib/platform";
 
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.APP_URL ?? "http://localhost:3000";
+  const base = appUrl();
   const noindex = new Set((await db.seoPage.findMany({ where: { noIndex: true } })).map((p) => p.path));
   const pages = ["/", "/signup", "/login"].filter((p) => !noindex.has(p)).map((p) => ({ url: `${base}${p}`, changeFrequency: "weekly" as const, priority: p === "/" ? 1 : 0.6 }));
   if (noindex.has("/book/*")) return pages;

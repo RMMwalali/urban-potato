@@ -1,4 +1,5 @@
 import { Globe, Trash2 } from "lucide-react";
+import { appUrl } from "@/lib/url";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/platform";
 import { deleteSeoPage, saveSeoPage, saveSettingsGroup } from "@/app/actions/admin";
@@ -11,7 +12,7 @@ const SUGGESTED = ["/", "/signup", "/login", "/book/*"];
 export default async function SeoPage({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
   const { saved } = await searchParams;
   const [{ seo, general }, pages] = await Promise.all([getSettings(), db.seoPage.findMany({ orderBy: { path: "asc" } })]);
-  const base = seo.canonicalUrl || process.env.APP_URL || "https://example.com";
+  const base = seo.canonicalUrl || appUrl();
   return (
     <div className="max-w-5xl space-y-6">
       <PageHeader title="SEO & meta tags" sub="Titles, descriptions, social cards and indexing for public pages" icon={Globe} />

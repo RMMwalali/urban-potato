@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { appUrl } from "@/lib/url";
 import { ArrowRight, CalendarDays, CalendarPlus, Check, CircleCheck, Copy, Footprints, Link2, MessageSquare, Receipt, TrendingUp, Users, Wallet } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -29,7 +30,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   ]);
 
   const active = appts.filter((a) => a.status !== "CANCELLED");
-  const bookingUrl = `${process.env.APP_URL ?? ""}/book/${b.slug}`;
+  const bookingUrl = `${appUrl()}/book/${b.slug}`;
   const isManager = ["OWNER", "MANAGER"].includes(user.role);
   const steps = [
     { done: serviceCount > 0, label: "Add your services & prices", href: "/app/services" },

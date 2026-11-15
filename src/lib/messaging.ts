@@ -1,4 +1,5 @@
 import "server-only";
+import { appUrl } from "@/lib/url";
 import { db } from "./db";
 import { fmtDateTime } from "./format";
 import { accessState, getCredential } from "./platform";
@@ -93,7 +94,7 @@ export function appointmentText(kind: "CONFIRMATION" | "REMINDER" | "CANCELLATIO
   const when = fmtDateTime(a.startAt, b.timezone);
   const first = a.client.name.split(" ")[0];
   const withWho = a.staff ? ` with ${a.staff.name.split(" ")[0]}` : "";
-  const manage = `${process.env.APP_URL ?? ""}/b/${a.manageToken}`;
+  const manage = `${appUrl()}/b/${a.manageToken}`;
   switch (kind) {
     case "CONFIRMATION":
       return `Hi ${first}, your ${a.service.name}${withWho} at ${b.name} is booked for ${when}. Change or cancel: ${manage}`;

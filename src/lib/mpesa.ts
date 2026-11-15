@@ -1,4 +1,5 @@
 import "server-only";
+import { appUrl } from "@/lib/url";
 import { db } from "./db";
 import { decrypt } from "./crypto";
 import type { Business, Prisma } from "@prisma/client";
@@ -16,7 +17,7 @@ async function darajaToken(b: Business) {
 
 /** Callback URLs. Safaricom rejects URLs containing words like "mpesa", so the path avoids them. */
 export function c2bUrls(b: Pick<Business, "c2bToken">) {
-  const base = process.env.APP_URL ?? "";
+  const base = appUrl();
   return { confirmation: `${base}/api/pay/c2b/${b.c2bToken}/confirm`, validation: `${base}/api/pay/c2b/${b.c2bToken}/validate` };
 }
 

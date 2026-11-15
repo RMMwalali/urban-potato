@@ -1,9 +1,10 @@
 import "server-only";
+import { appUrl } from "@/lib/url";
 import type { Metadata } from "next";
 import { db } from "./db";
 import { getSettings } from "./platform";
 
-const baseUrl = () => process.env.APP_URL ?? "http://localhost:3000";
+const baseUrl = () => appUrl();
 
 /** Root metadata from admin-managed SEO settings. */
 export async function rootMetadata(): Promise<Metadata> {

@@ -228,3 +228,16 @@ export async function removeAdmin(id: string) {
   await audit(a.email, "admin.delete", { type: "admin", id: r.email });
   revalidatePath("/admin/settings");
 }
+
+/** First-run admin creation for hosted deployments. Disabled once any admin exists. */
+export async function createFirstAdmin(_: AdminState, fd: FormData): Promise<AdminState> {
+  if (!process.env.ADMIN_SETUP_TOKEN || str(fd, "token") !== process.env.ADMIN_SETUP_TOKEN) return { error: "Invalid setup token" };
+  if ((await db.platformAdmin.count()) > 0) return { error: "An admin already exists. Log in instead." };
+  const email = str(fd, "email").toLowerCase();
+  const pw = String(fd.get("password") ?? "");
+  if (!email.includes("@") || pw.length < 12) return { error: "Enter an email and a password of 12+ characters" };
+  const admin = await db.platformAdmin.create({ data: { email, name: str(fd, "name") || email, passwordHash: await bcrypt.hash(pw, 12) } });
+  await createAdminSession(admin.id);
+  await audit(email, "admin.setup");
+  redirect("/admin");
+}
