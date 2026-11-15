@@ -11,7 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "postinstall": "prisma generate",
     "admin:create": "tsx scripts/create-admin.ts",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "node scripts/vercel-build.mjs",
     "db:deploy": "prisma migrate deploy"
   },
   "dependencies": {
@@ -42,6 +42,6 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   }
 }
