@@ -3,7 +3,7 @@ import { Logo } from "@/components/Logo";
 import { requireAdmin } from "@/lib/admin-auth";
 import { getSettings } from "@/lib/platform";
 import { adminLogout } from "@/app/actions/admin";
-import { AdminNav } from "@/components/admin/AdminNav";
+import { AdminNav, AdminSubNav } from "@/components/admin/AdminNav";
 
 export const metadata = { title: "Platform admin", robots: { index: false, follow: false } };
 
@@ -25,7 +25,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
         <div className="overflow-x-auto pb-3 lg:hidden"><AdminNav /></div>
       </header>
-      <main className="px-5 py-12 sm:px-8 md:py-16">{children}</main>
+      <main className="px-5 pb-12 sm:px-8 md:pb-16">
+        <AdminSubNav />
+        <div className="pt-2 md:pt-4">{children}</div>
+      </main>
     </div>
   );
 }

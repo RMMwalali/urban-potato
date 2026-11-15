@@ -288,3 +288,23 @@ export async function saveHomepage(fd: FormData) {
   revalidatePath("/admin/homepage");
   redirect("/admin/homepage?saved=1");
 }
+
+/* ---------- Web Push keys ---------- */
+
+export async function rotatePushKeys() {
+  const a = await requireAdmin();
+  const { rotateVapidKeys } = await import("@/lib/notify");
+  const removed = await rotateVapidKeys();
+  await audit(a.email, "push.rotate_keys", undefined, { devicesRemoved: removed });
+  revalidatePath("/admin/api-keys");
+  redirect("/admin/api-keys?rotated=" + removed);
+}
+
+export async function sendPushTestToAll() {
+  const a = await requireAdmin();
+  const { push } = await import("@/lib/notify");
+  const subs = await db.pushSubscription.findMany({ select: { userId: true } });
+  const r = await push([...new Set(subs.map((s) => s.userId))], { kind: "test", title: "Test from Darling", body: "Push notifications are working on this device.", url: "/app/notifications", id: `admin-test-${Date.now()}` });
+  await audit(a.email, "push.test_all", undefined, r);
+  redirect(`/admin/api-keys?pushed=${r.sent}&failed=${r.failed}`);
+}

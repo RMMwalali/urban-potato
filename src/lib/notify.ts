@@ -15,20 +15,48 @@ export const KINDS = {
 } as const;
 export type Kind = keyof typeof KINDS | "test";
 
-/* ---------- VAPID keys: from the environment, or generated once and kept (encrypted) in the database ---------- */
-let cached: { publicKey: string; privateKey: string } | null = null;
+/* ---------- VAPID keys ----------
+ * In order: keys saved in Admin → Platform → Connections, then the server environment, then a pair
+ * generated automatically on first use and kept (encrypted) in the database. Cached for a minute so a
+ * rotation reaches every server instance quickly. */
+let cached: { at: number; keys: { publicKey: string; privateKey: string; source: "admin" | "env" | "auto" } } | null = null;
 export async function vapidKeys() {
-  if (cached) return cached;
-  if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) return (cached = { publicKey: process.env.VAPID_PUBLIC_KEY, privateKey: process.env.VAPID_PRIVATE_KEY });
-  const row = await db.platformSetting.findUnique({ where: { key: "vapid" } });
-  const v = row?.value as { publicKey?: string; privateKeyEnc?: string } | undefined;
-  if (v?.publicKey && v.privateKeyEnc) return (cached = { publicKey: v.publicKey, privateKey: decrypt(v.privateKeyEnc) });
+  if (cached && Date.now() - cached.at < 60_000) return cached.keys;
+  const { getCredential } = await import("./platform");
+  const [pub, priv] = await Promise.all([getCredential("VAPID_PUBLIC_KEY"), getCredential("VAPID_PRIVATE_KEY")]);
+  let keys: { publicKey: string; privateKey: string; source: "admin" | "env" | "auto" };
+  if (pub && priv) {
+    const fromAdmin = !!(await db.apiCredential.findFirst({ where: { name: "VAPID_PUBLIC_KEY" }, select: { id: true } }));
+    keys = { publicKey: pub, privateKey: priv, source: fromAdmin ? "admin" : "env" };
+  } else {
+    const row = await db.platformSetting.findUnique({ where: { key: "vapid" } });
+    const v = row?.value as { publicKey?: string; privateKeyEnc?: string } | undefined;
+    if (v?.publicKey && v.privateKeyEnc) keys = { publicKey: v.publicKey, privateKey: decrypt(v.privateKeyEnc), source: "auto" };
+    else {
+      const k = webpush.generateVAPIDKeys();
+      const value = { publicKey: k.publicKey, privateKeyEnc: encrypt(k.privateKey), createdAt: new Date().toISOString() } as Prisma.InputJsonValue;
+      await db.platformSetting.upsert({ where: { key: "vapid" }, update: {}, create: { key: "vapid", value } });
+      cached = null;
+      return vapidKeys();
+    }
+  }
+  cached = { at: Date.now(), keys };
+  return keys;
+}
+
+/** New automatic key pair. Devices must turn notifications on again, so their old subscriptions are removed. */
+export async function rotateVapidKeys() {
   const k = webpush.generateVAPIDKeys();
-  const value = { publicKey: k.publicKey, privateKeyEnc: encrypt(k.privateKey) } as Prisma.InputJsonValue;
-  // if two requests race, keep whichever was stored first
-  await db.platformSetting.upsert({ where: { key: "vapid" }, update: {}, create: { key: "vapid", value } });
+  const value = { publicKey: k.publicKey, privateKeyEnc: encrypt(k.privateKey), createdAt: new Date().toISOString() } as Prisma.InputJsonValue;
+  await db.platformSetting.upsert({ where: { key: "vapid" }, update: { value }, create: { key: "vapid", value } });
+  const removed = await db.pushSubscription.deleteMany({});
   cached = null;
-  return vapidKeys();
+  return removed.count;
+}
+
+export async function pushSubject() {
+  const { getCredential } = await import("./platform");
+  return (await getCredential("VAPID_SUBJECT")) || (appUrl().startsWith("https://") ? appUrl() : "https://darling.app");
 }
 
 /** Who should see a notification: owners and managers, plus (optionally) one specific person. */
@@ -74,7 +102,7 @@ export async function push(userIds: string[], payload: { kind: string; title: st
   const subs = await db.pushSubscription.findMany({ where: { userId: { in: userIds } }, include: { user: { select: { id: true, businessId: true, role: true } } } });
   if (!subs.length) return { sent: 0, failed: 0 };
   const keys = await vapidKeys();
-  const contact = process.env.VAPID_SUBJECT || `${appUrl().startsWith("https://") ? appUrl() : "https://darling.app"}`;
+  const contact = await pushSubject();
   let sent = 0, failed = 0;
   await Promise.all(subs.map(async (s) => {
     const badge = await unreadCount(s.user).catch(() => 0);

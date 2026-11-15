@@ -61,6 +61,7 @@ export const PROVIDERS = {
   whatsapp: { label: "WhatsApp Cloud API", fields: ["WHATSAPP_TOKEN", "WHATSAPP_PHONE_NUMBER_ID", "WHATSAPP_TEMPLATE_LANG"] },
   mpesa: { label: "M-Pesa Daraja", fields: ["MPESA_CONSUMER_KEY", "MPESA_CONSUMER_SECRET", "MPESA_SHORTCODE", "MPESA_PASSKEY", "MPESA_ENV"] },
   messaging: { label: "Messaging provider", fields: ["MESSAGE_PROVIDER"] },
+  webpush: { label: "Web Push notifications (VAPID)", fields: ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT"] },
 } as const;
 
 export async function getCredential(name: string): Promise<string | undefined> {

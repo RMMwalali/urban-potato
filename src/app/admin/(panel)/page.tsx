@@ -36,7 +36,7 @@ export default async function AdminHome() {
 
       {credCount === 0 && (
         <div className="mt-6 flex items-start gap-3 rounded-none border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                    <p>No messaging credentials are configured, so SMS/WhatsApp reminders are only being logged. <Link href="/admin/api-keys" className="font-semibold underline">Add API keys</Link>.</p>
+                    <p>No messaging credentials are configured, so SMS/WhatsApp reminders are only being logged. <Link href="/admin/api-keys" className="font-semibold underline">Add keys in Platform → Connections</Link>.</p>
         </div>
       )}
 
