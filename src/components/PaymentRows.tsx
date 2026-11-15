@@ -47,7 +47,14 @@ export function PaymentRows({ initialCode, due, methods, requireVerified, curren
   async function check(i: number, code: string) {
     if (!looksLikeCode(code)) return update(i, { lookup: null });
     update(i, { lookup: "loading" });
-    const res = await lookupMpesa(code);
+    let res: Awaited<ReturnType<typeof lookupMpesa>>;
+    try {
+      res = await lookupMpesa(code);
+    } catch {
+      // network hiccup: don't leave the row stuck on "Checking…"; the code can be retyped or saved unverified
+      setRows((rs) => rs.map((r, j) => (j === i && r.lookup === "loading" ? { ...r, lookup: null } : r)));
+      return;
+    }
     setRows((rs) =>
       rs.map((r, j) => {
         if (j !== i || (r.reference ?? "").toUpperCase() !== code.toUpperCase()) return r;

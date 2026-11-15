@@ -112,7 +112,7 @@ export async function createShowcase() {
       const status: AppointmentStatus = past ? (k % 17 === 0 ? "NO_SHOW" : k % 19 === 0 ? "CANCELLED" : "COMPLETED") : d === 0 && startAt < now.plus({ hours: 1 }) ? "ARRIVED" : k % 3 === 0 ? "CONFIRMED" : "BOOKED";
       const price = Number(svc.price);
       const appt = await db.appointment.create({
-        data: { businessId: b.id, clientId: client.id, staffId: st.id, serviceId: svc.id, startAt: startAt.toJSDate(), endAt: startAt.plus({ minutes: svc.durationMin }).toJSDate(), status, source: SOURCES[k % SOURCES.length], price, createdAt: startAt.minus({ days: 3 }).toJSDate(), reminderSentAt: past || d <= 1 ? startAt.minus({ hours: 24 }).toJSDate() : null },
+        data: { businessId: b.id, clientId: client.id, staffId: st.id, serviceId: svc.id, startAt: startAt.toJSDate(), endAt: startAt.plus({ minutes: svc.durationMin }).toJSDate(), status, source: SOURCES[k % SOURCES.length], price, createdAt: DateTime.min(startAt.minus({ days: 3 }), DateTime.fromJSDate(b.createdAt).minus({ minutes: 1 })).toJSDate(), reminderSentAt: past || d <= 1 ? startAt.minus({ hours: 24 }).toJSDate() : null },
       });
       if (appt.reminderSentAt && d >= -6) {
         await db.messageLog.create({ data: { businessId: b.id, clientId: client.id, appointmentId: appt.id, channel: "WHATSAPP", to: client.phone, kind: "REMINDER", status: "SENT", providerRef: "showcase", createdAt: appt.reminderSentAt, body: `Hi ${client.name.split(" ")[0]}, a reminder of your ${svc.name} with ${st.name.split(" ")[0]} at Amani Hair & Beauty on ${startAt.toFormat("ccc d LLL 'at' HH:mm")}. Reschedule or cancel: /b/${appt.manageToken}` } });

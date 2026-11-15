@@ -43,9 +43,29 @@ Feature choices are based on real complaints about existing salon software; see 
 - **Launch checklist:** step-by-step submissions for Cloudflare, Vercel, Google Search Console, Bing, IndexNow, Business Profile, directories and AI assistants. See [`docs/LAUNCH-CHECKLIST.md`](docs/LAUNCH-CHECKLIST.md).
 - **Founding offer:** the first N salons that actually subscribe get X% off for M months (default 50 places, 50%, 6 months; editable in Admin → Settings). Applied automatically when an admin activates a salon; places-left counter on the pricing section and billing page.
 - **Plans:** Monthly (KES 2,500), Annual (KES 25,000, two months free) and Lifetime (KES 75,000 once, limited to 25 salons), all editable in Admin → Settings. Shown on the pricing section (with Offer schema), billing page and llms.txt. The founding discount applies to monthly and annual (pro-rated over the discounted months of the year) but not to lifetime.
-- **Reel studio** (Admin → Reel studio): one video per major feature (online booking, calendar, M-Pesa checkout, client records, reminders, reports, payroll), filmed on the **real app**. The page runs inside a 3D phone or browser, a scripted cursor moves through it (clicking, typing, choosing), the camera tilts and zooms after the cursor, and key results lift off the screen as 3D cards. Each reel opens on SAY NO MORE (big → bigger → biggest), then a feature title card, and ends on the sign-up card, scored with the built-in opera-style music (public-domain *Dies irae*). Record one reel or all of them (one MP4 each, 9:16 or 16:9) in desktop Chrome/Edge by choosing "This tab"; the capture is cropped to the stage. Scripts live in `src/components/reel/screen/reels.ts` and target elements by visible text or form label.
-  - **Showcase salon:** reels are filmed on a fictional salon ("Amani Hair & Beauty") that the admin creates with one click, so no customer data appears in marketing. It never sends SMS/WhatsApp, and it's excluded from admin stats, the customer map, the sitemap and search engines. Reset or delete it from the Reel studio. Opening the studio signs the browser into it; "Done" restores your own salon login.
-  - The older text-only promo generator is still available under "Text-only promo".
+- **How-to demos** (Admin → Reel studio): 11 short videos filmed on the **real app** with **no added text**. An animated cursor works through the pages (sidebar, links, forms, the browser address bar) while the camera follows it, zooms in on the action and pulls back on page changes. Each demo answers one problem salon owners raised in our research (see `docs/RESEARCH.md`), and together they cover the platform:
+  - online booking;
+  - deposits against no-shows;
+  - calendar and walk-ins;
+  - M-Pesa checkout;
+  - finance and till reconciliation;
+  - client records;
+  - reminders;
+  - client self-reschedule;
+  - reports and daily summary;
+  - payroll;
+  - services and team setup.
+
+  Each demo has its own look: a background colour, the move it lands with, and a camera tilt. Editing techniques adapted from short-form SaaS editing tutorials:
+  - a strong hook in the first second;
+  - flat colour with fine grain;
+  - a scale "punch" with motion blur on page changes;
+  - focus beats that blur the page and lift the key result;
+  - synthesised interface sounds (clicks, typing, whooshes), with optional low background music.
+
+  Record one demo or all of them (one MP4 each, 9:16 or 16:9) in desktop Chrome or Edge by choosing "This tab"; the capture is cropped to the stage. Scripts live in `src/components/reel/screen/reels.ts` and target elements by visible text or form label.
+  - **Showcase salon:** demos are filmed on a fictional salon ("Amani Hair & Beauty") that the admin creates with one click, so no customer data appears in marketing. It never sends SMS or WhatsApp messages, and it's excluded from admin stats, the customer map, the sitemap and search engines. Every take starts from the same state: what the previous take added is removed, and fresh M-Pesa payments are prepared. Reset or delete it from the Reel studio. Opening the studio signs the browser into it; "Done" restores your own salon login.
+  - The text promo (SAY NO MORE, no screens) is still available under "Text promo".
 
 ## Design
 Minimal and text-led, modelled on an editorial monochrome layout: light grey paper (#ededed), near-black ink (#1c1f24), white panels, thin black rules, small uppercase labels and very large uppercase display type. Blue (#1f5277) is the accent and pink (#d9468a) is used only for small highlights such as the active nav dot. **One font, Geist**, for everything (codes use tabular figures). No icons, no gradients, no images. Motion: lines slide up from masks, sections fade and rise on scroll (1s, `cubic-bezier(0.19, 1, 0.22, 1)`), outlined "lens" circles blur the type beneath them and drift slowly with mouse parallax, and the full-screen menu wipes in. All motion respects `prefers-reduced-motion`.
