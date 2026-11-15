@@ -42,7 +42,11 @@ Next.js 15 · PostgreSQL + Prisma 6 · Tailwind CSS 4 · framer-motion · lucide
 ## Deploy to Vercel
 
 1. **Import the repo:** on [vercel.com/new](https://vercel.com/new), import this GitHub repository. The framework is detected as Next.js. Vercel runs `npm run vercel-build`, which applies database migrations and then builds.
-2. **Add a database before the first build:** in the project, open **Storage → Marketplace → Neon (Postgres)** and connect it to **Production, Preview and Development**. The build accepts `DATABASE_URL`, `POSTGRES_PRISMA_URL` or `POSTGRES_URL`, and runs migrations over the direct (non-pooled) URL when one is provided. Any other Postgres works too; add its URL as `DATABASE_URL` (include `?sslmode=require`). If you see *"No database connection string found"*, the database isn't connected to that environment yet: connect it, then **Redeploy**.
+2. **Connect the Neon database** (project `rough-grass-70060214`, branch `production`). Either connect it under **Storage → Neon** in Vercel, or run `neon env pull` locally and add these two variables to Vercel for Production, Preview and Development:
+   - `DATABASE_URL`: the **pooled** string (host contains `-pooler`). The app uses it through node-postgres + Prisma's `@prisma/adapter-pg`, with the pool registered via `attachDatabasePool` for Vercel Fluid compute.
+   - `DATABASE_URL_UNPOOLED`: the **direct** string. The build uses it for `prisma migrate deploy`; migrations shouldn't go through PgBouncer.
+
+   The build also accepts `POSTGRES_PRISMA_URL` / `POSTGRES_URL`. If you see *"No database connection string found"*, connect the database to that environment and **Redeploy**.
 3. **Add environment variables** (Settings → Environment Variables). Generate each secret with `openssl rand -base64 48`:
 
    | Name | Value |

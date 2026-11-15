@@ -31,8 +31,12 @@ export const SETTING_DEFAULTS = {
 export type Settings = typeof SETTING_DEFAULTS;
 
 export const getSettings = cache(async (): Promise<Settings> => {
-  const rows = await db.platformSetting.findMany({ where: { key: { in: Object.keys(SETTING_DEFAULTS) } } });
   const out = structuredClone(SETTING_DEFAULTS) as Settings;
+  // Fall back to defaults if the database is unreachable (e.g. static pages prerendered at build time).
+  const rows = await db.platformSetting.findMany({ where: { key: { in: Object.keys(SETTING_DEFAULTS) } } }).catch((e) => {
+    console.warn("getSettings: using defaults,", (e as Error).message.split("\n").pop());
+    return [];
+  });
   for (const r of rows) Object.assign(out[r.key as keyof Settings], r.value as object);
   return out;
 });

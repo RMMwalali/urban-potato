@@ -26,7 +26,8 @@ export async function rootMetadata(): Promise<Metadata> {
  * otherwise the page's own fallback.
  */
 export async function pageMetadata(path: string, fallback: { title?: string; description?: string }, wildcard?: string): Promise<Metadata> {
-  const row = (await db.seoPage.findUnique({ where: { path } })) ?? (wildcard ? await db.seoPage.findUnique({ where: { path: wildcard } }) : null);
+  const find = (p: string) => db.seoPage.findUnique({ where: { path: p } }).catch(() => null);
+  const row = (await find(path)) ?? (wildcard ? await find(wildcard) : null);
   const vars = (s?: string | null) => s?.replace(/\{name\}/g, fallback.title ?? "");
   const title = vars(row?.title) || fallback.title;
   const description = vars(row?.description) || fallback.description;
