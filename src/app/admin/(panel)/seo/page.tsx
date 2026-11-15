@@ -12,6 +12,7 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
   const { saved } = await searchParams;
   const [{ seo, general }, pages] = await Promise.all([getSettings(), db.seoPage.findMany({ orderBy: { path: "asc" } })]);
   const base = seo.canonicalUrl || appUrl();
+  const homeOverride = pages.find((x) => x.path === "/" && (x.title || x.description));
   return (
     <div className="max-w-5xl space-y-6">
       <PageHeader title="SEO & meta tags" sub="Titles, descriptions, social cards and indexing for public pages" />
@@ -19,6 +20,11 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
 
       <section className="card p-5">
         <h2 className="section-title mb-4">Site-wide defaults</h2>
+        {homeOverride && (
+          <p className="mb-4 border-l-2 border-pink bg-panel px-4 py-3 text-[14px]">
+            The home page has its own {homeOverride.title ? <>title (&ldquo;{homeOverride.title}&rdquo;)</> : "description"} under Per-page overrides → <code>/</code>, which takes priority over the default here. Edit it there, or remove that override to use these defaults.
+          </p>
+        )}
         <form action={saveSettingsGroup} className="grid gap-4 lg:grid-cols-2">
           <input type="hidden" name="group" value="seo" /><input type="hidden" name="back" value="/admin/seo" />
           <div className="space-y-4">
@@ -48,7 +54,7 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
             <details key={p.path} className="group rounded-none border border-stone-200 open:bg-stone-50/50">
               <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm">
                 <span className="font-mono font-semibold">{p.path}</span>
-                <span className="text-xs text-stone-500">{p.id ? (p.title ?? "custom") : "default"}{p.noIndex && " · noindex"}</span>
+                <span className="text-xs text-stone-500">{p.id ? `${p.title ?? "custom"}${p.path === "/" && p.title ? " · overrides default title" : ""}` : "default"}{p.noIndex && " · noindex"}</span>
               </summary>
               <div className="grid gap-4 border-t border-stone-200 p-4 lg:grid-cols-2">
                 <ActionForm action={saveSeoPage} submit="Save page SEO" className="space-y-3">
