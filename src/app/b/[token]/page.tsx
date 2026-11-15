@@ -5,6 +5,7 @@ import { fmtDate, fmtTime, money, STATUS_LABEL } from "@/lib/format";
 import { openDays, policyText } from "@/lib/policy";
 import { ManageBooking } from "@/components/ManageBooking";
 import { BookingReceipt } from "@/components/BookingReceipt";
+import { PrintReceipt } from "@/components/PrintReceipt";
 import { bookingSlip } from "@/lib/slip";
 
 export const metadata = { title: "Your appointment", robots: { index: false, follow: false } };
@@ -25,7 +26,7 @@ export default async function ManagePage({ params }: { params: Promise<{ token: 
         <div>
           <p className="label-caps text-muted">{b.name} · {STATUS_LABEL[a.status]}</p>
           <h1 className="mt-4 text-[clamp(36px,9vw,64px)] leading-[0.9] uppercase">{a.service.name}</h1>{a.styleName && <p className="mt-2 text-[18px]">{a.styleName}</p>}
-          {slip && <div className="mt-8"><BookingReceipt slip={slip} animate={false} /></div>}
+          {slip && <div className="mt-8"><PrintReceipt label="Print booking slip" staff={false}><BookingReceipt slip={slip} animate={false} /></PrintReceipt></div>}
         </div>
         {active ? <ManageBooking token={token} days={days} timezone={b.timezone} canChange={canChange} policy={policyText(b)} /> : <p className="border-l-2 border-ink bg-panel px-4 py-3 text-[14px]">This appointment can no longer be changed online.{b.phone && ` Call ${b.phone}.`}</p>}
       </div>

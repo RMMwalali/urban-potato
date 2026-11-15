@@ -1,6 +1,7 @@
 "use client";
 import { keepValues } from "./useKeepForm";
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
+import { ClientAutofill, type FoundClient } from "./ClientAutofill";
 import { createAppointment, type ApptState } from "@/app/actions/appointments";
 import { SOURCE_LABEL } from "@/lib/format";
 
@@ -15,6 +16,14 @@ export function AppointmentForm(props: {
   const [state, action, pending] = useActionState<ApptState, FormData>(createAppointment, undefined);
   const [newClient] = useState(!props.client);
   const categories = [...new Set(props.services.map((s) => s.category))];
+  const svcRef = useRef<HTMLSelectElement>(null);
+  const staffRef = useRef<HTMLSelectElement>(null);
+  // a returning client: preselect their usual service and stylist, unless already chosen
+  const onPick = (c: FoundClient | null) => {
+    if (!c?.last) return;
+    if (svcRef.current && !svcRef.current.value && props.services.some((s) => s.id === c.last!.serviceId)) svcRef.current.value = c.last.serviceId;
+    if (staffRef.current && !staffRef.current.value && c.last.staffId && props.staff.some((s) => s.id === c.last!.staffId)) staffRef.current.value = c.last.staffId;
+  };
 
   return (
     <form onSubmit={keepValues(action)} className="card max-w-2xl space-y-5 p-5">
@@ -26,24 +35,14 @@ export function AppointmentForm(props: {
             <span className="font-medium">{props.client.name}</span> <span className="text-stone-500">{props.client.extra}</span>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="label">Phone number</label>
-              <input name="clientPhone" className="input" placeholder="0712 345 678" required inputMode="tel" />
-            </div>
-            <div>
-              <label className="label">Full name</label>
-              <input name="clientName" className="input" required />
-            </div>
-            <p className="text-xs text-stone-500 sm:col-span-2">Existing clients are matched by phone number, so their history stays in one place.</p>
-          </div>
+          <ClientAutofill onPick={onPick} />
         )}
       </fieldset>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label className="label">Service</label>
-          <select name="serviceId" className="input" required defaultValue="">
+          <select ref={svcRef} name="serviceId" className="input" required defaultValue="">
             <option value="" disabled>Choose a service…</option>
             {categories.map((c) => (
               <optgroup key={c} label={c}>
@@ -56,7 +55,7 @@ export function AppointmentForm(props: {
         </div>
         <div>
           <label className="label">Staff</label>
-          <select name="staffId" className="input" defaultValue={props.defaults.staffId ?? ""}>
+          <select ref={staffRef} name="staffId" className="input" defaultValue={props.defaults.staffId ?? ""}>
             <option value="">Unassigned</option>
             {props.staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>

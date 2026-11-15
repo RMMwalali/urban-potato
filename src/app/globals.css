@@ -162,3 +162,29 @@ input[type="checkbox"], input[type="radio"] { width: 1.15rem; height: 1.15rem; a
 .mq-logo img { filter: grayscale(1); opacity: 0.55; transition: filter 0.6s ease, opacity 0.6s ease, transform 0.9s cubic-bezier(0.19, 1, 0.22, 1); }
 .mq-logo:hover img, .mq-logo:focus-visible img { filter: none; opacity: 1; transform: scale(1.08); }
 @media (prefers-reduced-motion: reduce) { .mq { overflow-x: auto; } .mq-track { animation: none; } }
+
+/* ---------- Receipt printing (POS 58/80 mm and A4) ---------- */
+.rcpt { --tear: 0px; padding-bottom: 22px; -webkit-mask: none; mask: none; border: 1px solid #e3e3e3; }
+.print-area[data-paper="58"] .bk-paper { font-size: 11px; padding-left: 0; padding-right: 0; }
+.print-area[data-paper="58"] .bk-meta { font-size: 10px; }
+.print-area[data-paper="58"] .bk-strong { font-size: 12px; }
+@media print {
+  html, body { background: #fff !important; }
+  [data-print-hidden] { display: none !important; }
+  [data-print-path] { display: block !important; position: static !important; margin: 0 !important; padding: 0 !important; border: 0 !important; width: auto !important; max-width: none !important; min-height: 0 !important; height: auto !important; overflow: visible !important; transform: none !important; box-shadow: none !important; background: #fff !important; }
+  .print-area[data-print-path] { width: 100% !important; }
+  .print-area[data-paper="a4"][data-print-path] { width: 92mm !important; margin: 0 auto !important; }
+  .print-area .bk-card { display: none; }
+  .print-area .bk-slot { height: auto !important; overflow: visible; }
+  .print-area .bk-wrap { transform: none !important; filter: none !important; margin: 0 !important; }
+  /* thermal printers print black only: no greys, shadows, borders or torn edge */
+  .print-area .bk-paper { --tear: 0px; -webkit-mask: none; mask: none; border: 0; box-shadow: none; padding: 3mm 0 5mm; color: #000; }
+  /* roll printers can't print the outer few millimetres: keep content inside the printable width */
+  .print-area[data-paper="80"] .bk-paper { padding-left: 4mm; padding-right: 4mm; }
+  .print-area[data-paper="58"] .bk-paper { padding-left: 5mm; padding-right: 5mm; }
+  .print-area .bk-faint { color: #000; }
+  .print-area .bk-rule { border-top-color: #000; }
+  .print-area .bk-link { display: none; }
+  .print-area .rcpt-logo, .print-area .bk-paper img { filter: grayscale(1) contrast(1.4); }
+  .print-area .bk-barcode { height: 30px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

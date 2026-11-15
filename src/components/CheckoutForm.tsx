@@ -3,6 +3,7 @@ import { keepValues } from "./useKeepForm";
 import { useActionState, useState } from "react";
 import { createSale, type SaleState } from "@/app/actions/sales";
 import { PaymentRows, type PayRow } from "./PaymentRows";
+import { ClientAutofill, type FoundClient } from "./ClientAutofill";
 
 type Svc = { id: string; name: string; price: number };
 type Staff = { id: string; name: string };
@@ -34,6 +35,12 @@ export function CheckoutForm(props: {
   const tipStaffDefault = props.initialItems.find((i) => i.staffId)?.staffId ?? "";
   const fmt = (n: number) => `${props.currency} ${n.toLocaleString()}`;
   const update = (i: number, patch: Partial<Row>) => setItems(items.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  // returning client on a quick sale: start the bill with their usual service and stylist (payment is never prefilled)
+  const onPick = (c: FoundClient | null) => {
+    const s = c?.last && props.services.find((x) => x.id === c.last!.serviceId);
+    if (!s) return;
+    setItems((cur) => (cur.length === 0 || (cur.length === 1 && !cur[0].serviceId && !cur[0].name) ? [{ serviceId: s.id, staffId: c!.last!.staffId, name: s.name, quantity: 1, unitPrice: s.price }] : cur));
+  };
 
   return (
     <form onSubmit={keepValues(action)} className="card max-w-3xl space-y-5 p-5">
@@ -43,10 +50,7 @@ export function CheckoutForm(props: {
       {props.client ? (
         <p className="text-sm">Client: <b>{props.client.name}</b><input type="hidden" name="clientId" value={props.client.id} /></p>
       ) : !props.appointmentId ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div><label className="label">Client phone (optional)</label><input name="clientPhone" className="input" inputMode="tel" /></div>
-          <div><label className="label">Client name</label><input name="clientName" className="input" /></div>
-        </div>
+        <ClientAutofill required={false} phoneLabel="Client phone (optional)" nameLabel="Client name" onPick={onPick} />
       ) : null}
 
       <div>

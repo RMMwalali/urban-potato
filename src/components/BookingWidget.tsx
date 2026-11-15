@@ -1,12 +1,14 @@
 "use client";
 import { keepValues } from "./useKeepForm";
 import Link from "next/link";
-import { useActionState, useMemo, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { publicBook, type BookState } from "@/app/actions/booking";
 import { SlotPicker } from "./SlotPicker";
 import { BookingReceipt } from "./BookingReceipt";
+import { PrintReceipt } from "./PrintReceipt";
 
+const ME_KEY = "darling.client";
 type Photo = { url: string; thumb: string; alt: string };
 type Style = { id: string; name: string; price: number | null; durationMin: number | null; photo: Photo | null };
 type Svc = { id: string; name: string; category: string; durationMin: number; price: number; description: string | null; photos: Photo[]; styles: Style[] };
@@ -18,6 +20,11 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
   const [serviceId, setServiceId] = useState(props.services.some((s) => s.id === props.initialService) ? props.initialService! : "");
   const [styleId, setStyleId] = useState("");
   const [cat, setCat] = useState("All");
+  // remembered on this phone only (never looked up on the server), so returning clients don't retype
+  const [me, setMe] = useState<{ name: string; phone: string } | null>(null);
+  useEffect(() => { try { const v = JSON.parse(localStorage.getItem(ME_KEY) ?? "null"); if (v?.name && v?.phone) setMe(v); } catch {} }, []);
+  const typed = useRef<{ name: string; phone: string } | null>(null);
+  useEffect(() => { if (state?.done && typed.current?.name && typed.current.phone) try { localStorage.setItem(ME_KEY, JSON.stringify(typed.current)); } catch {} }, [state?.done]);
   const railRef = useRef<HTMLDivElement>(null);
   const [staffId, setStaffId] = useState("");
   const [start, setStart] = useState("");
@@ -33,7 +40,7 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
 
   if (state?.done)
     return state.done.slip ? (
-      <BookingReceipt slip={state.done.slip} />
+      <PrintReceipt label="Print booking slip" staff={false}><BookingReceipt slip={state.done.slip} /></PrintReceipt>
     ) : (
       <div className="card p-6 text-center">
         <h2 className="text-2xl">You&apos;re booked!</h2>
@@ -49,7 +56,7 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
   );
 
   return (
-    <form onSubmit={keepValues(action)} className="space-y-5">
+    <form onSubmit={(e) => { const f = new FormData(e.currentTarget); typed.current = { name: String(f.get("name") ?? "").trim(), phone: String(f.get("phone") ?? "").trim() }; keepValues(action)(e); }} className="space-y-5">
       <input type="hidden" name="slug" value={props.slug} />
       <input type="hidden" name="serviceId" value={serviceId} />
       <input type="hidden" name="styleId" value={styleId} />
@@ -150,8 +157,16 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
       {start && service && (
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card space-y-4 p-5">
           {step(3, "Your details")}
-          <div><label className="label">Full name</label><input name="name" className="input" required autoComplete="name" /></div>
-          <div><label className="label">Phone number</label><input name="phone" className="input" required inputMode="tel" autoComplete="tel" placeholder="0712 345 678" /></div>
+          {me && (
+            <p className="flex justify-between gap-3 text-[13px] text-stone-600">
+              <span>Welcome back, {me.name.split(" ")[0]}.</span>
+              <button type="button" className="underline underline-offset-4" onClick={() => { try { localStorage.removeItem(ME_KEY); } catch {} setMe(null); }}>Not you?</button>
+            </p>
+          )}
+          <div key={me ? "me" : "new"} className="space-y-4">
+            <div><label className="label">Full name</label><input name="name" className="input" required autoComplete="name" defaultValue={me?.name} /></div>
+            <div><label className="label">Phone number</label><input name="phone" className="input" required inputMode="tel" autoComplete="tel" placeholder="0712 345 678" defaultValue={me?.phone} /></div>
+          </div>
           <div><label className="label">Anything we should know? (optional)</label><textarea name="notes" rows={2} className="input" placeholder="Allergies, hair length, inspiration…" /></div>
           {deposit > 0 && props.mpesa && (
             <div className="rounded-none bg-petal/30 p-4 ring-lime-500/30">
