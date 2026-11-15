@@ -6,6 +6,7 @@ import { logout } from "@/app/actions/auth";
 import { db } from "@/lib/db";
 import { Nav } from "@/components/Nav";
 import { Tour, TourButton } from "@/components/tour/Tour";
+import { NotificationCenter } from "@/components/notify/NotificationCenter";
 import { ownerSteps, staffSteps } from "@/components/tour/steps";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const isPlatformAdmin = !!(await db.platformAdmin.findUnique({ where: { email: user.email }, select: { id: true } }));
   return (
     <div className="min-h-screen bg-paper md:flex">
+      <NotificationCenter />
       <aside className="border-b border-ink print:hidden md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-r md:border-b-0">
         <div className="flex items-start justify-between px-5 pt-6 pb-5">
           <div className="min-w-0">

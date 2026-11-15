@@ -21,6 +21,9 @@ export async function rootMetadata(): Promise<Metadata> {
     description: seo.description,
     keywords: seo.keywords ? seo.keywords.split(",").map((k) => k.trim()).filter(Boolean) : undefined,
     applicationName: general.siteName,
+    // installable app (PWA): iPhone home-screen title, status bar and full-screen mode
+    appleWebApp: { capable: true, title: general.siteName, statusBarStyle: "default" },
+    formatDetection: { telephone: false },
     openGraph: { type: "website", siteName: general.siteName, title: seo.defaultTitle, description: seo.description, images: [seo.ogImage || "/opengraph-image"] },
     twitter: { card: "summary_large_image", site: seo.twitterHandle || undefined, title: seo.defaultTitle, description: seo.description, images: [seo.ogImage || "/opengraph-image"] },
     verification: seo.googleVerification || seo.bingVerification

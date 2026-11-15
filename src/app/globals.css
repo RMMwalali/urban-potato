@@ -188,3 +188,8 @@ input[type="checkbox"], input[type="radio"] { width: 1.15rem; height: 1.15rem; a
   .print-area .rcpt-logo, .print-area .bk-paper img { filter: grayscale(1) contrast(1.4); }
   .print-area .bk-barcode { height: 30px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
+
+/* Notification toasts */
+.toast-in { animation: toast-in 0.7s cubic-bezier(0.19, 1, 0.22, 1) both; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-14px) scale(0.97); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .toast-in { animation: none; } }

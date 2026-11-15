@@ -79,6 +79,7 @@ model Business {
   mpesaTxns    MpesaTransaction[]
   payRuns      PayRun[]
   advances     StaffAdvance[]
+  notifications Notification[]
   media        Media[]
 }
 
@@ -126,6 +127,9 @@ model User {
   advances     StaffAdvance[]
   services     Service[] @relation("StaffServices") // empty = can perform every service
 
+  notifyMuted    String[] @default([]) // notification kinds this person turned off
+  notifications  Notification[]
+  pushSubs       PushSubscription[]
   @@index([businessId])
 }
 
@@ -549,4 +553,38 @@ model Media {
 
   @@index([businessId, kind])
   @@index([serviceId, position])
+}
+
+// What happened in a salon that the team should know about (new booking, payment, cancellation…).
+// userId null = for owners and managers; set = for one person (e.g. the stylist on a booking).
+model Notification {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind       String // booking | rescheduled | cancelled | payment | deposit | alert | test
+  title      String
+  body       String
+  url        String?
+  readBy     String[] @default([]) // user ids that have seen it
+  createdAt  DateTime @default(now())
+
+  @@index([businessId, createdAt])
+}
+
+// A browser or installed app (PWA) that receives push notifications for one person.
+model PushSubscription {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId String
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  device     String? // short description from the user agent, shown in settings
+  createdAt  DateTime @default(now())
+  lastOkAt   DateTime?
+
+  @@index([userId])
 }

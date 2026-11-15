@@ -59,6 +59,7 @@ export async function recordC2B(businessId: string, p: C2BPayload) {
     source: "C2B" as const,
     raw: p as Prisma.InputJsonValue,
   };
+  const existed = await db.mpesaTransaction.findUnique({ where: { businessId_code: { businessId, code } }, select: { id: true, source: true } });
   const tx = await db.mpesaTransaction.upsert({
     where: { businessId_code: { businessId, code } },
     update: data,
@@ -68,6 +69,12 @@ export async function recordC2B(businessId: string, p: C2BPayload) {
   // A payment recorded before the callback arrived becomes verified now.
   if (tx.payment) await db.payment.update({ where: { id: tx.payment.id }, data: { verified: true, payerName: tx.payment.payerName ?? payerName } });
   if (tx.appointmentId) await db.appointment.update({ where: { id: tx.appointmentId }, data: { depositVerified: true } });
+  // ring the till: only the first time Safaricom tells us about this payment
+  if (!existed || existed.source !== "C2B") {
+    const b = await db.business.findUnique({ where: { id: businessId }, select: { currency: true } });
+    const { notify } = await import("./notify");
+    await notify({ businessId, kind: "payment", title: `${b?.currency ?? "KES"} ${data.amount.toLocaleString()} received${payerName ? ` from ${payerName}` : ""}`, body: `M-Pesa ${code}${tx.payment ? " · matched to a sale" : tx.appointmentId ? " · booking deposit" : " · not matched to a sale yet"}`, url: tx.payment || tx.appointmentId ? "/app/finance" : `/app/sales/new?mpesa=${code}` });
+  }
   return tx;
 }
 

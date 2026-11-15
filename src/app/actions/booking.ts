@@ -7,6 +7,7 @@ import { fmtDateTime } from "@/lib/format";
 import { upsertClient } from "./appointments";
 import { accessState } from "@/lib/platform";
 import { bookingSlip, type Slip } from "@/lib/slip";
+import { notify } from "@/lib/notify";
 
 export type BookState = { error?: string; done?: { when: string; service: string; staff: string | null; manage: string; deposit: number; slip: Slip | null } } | undefined;
 
@@ -102,6 +103,12 @@ export async function publicBook(_: BookState, fd: FormData): Promise<BookState>
     }
   }
   await notifyAppointment("CONFIRMATION", appt.id);
+  await notify({
+    businessId: business.id, kind: deposit > 0 ? "deposit" : "booking", forUserId: appt.staffId,
+    title: `New booking · ${client.name}`,
+    body: `${label}${appt.staff ? ` with ${appt.staff.name.split(" ")[0]}` : ""} · ${fmtDateTime(start, business.timezone)}${deposit > 0 ? ` · ${business.currency} ${deposit.toLocaleString()} deposit` : ""}`,
+    url: `/app/appointments/${appt.id}`,
+  });
   return { done: { when: fmtDateTime(start, business.timezone), service: label, staff: appt.staff?.name ?? null, manage: `/b/${appt.manageToken}`, deposit, slip: await bookingSlip(appt.id) } };
 }
 
@@ -117,6 +124,8 @@ export async function clientCancel(token: string): Promise<BookState> {
   if (a.startAt.getTime() - Date.now() < a.business.cancelPolicyHours * 3600_000)
     return { error: `Online cancellation closes ${a.business.cancelPolicyHours}h before your appointment. Please call the salon.` };
   await db.appointment.update({ where: { id: a.id }, data: { status: "CANCELLED", cancelledBy: "CLIENT" } });
+  const who = await db.client.findUnique({ where: { id: a.clientId }, select: { name: true } });
+  await notify({ businessId: a.businessId, kind: "cancelled", forUserId: a.staffId, title: `${who?.name ?? "A client"} cancelled`, body: `${a.service.name} · ${fmtDateTime(a.startAt, a.business.timezone)}. The time is free again.`, url: `/app/calendar?view=day&date=${new Intl.DateTimeFormat("en-CA", { timeZone: a.business.timezone }).format(a.startAt)}` });
   await notifyAppointment("CANCELLATION", a.id);
   return undefined;
 }
@@ -139,5 +148,7 @@ export async function clientReschedule(_: BookState, fd: FormData): Promise<Book
     include: { staff: true },
   });
   await notifyAppointment("CONFIRMATION", a.id);
+  const who = await db.client.findUnique({ where: { id: a.clientId }, select: { name: true } });
+  await notify({ businessId: a.businessId, kind: "rescheduled", forUserId: updated.staffId, title: `${who?.name ?? "A client"} moved their booking`, body: `${a.service.name} · now ${fmtDateTime(start, a.business.timezone)} (was ${fmtDateTime(a.startAt, a.business.timezone)})`, url: `/app/appointments/${a.id}` });
   return { done: { when: fmtDateTime(start, a.business.timezone), service: a.service.name, staff: updated.staff?.name ?? null, manage: `/b/${a.manageToken}`, deposit: 0, slip: null } };
 }

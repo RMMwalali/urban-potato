@@ -73,6 +73,10 @@ export async function sendMessage(opts: {
   const channel = opts.channel ?? opts.business.messageChannel;
   // The showcase salon (used to film reels) never contacts anyone; its messages are only logged.
   const r: SendResult = opts.business.isShowcase ? { ok: true, ref: "showcase" } : await deliver(opts.to, opts.body);
+  if (!r.ok) {
+    const { notify } = await import("./notify");
+    await notify({ businessId: opts.business.id, kind: "alert", title: `A ${opts.kind.toLowerCase()} message didn't send`, body: `To ${opts.to}: ${r.error}`.slice(0, 200), url: "/app/messages" });
+  }
   return db.messageLog.create({
     data: {
       businessId: opts.business.id,
