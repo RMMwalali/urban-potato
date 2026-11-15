@@ -7,6 +7,7 @@ const items = [
   { href: "/admin/businesses", label: "Salons & trials" },
   { href: "/admin/map", label: "Map" },
   { href: "/admin/homepage", label: "Homepage" },
+  { href: "/admin/brand", label: "Brand" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/api-keys", label: "API keys" },
   { href: "/admin/seo", label: "SEO & meta" },
