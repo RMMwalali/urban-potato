@@ -5,6 +5,27 @@ import { db } from "@/lib/db";
 import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
 import { slugify } from "@/lib/format";
 import { getSettings } from "@/lib/platform";
+import { createAdminSession } from "@/lib/admin-auth";
+
+/**
+ * The very first account on the platform gets platform-admin rights (same email and password for /admin).
+ * Runs at sign-up and at login, so an account created before this rule existed is promoted on its next login.
+ * Does nothing once any platform admin exists.
+ */
+async function promoteFirstAccount(userId: string) {
+  if ((await db.platformAdmin.count()) > 0) return false;
+  const first = await db.user.findFirst({ orderBy: { createdAt: "asc" } });
+  if (!first || first.id !== userId) return false;
+  try {
+    const admin = await db.platformAdmin.create({ data: { email: first.email, name: first.name, passwordHash: first.passwordHash } });
+    await db.auditLog.create({ data: { actor: first.email, action: "admin.first_account", targetType: "user", targetId: first.id } });
+    await createAdminSession(admin.id);
+    return true;
+  } catch (e) {
+    console.error("first-account admin promotion skipped:", e);
+    return false;
+  }
+}
 
 export type FormState = { error?: string } | undefined;
 
@@ -42,6 +63,7 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
 
   try {
     await createSession({ userId: user.id, businessId: user.businessId, role: user.role });
+    await promoteFirstAccount(user.id);
   } catch (e) {
     console.error("signup failed (session):", e);
     return { error: "Your account was created, but signing in failed because the server isn't fully configured. Please contact support." };
@@ -61,6 +83,7 @@ export async function login(_: FormState, fd: FormData): Promise<FormState> {
     return { error: "Incorrect email or password" };
   try {
     await createSession({ userId: user.id, businessId: user.businessId, role: user.role });
+    await promoteFirstAccount(user.id);
   } catch (e) {
     console.error("login failed (session):", e);
     return { error: "Signing in failed because the server isn't fully configured. Please contact support." };

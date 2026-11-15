@@ -6,13 +6,10 @@ import bcrypt from "bcryptjs";
 import { db } from "./db";
 import type { Role } from "@prisma/client";
 import { accessState } from "./platform";
+import { authSecret } from "./secrets";
 
 const COOKIE = "spadesk_session";
-const secret = () => {
-  const s = process.env.AUTH_SECRET;
-  if (!s || s.length < 32) throw new Error("AUTH_SECRET must be set (32+ chars)");
-  return new TextEncoder().encode(s);
-};
+const secret = () => new TextEncoder().encode(authSecret());
 
 export type Session = { userId: string; businessId: string; role: Role };
 

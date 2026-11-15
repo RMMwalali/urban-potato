@@ -2,11 +2,13 @@ import Link from "next/link";
 import { requireUser, MANAGERS } from "@/lib/auth";
 import { accessState, getSettings } from "@/lib/platform";
 import { logout } from "@/app/actions/auth";
+import { db } from "@/lib/db";
 import { Nav } from "@/components/Nav";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const [user, { general }] = await Promise.all([requireUser(undefined, { allowLocked: true }), getSettings()]);
   const access = accessState(user.business);
+  const isPlatformAdmin = !!(await db.platformAdmin.findUnique({ where: { email: user.email }, select: { id: true } }));
   return (
     <div className="min-h-screen bg-paper md:flex">
       <aside className="border-b border-ink md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-r md:border-b-0">
@@ -17,7 +19,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
           <p className="label-caps mt-4 truncate text-muted">{user.business.name}</p>
         </div>
-        <div className="md:flex-1 md:overflow-y-auto"><Nav isManager={MANAGERS.includes(user.role)} /></div>
+        <div className="md:flex-1 md:overflow-y-auto">
+          <Nav isManager={MANAGERS.includes(user.role)} />
+          {isPlatformAdmin && <Link href="/admin" className="label-caps mx-5 mt-4 block border-t border-ink pt-3 hover:opacity-50">Platform admin ↗</Link>}
+        </div>
         {access.reason === "trial" && (
           <Link href="/app/billing" className="mx-5 mb-4 hidden border-t border-ink pt-3 md:block">
             <p className="label-caps text-muted">Free trial</p>

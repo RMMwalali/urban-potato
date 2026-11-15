@@ -1,12 +1,11 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
+import { encryptionSecret } from "./secrets";
 
 // AES-256-GCM for secrets stored in the database (API credentials).
 // Set ENCRYPTION_KEY in production; changing it makes stored credentials unreadable.
 function key() {
-  const k = process.env.ENCRYPTION_KEY || process.env.AUTH_SECRET;
-  if (!k) throw new Error("ENCRYPTION_KEY is not set");
-  return createHash("sha256").update(k).digest();
+  return createHash("sha256").update(encryptionSecret()).digest();
 }
 
 export function encrypt(plain: string) {

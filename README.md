@@ -57,7 +57,7 @@ Next.js 15 · Neon Postgres + Prisma 6 (node-postgres adapter) · Tailwind CSS 4
    | `ADMIN_SETUP_TOKEN` | random, used once to create your admin account |
    | `APP_URL` | your domain, e.g. `https://spadesk.co.ke` (optional; defaults to the Vercel production URL) |
 
-4. **Deploy**, then open `https://YOUR-APP/admin/setup?token=YOUR_ADMIN_SETUP_TOKEN` and create your platform admin. The page disables itself once an admin exists; you can then delete `ADMIN_SETUP_TOKEN`.
+4. **Deploy, then sign up straight away.** The first account created on the platform automatically becomes the platform admin: log in at `/admin/login` with the same email and password. (Alternatively, `/admin/setup?token=YOUR_ADMIN_SETUP_TOKEN` creates an admin without a salon.) If `AUTH_SECRET`/`ENCRYPTION_KEY` are missing the app falls back to secrets derived from `DATABASE_URL` so sign-up still works, but set them: the fallback changes if the database password changes, which logs everyone out and makes saved API keys unreadable. The reminders cron stays disabled until `CRON_SECRET` is set.
 5. In **/admin**, fill in Platform settings (support WhatsApp/phone, price), API keys (Africa's Talking / WhatsApp) and SEO.
 6. **Reminders:** `vercel.json` schedules `/api/cron/reminders` once a day, which is the most the Hobby plan allows. For reminders every 15 minutes, either upgrade to Pro and change the schedule to `*/15 * * * *`, or use the included GitHub Action (`.github/workflows/reminders.yml`): add repository secrets `APP_URL` and `CRON_SECRET` and it runs every 15 minutes for free.
 7. **M-Pesa C2B:** each salon connects in Settings → Payments. The callback URL uses your `https` domain automatically.

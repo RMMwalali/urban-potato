@@ -3,14 +3,11 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import { db } from "./db";
+import { authSecret } from "./secrets";
 
 // Platform admins use a separate cookie and table from salon users.
 const COOKIE = "spadesk_admin";
-const secret = () => {
-  const s = process.env.AUTH_SECRET;
-  if (!s || s.length < 32) throw new Error("AUTH_SECRET must be set (32+ chars)");
-  return new TextEncoder().encode(`${s}::admin`);
-};
+const secret = () => new TextEncoder().encode(`${authSecret()}::admin`);
 
 export async function createAdminSession(adminId: string) {
   const token = await new SignJWT({ adminId }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("12h").sign(secret());
