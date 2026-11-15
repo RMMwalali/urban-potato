@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import { MANAGERS, requireUser } from "@/lib/auth";
 import { money, num } from "@/lib/format";
 import { addServiceTemplate, saveService, toggleService } from "@/app/actions/manage";
-import { Scissors, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/ui";
 import { SERVICE_TEMPLATES } from "@/lib/templates";
 
@@ -16,14 +15,14 @@ export default async function ServicesPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Services & prices" sub="Your menu: what clients can book and what you charge" icon={Scissors} />
+      <PageHeader title="Services & prices" sub="Your menu: what clients can book and what you charge" />
       {services.length === 0 && (
-        <div className="card bg-gradient-to-br from-navy-950 to-navy-800 p-6 text-white">
-          <p className="flex items-center gap-2 font-display text-xl font-bold"><Sparkles className="h-5 w-5 text-petal" /> Start from a template</p>
+        <div className="card bg-ink p-6 text-white">
+          <p className="flex items-center gap-2 font-display text-xl font-bold">Start from a template</p>
           <p className="mt-1 text-sm text-white/70">Add a typical menu in one click, then edit names, times and prices to match yours. Or add your own services below.</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {Object.entries(SERVICE_TEMPLATES).map(([k, t]) => (
-              <form key={k} action={addServiceTemplate.bind(null, k)}><button className="btn bg-white/10 text-white ring-1 ring-white/20 hover:bg-white/20">+ {t.label}</button></form>
+              <form key={k} action={addServiceTemplate.bind(null, k)}><button className="btn bg-white/10 text-white hover:bg-white/20">+ {t.label}</button></form>
             ))}
           </div>
         </div>

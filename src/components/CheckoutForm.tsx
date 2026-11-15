@@ -96,7 +96,7 @@ export function CheckoutForm(props: {
         )}
       </div>
 
-      <div className="space-y-1 rounded-lg bg-stone-50 p-4 text-sm">
+      <div className="space-y-1 rounded-none bg-stone-50 p-4 text-sm">
         <div className="flex justify-between"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
         {discount > 0 && <div className="flex justify-between"><span>Discount</span><span>−{fmt(Math.min(discount, subtotal))}</span></div>}
         {tip > 0 && <div className="flex justify-between"><span>Tip</span><span>{fmt(tip)}</span></div>}
@@ -110,12 +110,12 @@ export function CheckoutForm(props: {
         {due > 0 ? (
           <PaymentRows initialCode={props.initialCode} due={due} methods={props.paymentMethods} requireVerified={props.requireVerified} currency={props.currency} onChange={(rows, ok) => { setPayments(rows); setPayOk(ok); }} />
         ) : (
-          <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Nothing more to pay. The deposit covers the bill.</p>
+          <p className="rounded-none bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Nothing more to pay. The deposit covers the bill.</p>
         )}
         <input type="hidden" name="payments" value={JSON.stringify(due > 0 ? payments.map(({ method, amount, tendered, reference, payerName, smsText }) => ({ method, amount, tendered, reference, payerName, smsText })) : [])} />
       </div>
 
-      {state?.error && <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
+      {state?.error && <p className="rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
       <button className="btn-primary w-full sm:w-auto" disabled={pending || items.length === 0 || (due > 0 && !payOk)}>{pending ? "Saving…" : `Record payment · ${fmt(due)}`}</button>
     </form>
   );

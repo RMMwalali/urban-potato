@@ -1,5 +1,4 @@
 import { DateTime } from "luxon";
-import { CalendarPlus } from "lucide-react";
 import { PageHeader } from "@/components/ui";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -23,7 +22,7 @@ export default async function NewAppointment({
   ]);
   return (
     <div className="space-y-5">
-      <PageHeader title={sp.walkin ? "Walk-in" : "New appointment"} icon={CalendarPlus} />
+      <PageHeader title={sp.walkin ? "Walk-in" : "New appointment"} />
       <AppointmentForm
         services={services.map((s) => ({ id: s.id, name: s.name, category: s.category, extra: `${s.durationMin} min · ${money(s.price, b.currency)}` }))}
         staff={staff.map((s) => ({ id: s.id, name: s.name }))}

@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Receipt } from "lucide-react";
 import { TitleIcon } from "@/components/ui";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -25,7 +24,7 @@ export default async function NewSale({ searchParams }: { searchParams: Promise<
 
   return (
     <div className="space-y-5">
-      <h1 className="page-title flex items-center gap-3"><TitleIcon icon={Receipt} />{appt ? "Check out appointment" : "Quick sale"}</h1>
+      <h1 className="page-title flex items-center gap-3"><TitleIcon />{appt ? "Check out appointment" : "Quick sale"}</h1>
       <CheckoutForm
         currency={b.currency}
         paymentMethods={b.paymentMethods}

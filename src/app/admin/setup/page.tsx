@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
 import { db } from "@/lib/db";
 import { createFirstAdmin } from "@/app/actions/admin";
 import { ActionForm } from "@/components/ActionForm";
@@ -14,25 +13,22 @@ export default async function AdminSetup({ searchParams }: { searchParams: Promi
   if ((await db.platformAdmin.count()) > 0) redirect("/admin/login");
   const ok = !!process.env.ADMIN_SETUP_TOKEN && token === process.env.ADMIN_SETUP_TOKEN;
   return (
-    <main className="flex min-h-screen items-center justify-center bg-navy-950 px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-6 flex flex-col items-center text-white">
-          <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-petal text-navy-950"><ShieldCheck className="h-6 w-6" /></span>
-          <h1 className="font-display text-2xl font-bold">Create the first admin</h1>
-        </div>
-        <div className="card p-6">
-          {!ok ? (
-            <p className="text-sm text-stone-600">Set an <code>ADMIN_SETUP_TOKEN</code> environment variable, redeploy, then open <code>/admin/setup?token=YOUR_TOKEN</code>.</p>
-          ) : (
-            <ActionForm action={createFirstAdmin} submit="Create admin" submitClass="btn-dark w-full" className="space-y-4">
-              <input type="hidden" name="token" value={token} />
-              <div><label className="label">Name</label><input name="name" className="input" required /></div>
-              <div><label className="label">Email</label><input name="email" type="email" className="input" required autoComplete="username" /></div>
-              <div><label className="label">Password (12+ characters)</label><input name="password" type="password" minLength={12} className="input" required autoComplete="new-password" /></div>
-            </ActionForm>
-          )}
-        </div>
+    <main className="flex min-h-screen flex-col justify-between bg-paper px-5 py-8 sm:px-8">
+      <p className="label-caps">Platform admin · first run</p>
+      <div className="mx-auto w-full max-w-md">
+        <h1 className="mb-12 text-[clamp(40px,6vw,80px)] leading-[0.85] uppercase">Create the<br />first admin</h1>
+        {!ok ? (
+          <p className="text-[15px] text-muted">Set an <code>ADMIN_SETUP_TOKEN</code> environment variable, redeploy, then open <code>/admin/setup?token=YOUR_TOKEN</code>.</p>
+        ) : (
+          <ActionForm action={createFirstAdmin} submit="Create admin" submitClass="btn-primary w-full" className="space-y-8">
+            <input type="hidden" name="token" value={token} />
+            <div><label className="label">Name</label><input name="name" className="input" required /></div>
+            <div><label className="label">Email</label><input name="email" type="email" className="input" required autoComplete="username" /></div>
+            <div><label className="label">Password (12+ characters)</label><input name="password" type="password" minLength={12} className="input" required autoComplete="new-password" /></div>
+          </ActionForm>
+        )}
       </div>
+      <p className="label-caps text-muted">This page closes once an admin exists</p>
     </main>
   );
 }

@@ -1,28 +1,27 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, Globe, History, KeyRound, LayoutDashboard, Settings, Users } from "lucide-react";
 
 const items = [
-  { href: "/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/businesses", label: "Salons & trials", icon: Building2 },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/api-keys", label: "API keys", icon: KeyRound },
-  { href: "/admin/seo", label: "SEO & meta", icon: Globe },
-  { href: "/admin/settings", label: "Platform settings", icon: Settings },
-  { href: "/admin/audit", label: "Audit log", icon: History },
+  { href: "/admin", label: "Overview" },
+  { href: "/admin/businesses", label: "Salons & trials" },
+  { href: "/admin/users", label: "Users" },
+  { href: "/admin/api-keys", label: "API keys" },
+  { href: "/admin/seo", label: "SEO & meta" },
+  { href: "/admin/settings", label: "Settings" },
+  { href: "/admin/audit", label: "Audit log" },
 ];
 
 export function AdminNav() {
   const path = usePathname();
   return (
-    <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-col md:pb-0">
-      {items.map(({ href, label, icon: Icon }) => {
+    <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
+      {items.map(({ href, label }) => {
         const active = href === "/admin" ? path === "/admin" : path.startsWith(href);
         return (
-          <Link key={href} href={href} className={`flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white"}`}>
-            <Icon className={`h-[18px] w-[18px] ${active ? "text-petal" : ""}`} />
+          <Link key={href} href={href} className={`label-caps relative py-1 transition-colors duration-500 ${active ? "text-ink" : "text-muted hover:text-ink"}`}>
             {label}
+            <span className={`absolute -bottom-0.5 left-0 h-px bg-ink transition-all duration-700 ${active ? "w-full" : "w-0"}`} />
           </Link>
         );
       })}

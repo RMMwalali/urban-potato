@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AlertTriangle, Building2, CalendarDays, Hourglass, LayoutDashboard, Receipt, TrendingUp, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { accessState, getSettings } from "@/lib/platform";
 import { fmtDate } from "@/lib/format";
@@ -26,18 +25,17 @@ export default async function AdminHome() {
 
   return (
     <div>
-      <PageHeader title="Platform overview" sub={`${settings.general.siteName} · ${settings.general.trialDays}-day free trial`} icon={LayoutDashboard} />
+      <PageHeader title="Platform overview" sub={`${settings.general.siteName} · ${settings.general.trialDays}-day free trial`} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <TiltCard max={8}><Stat tone="brand" label="Salons" value={businesses.length} sub={`${newThisWeek} new this week`} icon={Building2} /></TiltCard>
-        <TiltCard max={8}><Stat tone="dark" label="On trial" value={trials.length} sub={`${expiring.length} ending in 3 days`} icon={Hourglass} /></TiltCard>
-        <TiltCard max={8}><Stat tone="lime" label="Paying" value={paying.length} sub={`${locked.length} locked / expired`} icon={TrendingUp} /></TiltCard>
-        <TiltCard max={8}><Stat tone="plain" label="Users" value={users} sub={`${appts7} bookings · ${sales7} sales (7d)`} icon={Users} /></TiltCard>
+        <TiltCard max={8}><Stat tone="brand" label="Salons" value={businesses.length} sub={`${newThisWeek} new this week`} /></TiltCard>
+        <TiltCard max={8}><Stat tone="dark" label="On trial" value={trials.length} sub={`${expiring.length} ending in 3 days`} /></TiltCard>
+        <TiltCard max={8}><Stat tone="lime" label="Paying" value={paying.length} sub={`${locked.length} locked / expired`} /></TiltCard>
+        <TiltCard max={8}><Stat tone="plain" label="Users" value={users} sub={`${appts7} bookings · ${sales7} sales (7d)`} /></TiltCard>
       </div>
 
       {credCount === 0 && (
-        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-          <p>No messaging credentials are configured, so SMS/WhatsApp reminders are only being logged. <Link href="/admin/api-keys" className="font-semibold underline">Add API keys</Link>.</p>
+        <div className="mt-6 flex items-start gap-3 rounded-none border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                    <p>No messaging credentials are configured, so SMS/WhatsApp reminders are only being logged. <Link href="/admin/api-keys" className="font-semibold underline">Add API keys</Link>.</p>
         </div>
       )}
 
@@ -45,7 +43,7 @@ export default async function AdminHome() {
         <section className="card">
           <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
             <h2 className="section-title">Trials ending soon</h2>
-            <Link href="/admin/businesses?status=trial" className="text-sm font-semibold text-azure-600">All trials</Link>
+            <Link href="/admin/businesses?status=trial" className="text-sm underline underline-offset-4 decoration-1 hover:opacity-60">All trials</Link>
           </div>
           {expiring.length === 0 ? <p className="p-5 text-sm text-stone-500">No trials ending in the next 3 days.</p> : (
             <ul className="divide-y divide-stone-100">
@@ -60,13 +58,13 @@ export default async function AdminHome() {
         <section className="card">
           <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
             <h2 className="section-title">Newest salons</h2>
-            <Link href="/admin/businesses" className="text-sm font-semibold text-azure-600">All salons</Link>
+            <Link href="/admin/businesses" className="text-sm underline underline-offset-4 decoration-1 hover:opacity-60">All salons</Link>
           </div>
           {businesses.length === 0 ? <p className="p-5 text-sm text-stone-500">No salons have signed up yet.</p> : (
             <ul className="divide-y divide-stone-100">
               {businesses.slice(0, 8).map((b) => (
                 <li key={b.id}><Link href={`/admin/businesses/${b.id}`} className="flex items-center justify-between gap-3 px-5 py-3 hover:bg-stone-50">
-                  <span><span className="block font-medium">{b.name}</span><span className="text-xs text-stone-500">Joined {fmtDate(b.createdAt, b.timezone)} · <CalendarDays className="inline h-3 w-3" /> {b._count.appointments} <Receipt className="inline h-3 w-3" /> {b._count.users} staff</span></span>
+                  <span><span className="block font-medium">{b.name}</span><span className="text-xs text-stone-500">Joined {fmtDate(b.createdAt, b.timezone)} · {b._count.appointments} {b._count.users} staff</span></span>
                   <span className={`badge ${BUSINESS_STATUS_STYLE[b.status]}`}>{b.status.replace("_", " ")}</span>
                 </Link></li>
               ))}

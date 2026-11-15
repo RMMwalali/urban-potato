@@ -3,7 +3,6 @@ import { keepValues } from "./useKeepForm";
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { CircleCheck, Clock, Wallet } from "lucide-react";
 import { publicBook, type BookState } from "@/app/actions/booking";
 import { SlotPicker } from "./SlotPicker";
 
@@ -26,9 +25,8 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
     return (
       <motion.div initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 90, damping: 14 }} style={{ transformPerspective: 1000 }}
         className="card overflow-hidden text-center">
-        <div className="bg-gradient-to-br from-navy-900 to-brand-700 px-6 py-8 text-white">
-          <CircleCheck className="mx-auto h-14 w-14 text-petal" />
-          <h2 className="mt-3 font-display text-2xl font-bold">You&apos;re booked!</h2>
+        <div className="bg-ink px-6 py-8 text-white">
+                    <h2 className="mt-3 font-display text-2xl font-bold">You&apos;re booked!</h2>
         </div>
         <div className="space-y-1 p-6">
           <p className="font-semibold">{state.done.service}{state.done.staff ? ` with ${state.done.staff}` : ""}</p>
@@ -42,7 +40,7 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
 
   const step = (n: number, title: string) => (
     <h2 className="mb-4 flex items-center gap-3 font-display text-lg font-bold">
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-azure-500 text-sm text-white">{n}</span>{title}
+      <span className="flex h-8 w-8 items-center justify-center rounded-none bg-ink text-sm text-white">{n}</span>{title}
     </h2>
   );
 
@@ -64,10 +62,10 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
                 const on = serviceId === s.id;
                 return (
                   <button type="button" key={s.id} onClick={() => { setServiceId(s.id); setStaffId(""); setStart(""); }}
-                    className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition ${on ? "border-brand-400 bg-brand-50 ring-4 ring-brand-100" : "border-stone-200 hover:border-stone-300 hover:bg-stone-50"}`}>
+                    className={`flex w-full items-center justify-between gap-3 rounded-none border px-4 py-3 text-left transition ${on ? "border-brand-400 bg-brand-50 " : "border-stone-200 hover:border-stone-300 hover:bg-stone-50"}`}>
                     <span>
                       <span className="block font-semibold">{s.name}</span>
-                      <span className="flex items-center gap-1 text-xs text-stone-500"><Clock className="h-3 w-3" /> {s.durationMin} min{s.description ? ` · ${s.description}` : ""}</span>
+                      <span className="flex items-center gap-1 text-xs text-stone-500">{s.durationMin} min{s.description ? ` · ${s.description}` : ""}</span>
                     </span>
                     <span className="shrink-0 font-display font-bold">{money(s.price)}</span>
                   </button>
@@ -99,8 +97,8 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
           <div><label className="label">Phone number</label><input name="phone" className="input" required inputMode="tel" autoComplete="tel" placeholder="0712 345 678" /></div>
           <div><label className="label">Anything we should know? (optional)</label><textarea name="notes" rows={2} className="input" placeholder="Allergies, hair length, inspiration…" /></div>
           {deposit > 0 && props.mpesa && (
-            <div className="rounded-2xl bg-petal/30 p-4 ring-1 ring-lime-500/30">
-              <p className="flex items-center gap-2 font-semibold"><Wallet className="h-4 w-4" /> Deposit: {money(deposit)}</p>
+            <div className="rounded-none bg-petal/30 p-4 ring-lime-500/30">
+              <p className="flex items-center gap-2 font-semibold">Deposit: {money(deposit)}</p>
               <p className="mt-1 text-sm text-stone-700">
                 Pay via M-Pesa to {props.mpesa.type === "PAYBILL" ? <>Paybill <b>{props.mpesa.number}</b>, account <b>{props.mpesa.account || "your name"}</b></> : props.mpesa.type === "TILL" ? <>Buy Goods Till <b>{props.mpesa.number}</b></> : <><b>{props.mpesa.number}</b></>}, then enter the confirmation code. It comes off your final bill.
               </p>
@@ -108,7 +106,7 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
             </div>
           )}
           {props.policy && <p className="text-xs text-stone-500">{props.policy}</p>}
-          {state?.error && <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
+          {state?.error && <p className="rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
           <button className="btn-bold w-full py-3.5 text-base" disabled={pending}>
             {pending ? "Booking…" : `Confirm booking · ${money(service.price)}`}
           </button>

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { CalendarClock } from "lucide-react";
 import { TitleIcon } from "@/components/ui";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
@@ -34,7 +33,7 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
       <Link href={`/app/calendar?date=${inTz(a.startAt, tz).toISODate()}`} className="text-sm text-stone-500">← Calendar</Link>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="page-title flex items-center gap-3"><TitleIcon icon={CalendarClock} />{a.service.name}</h1>
+          <h1 className="page-title flex items-center gap-3"><TitleIcon />{a.service.name}</h1>
           <p className="text-stone-600">
             {fmtDate(a.startAt, tz)}, {fmtTime(a.startAt, tz)}–{fmtTime(a.endAt, tz)} · {a.staff?.name ?? "Unassigned"}
           </p>
@@ -55,15 +54,15 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
                 <a className="btn-secondary btn-sm" target="_blank" href={`https://wa.me/${a.client.phone}`}>WhatsApp</a>
               </div>
             </div>
-            {noShows >= 2 && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"><b>Heads up:</b> {noShows} previous no-shows. Consider asking for a deposit.</p>}
+            {noShows >= 2 && <p className="mt-3 rounded-none bg-amber-50 px-3 py-2 text-sm text-amber-900"><b>Heads up:</b> {noShows} previous no-shows. Consider asking for a deposit.</p>}
             {num(a.depositAmount) > 0 && (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-petal/30 px-3 py-2 text-sm">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-none bg-petal/30 px-3 py-2 text-sm">
                 <span><b>Deposit {money(a.depositAmount, b.currency)}</b> · M-Pesa {a.depositRef ?? "-"} {a.depositVerified ? "· verified" : "· not yet checked"}</span>
                 {!a.depositVerified && <form action={verifyDeposit.bind(null, a.id)}><button className="btn-secondary btn-sm">Mark verified</button></form>}
               </div>
             )}
             {a.client.allergies && (
-              <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800"><b>Allergies:</b> {a.client.allergies}</p>
+              <p className="mt-3 rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-800"><b>Allergies:</b> {a.client.allergies}</p>
             )}
             {a.client.preferences && <p className="mt-2 text-sm"><b>Preferences:</b> {a.client.preferences}</p>}
             <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -96,7 +95,7 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
             ) : (
               <ul className="space-y-2 text-sm">
                 {messages.map((m) => (
-                  <li key={m.id} className="rounded-lg bg-stone-50 px-3 py-2">
+                  <li key={m.id} className="rounded-none bg-stone-50 px-3 py-2">
                     <p className="text-xs text-stone-500">{m.kind} · {m.channel} · {fmtDateTime(m.createdAt, tz)} · {m.status}{m.error ? `: ${m.error}` : ""}</p>
                     <p>{m.body}</p>
                   </li>

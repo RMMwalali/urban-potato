@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Building2, RotateCcw, Search } from "lucide-react";
 import { db } from "@/lib/db";
 import { accessState } from "@/lib/platform";
 import { fmtDate } from "@/lib/format";
@@ -33,21 +32,20 @@ export default async function BusinessesPage({ searchParams }: { searchParams: P
 
   return (
     <div>
-      <PageHeader title="Salons & trials" sub={`${all.length} salons`} icon={Building2}>
+      <PageHeader title="Salons & trials" sub={`${all.length} salons`}>
         <form className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-stone-400" />
-          <input name="q" defaultValue={q} placeholder="Name, link, email, phone…" className="input w-72 pl-9" />
+                    <input name="q" defaultValue={q} placeholder="Name, link, email, phone…" className="input w-72 pl-9" />
           <input type="hidden" name="status" value={status} />
         </form>
       </PageHeader>
       {deleted && <div className="mb-4"><Alert tone="success">Salon deleted.</Alert></div>}
       <div className="mb-4 flex flex-wrap gap-2">
         {FILTERS.map(([k, label]) => (
-          <Link key={k} href={`?status=${k}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${status === k ? "bg-navy-900 text-white" : "bg-white text-stone-600 ring-1 ring-stone-200 hover:ring-stone-300"}`}>{label}</Link>
+          <Link key={k} href={`?status=${k}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${status === k ? "bg-navy-900 text-white" : "bg-white text-stone-600 hover:"}`}>{label}</Link>
         ))}
       </div>
       <div className="card overflow-x-auto">
-        {rows.length === 0 ? <Empty icon={Building2} title="No salons here">{q ? "Try a different search." : "Salons appear here as soon as they sign up."}</Empty> : (
+        {rows.length === 0 ? <Empty title="No salons here">{q ? "Try a different search." : "Salons appear here as soon as they sign up."}</Empty> : (
           <table className="table">
             <thead><tr><th>Salon</th><th>Owner</th><th>Status</th><th>Trial / plan</th><th>Usage</th><th /></tr></thead>
             <tbody>
@@ -61,7 +59,7 @@ export default async function BusinessesPage({ searchParams }: { searchParams: P
                   </td>
                   <td className="text-xs text-stone-600">{b._count.users} staff · {b._count.clients} clients · {b._count.appointments} bookings</td>
                   <td className="text-right">
-                    <form action={resetTrial.bind(null, b.id)}><button className="btn-secondary btn-sm" title="Restart the free trial from today"><RotateCcw className="h-3.5 w-3.5" /> Reset trial</button></form>
+                    <form action={resetTrial.bind(null, b.id)}><button className="btn-secondary btn-sm" title="Restart the free trial from today">Reset trial</button></form>
                   </td>
                 </tr>
               ))}

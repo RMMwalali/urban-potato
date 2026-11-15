@@ -1,4 +1,3 @@
-import { History } from "lucide-react";
 import { db } from "@/lib/db";
 import { fmtDateTime } from "@/lib/format";
 import { Empty, PageHeader } from "@/components/ui";
@@ -7,9 +6,9 @@ export default async function AuditPage() {
   const logs = await db.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 300 });
   return (
     <div>
-      <PageHeader title="Audit log" sub="Every action taken in the admin panel" icon={History} />
+      <PageHeader title="Audit log" sub="Every action taken in the admin panel" />
       <div className="card overflow-x-auto">
-        {logs.length === 0 ? <Empty icon={History} title="Nothing logged yet" /> : (
+        {logs.length === 0 ? <Empty title="Nothing logged yet" /> : (
           <table className="table">
             <thead><tr><th>When</th><th>Admin</th><th>Action</th><th>Target</th><th>Details</th></tr></thead>
             <tbody>

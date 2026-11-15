@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Receipt } from "lucide-react";
 import { TitleIcon } from "@/components/ui";
 import { DateTime } from "luxon";
 import { db } from "@/lib/db";
@@ -32,7 +31,7 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="page-title flex items-center gap-3"><TitleIcon icon={Receipt} />Sales</h1>
+          <h1 className="page-title flex items-center gap-3"><TitleIcon />Sales</h1>
           <p className="text-sm text-stone-500">{label}</p>
         </div>
         <div className="flex flex-wrap items-end gap-2">

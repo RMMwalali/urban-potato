@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Search, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
 import { adminSetUserPassword, adminToggleUser } from "@/app/actions/admin";
@@ -16,14 +15,13 @@ export default async function AdminUsers({ searchParams }: { searchParams: Promi
   });
   return (
     <div>
-      <PageHeader title="Users" sub="Everyone who can log in to a salon account" icon={Users}>
+      <PageHeader title="Users" sub="Everyone who can log in to a salon account">
         <form className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-stone-400" />
-          <input name="q" defaultValue={q} placeholder="Name, email or salon…" className="input w-72 pl-9" />
+                    <input name="q" defaultValue={q} placeholder="Name, email or salon…" className="input w-72 pl-9" />
         </form>
       </PageHeader>
       <div className="card overflow-x-auto">
-        {users.length === 0 ? <Empty icon={Users} title="No users found" /> : (
+        {users.length === 0 ? <Empty title="No users found" /> : (
           <table className="table">
             <thead><tr><th>User</th><th>Salon</th><th>Role</th><th>Joined</th><th>Reset password</th><th /></tr></thead>
             <tbody>

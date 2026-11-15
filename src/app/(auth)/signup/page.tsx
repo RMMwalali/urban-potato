@@ -13,8 +13,8 @@ export default async function SignupPage() {
   const { general } = await getSettings();
   return (
     <>
-      <h1 className="font-display text-3xl font-bold tracking-tight">Start your {general.trialDays}-day free trial</h1>
-      <p className="mt-1 mb-8 text-stone-500">No card needed. Set up takes about two minutes.</p>
+      <h1 className="text-[clamp(40px,5.4vw,70px)] leading-[0.85] uppercase">Start your<br />free trial</h1>
+      <p className="mt-4 mb-10 text-[15px] text-muted">{general.trialDays} days free, no card needed. Setup takes about two minutes.</p>
       {general.signupEnabled ? (
         <AuthForm
           action={signup}
@@ -27,10 +27,10 @@ export default async function SignupPage() {
           ]}
         />
       ) : (
-        <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">New sign-ups are paused right now. Please check back soon.</p>
+        <p className="rounded-none bg-amber-50 p-4 text-sm text-amber-900">New sign-ups are paused right now. Please check back soon.</p>
       )}
       <p className="mt-6 text-sm text-stone-600">
-        Already have an account? <Link href="/login" className="font-semibold text-azure-600">Log in</Link>
+        Already have an account? <Link href="/login" className="underline underline-offset-4 decoration-1 hover:opacity-60">Log in</Link>
       </p>
     </>
   );

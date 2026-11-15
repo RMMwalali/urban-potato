@@ -1,6 +1,5 @@
 import { MANAGERS, requireUser } from "@/lib/auth";
 import { saveSettings } from "@/app/actions/manage";
-import { Settings, Wallet } from "lucide-react";
 import { PageHeader } from "@/components/ui";
 import { PaymentSettings } from "@/components/PaymentSettings";
 
@@ -16,7 +15,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   return (
     <>
     <form action={saveSettings} className="max-w-3xl space-y-5">
-      <PageHeader title="Settings" icon={Settings} />
+      <PageHeader title="Settings" />
       {sp.saved && <p className="card bg-emerald-50 p-3 text-sm text-emerald-800">Settings saved.</p>}
       {sp.error === "slug" && <p className="card bg-rose-50 p-3 text-sm text-rose-800">That booking link is already taken. Choose another.</p>}
 
@@ -56,7 +55,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </section>
 
       <section className="card grid gap-3 p-5 sm:grid-cols-2">
-        <h2 className="section-title flex items-center gap-2 sm:col-span-2"><Wallet className="h-5 w-5 text-brand-600" /> M-Pesa & deposits</h2>
+        <h2 className="section-title flex items-center gap-2 sm:col-span-2">M-Pesa & deposits</h2>
         <p className="text-sm text-stone-500 sm:col-span-2">Payments go straight to your own M-Pesa. We never hold your money. Deposits cut no-shows: clients pay when booking online and enter the code.</p>
         <div>
           <label className="label">Receive payments on</label>

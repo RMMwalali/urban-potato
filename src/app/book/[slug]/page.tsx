@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { DateTime } from "luxon";
-import { Clock, MapPin, Phone, Sparkles } from "lucide-react";
 import { db } from "@/lib/db";
 import { num } from "@/lib/format";
 import { accessState } from "@/lib/platform";
@@ -27,20 +26,19 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
   const available = b.bookingEnabled && services.length > 0 && staff.length > 0 && accessState(b).ok;
 
   return (
-    <main className="min-h-screen bg-canvas">
-      <header className="relative overflow-hidden bg-navy-950 px-4 pt-10 pb-24 text-center text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(236,72,153,0.45),transparent_60%)]" />
-        <div className="relative">
-          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-azure-500 font-display text-2xl font-bold shadow-xl shadow-brand-600/40">{b.name[0]}</span>
-          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{b.name}</h1>
-          <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm text-white/70">
-            {b.address && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" />{b.address}</span>}
-            <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" />{b.openTime}–{b.closeTime}</span>
-            {b.phone && <a href={`tel:${b.phone}`} className="flex items-center gap-1.5 hover:text-white"><Phone className="h-4 w-4" />{b.phone}</a>}
+    <main className="min-h-screen bg-paper">
+      <header className="border-b border-ink px-5 pt-12 pb-10 sm:px-8">
+        <div>
+          <p className="label-caps text-muted">Book online</p>
+          <h1 className="mt-4 text-[clamp(40px,7vw,96px)] leading-[0.88] uppercase">{b.name}</h1>
+          <div className="label-caps mt-6 flex flex-wrap gap-x-6 gap-y-1 text-muted">
+            {b.address && <span>{b.address}</span>}
+            <span>{b.openTime}–{b.closeTime}</span>
+            {b.phone && <a href={`tel:${b.phone}`} className="hover:text-ink">{b.phone}</a>}
           </div>
         </div>
       </header>
-      <div className="relative mx-auto -mt-14 max-w-xl px-4 pb-12">
+      <div className="mx-auto max-w-xl px-5 py-12">
         {!available ? (
           <div className="card p-8 text-center text-stone-600">Online booking is currently unavailable.{b.phone && ` Please call ${b.phone}.`}</div>
         ) : (
@@ -56,7 +54,7 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
             policy={policyText(b)}
           />
         )}
-        <p className="mt-8 flex items-center justify-center gap-1.5 text-xs text-stone-400"><Sparkles className="h-3.5 w-3.5" /> Powered by Darling</p>
+        <p className="label-caps mt-12 text-center text-muted">Powered by Darling</p>
       </div>
     </main>
   );

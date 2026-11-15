@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { User } from "lucide-react";
 import { TitleIcon } from "@/components/ui";
 import { notFound } from "next/navigation";
 import { DateTime } from "luxon";
@@ -35,7 +34,7 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
       {sp.duplicate && <div className="card bg-amber-50 p-3 text-sm text-amber-800">A client with that phone number already exists. Here is their record.</div>}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="page-title flex items-center gap-3"><TitleIcon icon={User} />{c.name}</h1>
+          <h1 className="page-title flex items-center gap-3"><TitleIcon />{c.name}</h1>
           <p className="text-stone-600">{displayPhone(c.phone)}{c.email && ` · ${c.email}`}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -82,7 +81,7 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
             {messages.length > 0 && (
               <ul className="mt-4 space-y-2 text-sm">
                 {messages.map((m) => (
-                  <li key={m.id} className="rounded-lg bg-stone-50 px-3 py-2">
+                  <li key={m.id} className="rounded-none bg-stone-50 px-3 py-2">
                     <p className="text-xs text-stone-500">{m.kind} · {fmtDateTime(m.createdAt, tz)} · {m.status}</p>
                     <p>{m.body}</p>
                   </li>
@@ -109,7 +108,7 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
           ) : (
             <section className="card space-y-3 p-4 text-sm">
               <h2 className="font-semibold">Profile</h2>
-              {c.allergies && <p className="rounded-lg bg-rose-50 px-3 py-2 text-rose-800"><b>Allergies:</b> {c.allergies}</p>}
+              {c.allergies && <p className="rounded-none bg-rose-50 px-3 py-2 text-rose-800"><b>Allergies:</b> {c.allergies}</p>}
               <div><p className="text-xs text-stone-500">Preferences</p><p>{c.preferences || "-"}</p></div>
               <div><p className="text-xs text-stone-500">Notes</p><p className="whitespace-pre-wrap">{c.notes || "-"}</p></div>
               <div><p className="text-xs text-stone-500">Birthday</p><p>{c.birthday ? DateTime.fromJSDate(c.birthday, { zone: "utc" }).toFormat("d LLLL") : "-"}</p></div>

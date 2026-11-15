@@ -1,7 +1,6 @@
 "use client";
 import { keepValues } from "./useKeepForm";
 import { useActionState, useState, useTransition } from "react";
-import { CalendarClock, CircleCheck, XCircle } from "lucide-react";
 import { clientCancel, clientReschedule, type BookState } from "@/app/actions/booking";
 import { SlotPicker } from "./SlotPicker";
 
@@ -13,16 +12,16 @@ export function ManageBooking({ token, days, timezone, canChange, policy }: { to
   const [state, action, pending] = useActionState<BookState, FormData>(clientReschedule, undefined);
 
   if (mode === "cancelled")
-    return <div className="card p-6 text-center"><XCircle className="mx-auto h-10 w-10 text-stone-400" /><p className="mt-2 font-display text-xl font-bold">Appointment cancelled</p><p className="text-sm text-stone-500">We&apos;ve let the salon know.</p></div>;
+    return <div className="card p-6 text-center"><p className="mt-2 font-display text-xl font-bold">Appointment cancelled</p><p className="text-sm text-stone-500">We&apos;ve let the salon know.</p></div>;
   if (state?.done)
-    return <div className="card p-6 text-center"><CircleCheck className="mx-auto h-10 w-10 text-emerald-500" /><p className="mt-2 font-display text-xl font-bold">Moved to {state.done.when}</p><p className="text-sm text-stone-500">A new confirmation is on its way.</p></div>;
+    return <div className="card p-6 text-center"><p className="mt-2 font-display text-xl font-bold">Moved to {state.done.when}</p><p className="text-sm text-stone-500">A new confirmation is on its way.</p></div>;
   if (!canChange) return <p className="card p-5 text-sm text-stone-600">{policy} To change this appointment, please contact the salon.</p>;
 
   return (
     <div className="space-y-4">
       {mode === "idle" && (
         <div className="grid gap-3 sm:grid-cols-2">
-          <button onClick={() => setMode("move")} className="btn-bold py-3"><CalendarClock className="h-4 w-4" /> Reschedule</button>
+          <button onClick={() => setMode("move")} className="btn-bold py-3">Reschedule</button>
           <button
             disabled={pendingCancel}
             onClick={() => {
@@ -35,18 +34,18 @@ export function ManageBooking({ token, days, timezone, canChange, policy }: { to
             }}
             className="btn-danger py-3"
           >
-            <XCircle className="h-4 w-4" /> {pendingCancel ? "Cancelling…" : "Cancel appointment"}
+            {pendingCancel ? "Cancelling…" : "Cancel appointment"}
           </button>
         </div>
       )}
-      {cancelErr && <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{cancelErr}</p>}
+      {cancelErr && <p className="rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-700">{cancelErr}</p>}
       {mode === "move" && (
         <form onSubmit={keepValues(action)} className="card space-y-4 p-5">
           <input type="hidden" name="token" value={token} />
           <input type="hidden" name="start" value={start} />
           <p className="font-display text-lg font-bold">Pick a new time</p>
           <SlotPicker days={days} timezone={timezone} value={start} onChange={setStart} query={`token=${token}`} refreshKey={state?.error} />
-          {state?.error && <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
+          {state?.error && <p className="rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
           <div className="flex gap-2">
             <button className="btn-bold" disabled={!start || pending}>{pending ? "Saving…" : "Confirm new time"}</button>
             <button type="button" className="btn-ghost" onClick={() => setMode("idle")}>Back</button>

@@ -1,5 +1,4 @@
 import { DateTime } from "luxon";
-import { Banknote, Gift, Scissors, Wallet } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { fmtDateTime, money, num } from "@/lib/format";
@@ -24,14 +23,14 @@ export default async function MyEarnings({ searchParams }: { searchParams: Promi
 
   return (
     <div className="max-w-5xl">
-      <PageHeader title="My earnings" sub={`${month.toFormat("LLLL yyyy")} · ${num(user.commissionRate)}% commission`} icon={Wallet}>
+      <PageHeader title="My earnings" sub={`${month.toFormat("LLLL yyyy")} · ${num(user.commissionRate)}% commission`}>
         <form><input type="month" name="month" defaultValue={month.toFormat("yyyy-LL")} className="input w-auto" /></form>
       </PageHeader>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat tone="brand" label="You earned" value={money(commission + tipTotal, c)} sub="commission + tips" icon={Banknote} />
+        <Stat tone="brand" label="You earned" value={money(commission + tipTotal, c)} sub="commission + tips" />
         <Stat tone="plain" label="Commission" value={money(commission, c)} />
-        <Stat tone="lime" label="Tips" value={money(tipTotal, c)} icon={Gift} />
-        <Stat tone="dark" label="Services done" value={items.length} sub={money(services, c)} icon={Scissors} />
+        <Stat tone="lime" label="Tips" value={money(tipTotal, c)} />
+        <Stat tone="dark" label="Services done" value={items.length} sub={money(services, c)} />
       </div>
       <section className="card mt-6 overflow-x-auto">
         <table className="table">

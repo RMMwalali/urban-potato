@@ -1,11 +1,9 @@
 import Link from "next/link";
-import { appUrl } from "@/lib/url";
-import { ArrowRight, CalendarDays, CalendarPlus, Check, CircleCheck, Copy, Footprints, Link2, MessageSquare, Receipt, TrendingUp, Users, Wallet } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { dayRange, fmtTime, money, num, STATUS_LABEL, STATUS_STYLE, todayIso } from "@/lib/format";
+import { appUrl } from "@/lib/url";
+import { dayRange, fmtTime, money, num, STATUS_LABEL, todayIso } from "@/lib/format";
 import { Empty, Stat } from "@/components/ui";
-import { TiltCard } from "@/components/motion/Tilt";
 import { Reveal } from "@/components/motion/Reveal";
 import { CopyButton } from "@/components/CopyButton";
 
@@ -44,94 +42,89 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return (
-    <div className="space-y-8">
-      {sp.denied && <div className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Only owners and managers can open that page.</div>}
+    <div className="space-y-16">
+      {sp.denied && <p className="border-l-2 border-pink bg-panel px-4 py-3 text-[14px]">Only owners and managers can open that page.</p>}
 
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-azure-600">{greeting}, {user.name.split(" ")[0]}</p>
-          <h1 className="page-title mt-1">{b.name}</h1>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/app/appointments/new?walkin=1" className="btn-secondary"><Footprints className="h-4 w-4" /> Walk-in</Link>
-          <Link href="/app/sales/new" className="btn-secondary"><Receipt className="h-4 w-4" /> Quick sale</Link>
-          <Link href="/app/appointments/new" className="btn-bold"><CalendarPlus className="h-4 w-4" /> New appointment</Link>
+      <div className="border-b border-ink pb-6">
+        <p className="label-caps mb-4 text-muted">{greeting}, {user.name.split(" ")[0]}</p>
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <h1 className="page-title">{b.name}</h1>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/app/appointments/new?walkin=1" className="btn-secondary">Walk-in</Link>
+            <Link href="/app/sales/new" className="btn-secondary">Quick sale</Link>
+            <Link href="/app/appointments/new" className="btn-primary">New appointment</Link>
+          </div>
         </div>
       </div>
 
       {isManager && doneCount < steps.length && (
         <Reveal>
-          <section className="card overflow-hidden">
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-navy-950 to-navy-800 px-6 py-5 text-white">
-              <div>
-                <p className="font-display text-xl font-bold">Get set up in 5 steps</p>
-                <p className="text-sm text-white/60">{doneCount} of {steps.length} done</p>
-              </div>
-              <div className="h-2 w-48 rounded-full bg-white/10"><div className="h-2 rounded-full bg-gradient-to-r from-petal to-emerald-400" style={{ width: `${(doneCount / steps.length) * 100}%` }} /></div>
+          <section>
+            <div className="mb-4 flex items-baseline justify-between">
+              <p className="label-caps">Get set up</p>
+              <p className="label-caps text-muted">{doneCount} / {steps.length}</p>
             </div>
-            <ul className="divide-y divide-stone-100">
-              {steps.map((s) => (
-                <li key={s.label}>
-                  <Link href={s.href} className="flex items-center gap-4 px-6 py-3.5 hover:bg-stone-50">
-                    <span className={`flex h-7 w-7 items-center justify-center rounded-full ${s.done ? "bg-emerald-500 text-white" : "border-2 border-stone-300"}`}>{s.done && <Check className="h-4 w-4" />}</span>
-                    <span className={`flex-1 text-sm font-medium ${s.done ? "text-stone-400 line-through" : ""}`}>{s.label}</span>
-                    {!s.done && <ArrowRight className="h-4 w-4 text-stone-400" />}
+            <ol className="border-t-2 border-ink">
+              {steps.map((s, i) => (
+                <li key={s.label} className="border-b border-ink/30">
+                  <Link href={s.href} className={`group flex items-center gap-5 py-4 transition-opacity duration-500 ${s.done ? "opacity-35" : "hover:opacity-60"}`}>
+                    <sup className="text-[11px]">{i + 1}</sup>
+                    <span className={`flex-1 text-[clamp(17px,1.6vw,22px)] ${s.done ? "line-through" : ""}`}>{s.label}</span>
+                    <span className="label-caps">{s.done ? "Done" : "↗"}</span>
                   </Link>
                 </li>
               ))}
-            </ul>
+            </ol>
           </section>
         </Reveal>
       )}
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <TiltCard max={8}><Stat tone="brand" label="Today's bookings" value={active.length} sub={`${active.filter((a) => a.source !== "WALK_IN").length} booked ahead`} icon={CalendarDays} /></TiltCard>
-        <TiltCard max={8}><Stat tone="dark" label="Today's takings" value={money(todaySales._sum.total, b.currency)} sub={`${todaySales._count} sales`} icon={Wallet} /></TiltCard>
-        <TiltCard max={8}><Stat tone="lime" label="Last 7 days" value={money(weekSales._sum.total, b.currency)} sub={`${newClients} new clients`} icon={TrendingUp} /></TiltCard>
-        <TiltCard max={8}><Stat tone="plain" label="Upcoming" value={upcoming} sub="bookings after today" icon={Users} /></TiltCard>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
+        <Stat label="Today's bookings" value={active.length} sub={`${active.filter((a) => a.source !== "WALK_IN").length} booked ahead`} />
+        <Stat label="Today's takings" value={money(todaySales._sum.total, b.currency)} sub={`${todaySales._count} sales`} />
+        <Stat label="Last 7 days" value={money(weekSales._sum.total, b.currency)} sub={`${newClients} new clients`} />
+        <Stat label="Upcoming" value={upcoming} sub="bookings after today" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <section className="card lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
-            <h2 className="section-title">Today&apos;s schedule</h2>
-            <Link href="/app/calendar" className="flex items-center gap-1 text-sm font-semibold text-azure-600">Calendar <ArrowRight className="h-4 w-4" /></Link>
+      <div className="grid gap-12 lg:grid-cols-3">
+        <section className="lg:col-span-2">
+          <div className="mb-4 flex items-baseline justify-between">
+            <p className="label-caps">Today&apos;s schedule</p>
+            <Link href="/app/calendar" className="label-caps hover:opacity-50">Calendar ↗</Link>
           </div>
-          {appts.length === 0 ? (
-            <Empty icon={CalendarDays} title="Nothing booked today yet">Share your booking link or add a walk-in.</Empty>
-          ) : (
-            <ul className="divide-y divide-stone-100">
-              {appts.map((a) => (
-                <li key={a.id}>
-                  <Link href={`/app/appointments/${a.id}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-stone-50">
-                    <span className="w-14 font-display text-lg font-bold">{fmtTime(a.startAt, b.timezone)}</span>
-                    <span className="h-10 w-1.5 rounded-full" style={{ background: a.staff?.color ?? "#d6d3d1" }} />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold">{a.client.name}</span>
-                      <span className="block truncate text-xs text-stone-500">{a.service.name} · {a.staff?.name ?? "Unassigned"}</span>
-                    </span>
-                    <span className="hidden text-sm font-semibold sm:block">{money(num(a.price), b.currency)}</span>
-                    <span className={`badge ${a.sale ? "bg-emerald-100 text-emerald-800" : STATUS_STYLE[a.status]}`}>{a.sale ? <><CircleCheck className="h-3 w-3" /> Paid</> : STATUS_LABEL[a.status]}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          <div className="border-t-2 border-ink">
+            {appts.length === 0 ? (
+              <Empty title="Nothing booked today yet">Share your booking link or add a walk-in.</Empty>
+            ) : (
+              <ul>
+                {appts.map((a) => (
+                  <li key={a.id} className="border-b border-ink/30">
+                    <Link href={`/app/appointments/${a.id}`} className="grid grid-cols-[64px_1fr_auto] items-baseline gap-4 py-4 transition-colors duration-500 hover:bg-panel sm:grid-cols-[80px_1fr_auto_auto]">
+                      <span className="text-[20px] tabular-nums">{fmtTime(a.startAt, b.timezone)}</span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[17px]">{a.client.name}</span>
+                        <span className="label-caps block truncate text-muted">{a.service.name} · {a.staff?.name ?? "Unassigned"}</span>
+                      </span>
+                      <span className="hidden text-[15px] tabular-nums sm:block">{money(num(a.price), b.currency)}</span>
+                      <span className="label-caps">{a.sale ? "Paid" : STATUS_LABEL[a.status]}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </section>
 
-        <TiltCard max={6} className="rounded-2xl">
-          <section className="relative h-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-500 to-azure-500 p-6 text-white shadow-xl shadow-brand-500/30">
-            <Link2 className="absolute -right-6 -bottom-6 h-36 w-36 opacity-15" />
-            <h2 className="font-display text-xl font-bold">Your booking link</h2>
-            <p className="mt-1 text-sm text-white/80">Put it in your Instagram, TikTok and Facebook bios and your WhatsApp Business profile. Clients book themselves, no app needed.</p>
-            <code className="mt-4 block break-all rounded-xl bg-black/20 px-3 py-2.5 text-xs">{bookingUrl}</code>
-            <div className="relative mt-4 flex flex-wrap gap-2">
-              <CopyButton text={bookingUrl} className="btn btn-sm bg-white text-brand-700 hover:bg-petal"><Copy className="h-3.5 w-3.5" /> Copy</CopyButton>
-              <a className="btn btn-sm bg-white/15 text-white ring-1 ring-white/30 hover:bg-white/25" target="_blank" href={`https://wa.me/?text=${encodeURIComponent(`Book your next appointment at ${b.name}: ${bookingUrl}`)}`}><MessageSquare className="h-3.5 w-3.5" /> Share on WhatsApp</a>
-            </div>
-            {!b.bookingEnabled && <p className="relative mt-3 text-xs text-white/90">Online booking is switched off in Settings.</p>}
-          </section>
-        </TiltCard>
+        <section className="bg-ink p-7 text-paper">
+          <p className="label-caps text-paper/60">Your booking link</p>
+          <p className="mt-6 text-[clamp(22px,2vw,28px)] leading-tight">Put it in your Instagram, TikTok and WhatsApp bios. Clients book themselves, no app needed.</p>
+          <p className="mt-8 break-all border-t border-paper/30 pt-4 font-mono text-[13px]">{bookingUrl}</p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <CopyButton text={bookingUrl} className="btn btn-sm border-paper bg-paper text-ink hover:bg-transparent hover:text-paper">Copy link</CopyButton>
+            <a className="btn btn-sm border-paper text-paper hover:bg-paper hover:text-ink" target="_blank" href={`https://wa.me/?text=${encodeURIComponent(`Book your next appointment at ${b.name}: ${bookingUrl}`)}`}>Share on WhatsApp</a>
+          </div>
+          {!b.bookingEnabled && <p className="mt-4 text-[13px] text-paper/70">Online booking is switched off in Settings.</p>}
+        </section>
       </div>
     </div>
   );

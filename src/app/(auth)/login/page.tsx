@@ -8,8 +8,8 @@ export const generateMetadata = () => pageMetadata("/login", { title: "Log in", 
 export default function LoginPage() {
   return (
     <>
-      <h1 className="font-display text-3xl font-bold tracking-tight">Welcome back</h1>
-      <p className="mt-1 mb-8 text-stone-500">Log in to your salon dashboard.</p>
+      <h1 className="text-[clamp(44px,6vw,76px)] leading-[0.85] uppercase">Log in</h1>
+      <p className="mt-4 mb-10 text-[15px] text-muted">Your salon dashboard.</p>
       <AuthForm
         action={login}
         submit="Log in"
@@ -19,7 +19,7 @@ export default function LoginPage() {
         ]}
       />
       <p className="mt-6 text-sm text-stone-600">
-        New here? <Link href="/signup" className="font-semibold text-azure-600">Start a free trial</Link>
+        New here? <Link href="/signup" className="underline underline-offset-4 decoration-1 hover:opacity-60">Start a free trial</Link>
       </p>
     </>
   );

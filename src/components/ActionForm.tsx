@@ -10,8 +10,8 @@ export function ActionForm({ action, children, className = "", submit, submitCla
   return (
     <form onSubmit={keepValues(formAction)} className={className}>
       {children}
-      {state?.error && <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
-      {state?.ok && <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{state.ok}</p>}
+      {state?.error && <p className="rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
+      {state?.ok && <p className="rounded-none bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{state.ok}</p>}
       <div><button className={submitClass} disabled={pending}>{pending ? "Saving…" : submit}</button></div>
     </form>
   );

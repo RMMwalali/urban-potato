@@ -1,4 +1,3 @@
-import { Globe, Trash2 } from "lucide-react";
 import { appUrl } from "@/lib/url";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/platform";
@@ -15,7 +14,7 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
   const base = seo.canonicalUrl || appUrl();
   return (
     <div className="max-w-5xl space-y-6">
-      <PageHeader title="SEO & meta tags" sub="Titles, descriptions, social cards and indexing for public pages" icon={Globe} />
+      <PageHeader title="SEO & meta tags" sub="Titles, descriptions, social cards and indexing for public pages" />
       {saved && <Alert tone="success">SEO defaults saved.</Alert>}
 
       <section className="card p-5">
@@ -44,7 +43,7 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
         <p className="mb-4 text-sm text-stone-500">Use <code>/book/*</code> for all salon booking pages; <code>{"{name}"}</code> is replaced with the salon&apos;s name. {general.siteName} adds the title template automatically.</p>
         <div className="space-y-3">
           {[...pages, ...SUGGESTED.filter((p) => !pages.some((x) => x.path === p)).map((path) => ({ id: "", path, title: null, description: null, keywords: null, ogImage: null, noIndex: false }))].map((p) => (
-            <details key={p.path} className="group rounded-xl border border-stone-200 open:bg-stone-50/50">
+            <details key={p.path} className="group rounded-none border border-stone-200 open:bg-stone-50/50">
               <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm">
                 <span className="font-mono font-semibold">{p.path}</span>
                 <span className="text-xs text-stone-500">{p.id ? (p.title ?? "custom") : "default"}{p.noIndex && " · noindex"}</span>
@@ -60,14 +59,14 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
                 </ActionForm>
                 <div className="space-y-3">
                   <SeoPreview url={`${base}${p.path.replace("*", "your-salon")}`} title={(p.title ?? seo.defaultTitle).replace("{name}", "Your Salon")} description={(p.description ?? seo.description).replace("{name}", "Your Salon")} />
-                  {p.id && <form action={deleteSeoPage.bind(null, p.id)}><ConfirmButton message={`Remove override for ${p.path}?`}><Trash2 className="h-3.5 w-3.5" /> Remove override</ConfirmButton></form>}
+                  {p.id && <form action={deleteSeoPage.bind(null, p.id)}><ConfirmButton message={`Remove override for ${p.path}?`}>Remove override</ConfirmButton></form>}
                 </div>
               </div>
             </details>
           ))}
         </div>
-        <details className="mt-4 rounded-xl border border-dashed border-stone-300 p-4">
-          <summary className="cursor-pointer text-sm font-semibold text-azure-600">+ Add another path</summary>
+        <details className="mt-4 rounded-none border border-dashed border-stone-300 p-4">
+          <summary className="cursor-pointer text-sm underline underline-offset-4 decoration-1 hover:opacity-60">+ Add another path</summary>
           <ActionForm action={saveSeoPage} submit="Add" className="mt-3 grid gap-3 sm:grid-cols-2">
             <input name="path" placeholder="/pricing" className="input" required />
             <input name="title" placeholder="Title" className="input" />

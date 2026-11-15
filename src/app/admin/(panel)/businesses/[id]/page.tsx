@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Ban, Building2, ExternalLink, Eye, Hourglass, RotateCcw, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { accessState, getSettings } from "@/lib/platform";
 import { displayPhone, fmtDate, fmtDateTime, money, num } from "@/lib/format";
@@ -25,16 +24,16 @@ export default async function BusinessDetail({ params, searchParams }: { params:
     <div className="max-w-6xl">
       <Link href="/admin/businesses" className="text-sm text-stone-500 hover:text-ink">← All salons</Link>
       <div className="mt-2" />
-      <PageHeader title={b.name} icon={Building2} sub={<>/book/{b.slug} · joined {fmtDate(b.createdAt, tz)} {b.phone && `· ${b.phone}`} {b.email && `· ${b.email}`}</>}>
+      <PageHeader title={b.name} sub={<>/book/{b.slug} · joined {fmtDate(b.createdAt, tz)} {b.phone && `· ${b.phone}`} {b.email && `· ${b.email}`}</>}>
         <span className={`badge text-sm ${BUSINESS_STATUS_STYLE[b.status]}`}>{b.status.replace("_", " ")}</span>
-        <a href={`/book/${b.slug}`} target="_blank" className="btn-secondary btn-sm"><ExternalLink className="h-3.5 w-3.5" /> Booking page</a>
-        <form action={impersonate.bind(null, b.id)}><button className="btn-dark btn-sm"><Eye className="h-3.5 w-3.5" /> Open as owner</button></form>
+        <a href={`/book/${b.slug}`} target="_blank" className="btn-secondary btn-sm">Booking page</a>
+        <form action={impersonate.bind(null, b.id)}><button className="btn-dark btn-sm">Open as owner</button></form>
       </PageHeader>
       {error === "confirm" && <div className="mb-4"><Alert tone="error">Type the salon link exactly to confirm deletion.</Alert></div>}
       {error === "noowner" && <div className="mb-4"><Alert tone="error">This salon has no active owner to open as.</Alert></div>}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat tone={s.ok ? "lime" : "dark"} label="Access" value={s.ok ? (s.reason === "trial" ? `${s.daysLeft} days` : "Active") : "Locked"} sub={s.reason === "trial" ? `Trial ends ${fmtDate(b.trialEndsAt, tz)}` : s.reason.replace("_", " ")} icon={Hourglass} />
+        <Stat tone={s.ok ? "lime" : "dark"} label="Access" value={s.ok ? (s.reason === "trial" ? `${s.daysLeft} days` : "Active") : "Locked"} sub={s.reason === "trial" ? `Trial ends ${fmtDate(b.trialEndsAt, tz)}` : s.reason.replace("_", " ")} />
         <Stat tone="plain" label="Revenue recorded" value={money(num(revenue._sum.total), b.currency)} />
         <Stat tone="plain" label="Clients" value={b._count.clients} sub={`${b._count.services} services`} />
         <Stat tone="plain" label="Bookings" value={b._count.appointments} sub={`${b._count.messages} messages sent`} />
@@ -47,7 +46,7 @@ export default async function BusinessDetail({ params, searchParams }: { params:
             {b.status === "TRIAL" ? <>Trial {s.daysLeft > 0 ? "ends" : "ended"} <b>{fmtDateTime(b.trialEndsAt, tz)}</b>.</> : <>Not on trial (status {b.status.toLowerCase()}).</>}
           </p>
           <form action={resetTrial.bind(null, b.id)}>
-            <button className="btn-bold w-full"><RotateCcw className="h-4 w-4" /> Reset to a fresh {settings.general.trialDays}-day trial</button>
+            <button className="btn-bold w-full">Reset to a fresh {settings.general.trialDays}-day trial</button>
           </form>
           <form action={extendTrial} className="flex gap-2">
             <input type="hidden" name="businessId" value={b.id} />
@@ -73,7 +72,7 @@ export default async function BusinessDetail({ params, searchParams }: { params:
             {(["PAST_DUE", "SUSPENDED", "CANCELLED"] as const).map((st) => (
               <form key={st} action={setBusinessStatus}>
                 <input type="hidden" name="businessId" value={b.id} /><input type="hidden" name="status" value={st} />
-                <ConfirmButton message={`Set ${b.name} to ${st.replace("_", " ").toLowerCase()}? They will lose access.`}><Ban className="h-3.5 w-3.5" /> {st.replace("_", " ").toLowerCase()}</ConfirmButton>
+                <ConfirmButton message={`Set ${b.name} to ${st.replace("_", " ").toLowerCase()}? They will lose access.`}>{st.replace("_", " ").toLowerCase()}</ConfirmButton>
               </form>
             ))}
           </div>
@@ -132,7 +131,7 @@ export default async function BusinessDetail({ params, searchParams }: { params:
           <form action={deleteBusiness} className="flex gap-2">
             <input type="hidden" name="businessId" value={b.id} />
             <input name="confirm" placeholder={`Type "${b.slug}"`} className="input" autoComplete="off" />
-            <button className="btn-danger"><Trash2 className="h-4 w-4" /> Delete</button>
+            <button className="btn-danger">Delete</button>
           </form>
         </section>
       </div>

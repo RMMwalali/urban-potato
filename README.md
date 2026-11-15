@@ -34,10 +34,10 @@ Feature choices are based on real complaints about existing salon software; see 
 - **Audit log**: every admin action.
 
 ## Design
-Pink, blue and white. Pink (`brand-*`, #db2777/#ec4899) for primary actions, blue (`azure-*`, #2563eb) for links and accents, deep blue (`navy-*`) for the sidebar and hero, and a near-white page (#f8fafc) with white cards. Typography follows databricks.com, two fonts only: **DM Sans** for all text (headings medium/semibold, slightly tight tracking) and **DM Mono** for M-Pesa codes and receipts. **lucide** icons only. 3D effects (tilt-with-shine, flip cards, mouse-parallax depth layers, 3D reveals) follow the `3d-animations` skill in `.claude/skills/3d-animations` and respect `prefers-reduced-motion`.
+Minimal and text-led, modelled on an editorial monochrome layout: light grey paper (#ededed), near-black ink (#1c1f24), white panels, thin black rules, small uppercase labels and very large uppercase display type. Blue (#1f5277) is the accent and pink (#d9468a) is used only for small highlights such as the active nav dot. **One font, Geist**, for everything (codes use tabular figures). No icons, no gradients, no images. Motion: lines slide up from masks, sections fade and rise on scroll (1s, `cubic-bezier(0.19, 1, 0.22, 1)`), outlined "lens" circles blur the type beneath them and drift slowly with mouse parallax, and the full-screen menu wipes in. All motion respects `prefers-reduced-motion`.
 
 ## Stack
-Next.js 15 · Neon Postgres + Prisma 6 (node-postgres adapter) · Tailwind CSS 4 · framer-motion · lucide-react · jose/bcrypt sessions · Luxon.
+Next.js 15 · Neon Postgres + Prisma 6 (node-postgres adapter) · Tailwind CSS 4 · framer-motion · jose/bcrypt sessions · Luxon.
 
 ## Deploy to Vercel
 

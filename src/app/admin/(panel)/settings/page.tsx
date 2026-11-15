@@ -1,4 +1,3 @@
-import { Settings, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-auth";
 import { getSettings } from "@/lib/platform";
@@ -13,7 +12,7 @@ export default async function PlatformSettings({ searchParams }: { searchParams:
   const [{ general }, admins] = await Promise.all([getSettings(), db.platformAdmin.findMany({ orderBy: { createdAt: "asc" } })]);
   return (
     <div className="max-w-5xl space-y-6">
-      <PageHeader title="Platform settings" icon={Settings} />
+      <PageHeader title="Platform settings" />
       {saved && <Alert tone="success">Settings saved.</Alert>}
       <section className="card p-5">
         <h2 className="section-title mb-4">General</h2>
@@ -38,7 +37,7 @@ export default async function PlatformSettings({ searchParams }: { searchParams:
             {admins.map((a) => (
               <li key={a.id} className="flex items-center justify-between py-2.5 text-sm">
                 <span><b>{a.name}</b><span className="block text-xs text-stone-500">{a.email} · last login {a.lastLoginAt ? fmtDateTime(a.lastLoginAt, "Africa/Nairobi") : "never"}</span></span>
-                {a.id !== me.id && <form action={removeAdmin.bind(null, a.id)}><ConfirmButton message={`Remove admin ${a.email}?`}><Trash2 className="h-3.5 w-3.5" /></ConfirmButton></form>}
+                {a.id !== me.id && <form action={removeAdmin.bind(null, a.id)}><ConfirmButton message={`Remove admin ${a.email}?`}>Delete</ConfirmButton></form>}
               </li>
             ))}
           </ul>

@@ -1,69 +1,56 @@
-import type { LucideIcon } from "lucide-react";
+// Text-only UI primitives: uppercase micro-labels, large uppercase titles, thin rules. No icons.
 
-export function PageHeader({ title, sub, icon: Icon, children }: { title: string; sub?: React.ReactNode; icon?: LucideIcon; children?: React.ReactNode }) {
+export function PageHeader({ title, sub, label, children }: { title: string; sub?: React.ReactNode; label?: string; icon?: unknown; children?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-      <div className="flex items-center gap-4">
-        {Icon && (
-          <span className="hidden h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-azure-500 text-white shadow-lg shadow-brand-500/30 sm:flex">
-            <Icon className="h-6 w-6" strokeWidth={2.2} />
-          </span>
-        )}
+    <div className="mb-10 border-b border-ink pb-6">
+      {label && <p className="label-caps mb-4 text-muted">{label}</p>}
+      <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <h1 className="page-title">{title}</h1>
-          {sub && <p className="mt-1 text-sm text-stone-500">{sub}</p>}
+          {sub && <p className="mt-3 max-w-2xl text-[15px] text-muted">{sub}</p>}
         </div>
+        {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
       </div>
-      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
     </div>
   );
 }
 
-export function Stat({ label, value, sub, icon: Icon, tone = "brand" }: { label: string; value: React.ReactNode; sub?: React.ReactNode; icon?: LucideIcon; tone?: "brand" | "dark" | "lime" | "plain" }) {
-  const tones = {
-    brand: "bg-gradient-to-br from-brand-600 to-azure-500 text-white border-transparent",
-    dark: "bg-navy-900 text-white border-transparent",
-    lime: "bg-petal text-navy-950 border-transparent",
-    plain: "bg-white",
-  } as const;
-  const subTone = tone === "plain" ? "text-stone-500" : tone === "lime" ? "text-navy-800/70" : "text-white/70";
+export function Stat({ label, value, sub, tone = "plain" }: { label: string; value: React.ReactNode; sub?: React.ReactNode; icon?: unknown; tone?: "brand" | "dark" | "lime" | "plain" }) {
+  const dark = tone === "dark" || tone === "brand";
   return (
-    <div className={`card relative h-full overflow-hidden p-5 ${tones[tone]}`}>
-      {Icon && <Icon className={`absolute -right-3 -bottom-3 h-20 w-20 ${tone === "plain" ? "text-stone-100" : "opacity-15"}`} strokeWidth={1.5} />}
-      <p className={`text-xs font-semibold uppercase tracking-wider ${subTone}`}>{label}</p>
-      <p className="stat-value mt-2">{value}</p>
-      {sub && <p className={`mt-1 text-xs ${subTone}`}>{sub}</p>}
+    <div className={`h-full border-t-2 border-ink py-5 pr-4 ${dark ? "bg-ink px-5 text-paper" : ""} ${tone === "lime" ? "bg-panel px-5" : ""}`}>
+      <p className={`label-caps ${dark ? "text-paper/60" : "text-muted"}`}>{label}</p>
+      <p className="stat-value mt-3">{value}</p>
+      {sub && <p className={`mt-1 text-[13px] ${dark ? "text-paper/60" : "text-muted"}`}>{sub}</p>}
     </div>
   );
 }
 
-export function Empty({ icon: Icon, title, children }: { icon: LucideIcon; title: string; children?: React.ReactNode }) {
+export function Empty({ title, children }: { title: string; icon?: unknown; children?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center px-6 py-12 text-center">
-      <span className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600"><Icon className="h-7 w-7" /></span>
-      <p className="font-display text-lg font-bold">{title}</p>
-      {children && <div className="mt-1 max-w-sm text-sm text-stone-500">{children}</div>}
+    <div className="px-6 py-14 text-center">
+      <p className="label-caps">{title}</p>
+      {children && <div className="mx-auto mt-2 max-w-sm text-[14px] text-muted">{children}</div>}
     </div>
   );
 }
 
 export function Alert({ tone = "info", children }: { tone?: "info" | "success" | "warn" | "error"; children: React.ReactNode }) {
-  const t = { info: "bg-sky-50 text-sky-900 border-sky-200", success: "bg-emerald-50 text-emerald-900 border-emerald-200", warn: "bg-amber-50 text-amber-900 border-amber-200", error: "bg-rose-50 text-rose-900 border-rose-200" }[tone];
-  return <div className={`rounded-xl border px-4 py-3 text-sm ${t}`}>{children}</div>;
+  const t = { info: "border-ink", success: "border-azure-600 text-azure-700", warn: "border-ink", error: "border-pink text-pink" }[tone];
+  return <div className={`border-l-2 bg-panel px-4 py-3 text-[14px] ${t}`}>{children}</div>;
 }
+
+export function TitleIcon(_: { icon?: unknown }) {
+  return null;
+}
+
+/** Arrow glyph used instead of icons. */
+export const Arrow = ({ dir = "ne" }: { dir?: "ne" | "e" }) => <span aria-hidden className="inline-block">{dir === "ne" ? "↗" : "→"}</span>;
 
 export const BUSINESS_STATUS_STYLE: Record<string, string> = {
-  TRIAL: "bg-sky-100 text-sky-800",
-  ACTIVE: "bg-emerald-100 text-emerald-800",
-  PAST_DUE: "bg-amber-100 text-amber-800",
-  SUSPENDED: "bg-rose-100 text-rose-800",
-  CANCELLED: "bg-stone-200 text-stone-600",
+  TRIAL: "text-azure-600",
+  ACTIVE: "text-ink",
+  PAST_DUE: "text-pink",
+  SUSPENDED: "text-pink",
+  CANCELLED: "text-muted",
 };
-
-export function TitleIcon({ icon: Icon }: { icon: LucideIcon }) {
-  return (
-    <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-azure-500 text-white shadow-lg shadow-brand-500/30 sm:inline-flex">
-      <Icon className="h-5 w-5" strokeWidth={2.2} />
-    </span>
-  );
-}

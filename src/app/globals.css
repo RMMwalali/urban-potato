@@ -1,70 +1,106 @@
 @import "tailwindcss";
 
+/*
+  Darling design system. Minimal, text-led, modelled on a monochrome editorial layout:
+  light grey paper, near-black ink, thin rules, uppercase micro-labels, huge uppercase display type.
+  One font, as on the reference site: Geist for everything (codes use tabular figures).
+*/
 @theme {
-  /* Two fonts only, as on databricks.com: DM Sans for all text, DM Mono for codes and receipts */
-  --font-sans: "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "DM Mono", ui-monospace, monospace;
+  --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif; /* single-font system */
 
-  /* Darling palette: pink (primary), blue (secondary, links, dark surfaces), white */
-  --color-brand-50: #fdf2f8;   /* pink */
-  --color-brand-100: #fce7f3;
-  --color-brand-200: #fbcfe8;
-  --color-brand-300: #f9a8d4;
-  --color-brand-400: #f472b6;
-  --color-brand-500: #ec4899;
-  --color-brand-600: #db2777;
-  --color-brand-700: #be185d;
-  --color-petal: #fbcfe8;      /* soft pink highlight */
-  --color-azure-50: #eff6ff;   /* blue */
-  --color-azure-400: #60a5fa;
-  --color-azure-500: #3b82f6;
-  --color-azure-600: #2563eb;
-  --color-azure-700: #1d4ed8;
-  --color-navy-950: #0b1b3a;   /* deep blue surfaces (sidebar, hero) */
-  --color-navy-900: #12264d;
-  --color-navy-800: #1c3766;
-  --color-navy-700: #284a80;
-  --color-ink: #0f1f3d;
-  --color-canvas: #f8fafc;     /* near-white page background; cards are pure white */
-  --color-oat: #f1f5f9;
+  --color-ink: #1c1f24;
+  --color-paper: #ededed;
+  --color-panel: #f4f4f4;
+  --color-line: #c9c9c9;
+  --color-muted: #6b6f76;
+  --color-canvas: #ededed;
+  --color-oat: #f4f4f4;
+
+  /* Accents: blue (primary accent) and pink (small highlights only) */
+  --color-azure-50: #e8eef3;
+  --color-azure-400: #3b7899;
+  --color-azure-500: #1b6580;
+  --color-azure-600: #1f5277;
+  --color-azure-700: #173d59;
+  --color-pink: #d9468a;
+  --color-petal: #f3dbe7;
+
+  /* Legacy names mapped onto the monochrome palette so existing screens follow the new look */
+  --color-brand-50: #f4f4f4;
+  --color-brand-100: #e6e6e6;
+  --color-brand-200: #d6d6d6;
+  --color-brand-300: #b3b3b3;
+  --color-brand-400: #6b6f76;
+  --color-brand-500: #3a3e45;
+  --color-brand-600: #1c1f24;
+  --color-brand-700: #000000;
+  --color-navy-950: #1c1f24;
+  --color-navy-900: #1c1f24;
+  --color-navy-800: #2b2f35;
+  --color-navy-700: #3a3e45;
+
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-body { @apply bg-canvas text-ink antialiased; }
-h1, h2, h3, .page-title, .section-title, .stat-value { letter-spacing: -0.01em; }
+html { scroll-behavior: smooth; }
+body { @apply bg-paper text-ink antialiased; font-weight: 400; }
+.font-mono { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+::selection { background: var(--color-ink); color: var(--color-paper); }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:scale-[0.98] whitespace-nowrap;
+  @apply inline-flex items-center justify-center gap-2 rounded-full border px-5 py-2.5 text-[13px] font-normal uppercase tracking-[0.06em] whitespace-nowrap cursor-pointer disabled:opacity-40 disabled:pointer-events-none;
+  transition: background-color .7s var(--ease-out-expo), color .7s var(--ease-out-expo), border-color .6s var(--ease-out-expo);
 }
-@utility text-gradient {
-  @apply bg-gradient-to-r from-brand-500 via-brand-400 to-azure-500 bg-clip-text text-transparent;
+@utility label-caps {
+  @apply text-[13px] font-normal uppercase tracking-[0.06em];
 }
 
 @layer components {
-  .btn-primary { @apply btn bg-brand-600 text-white shadow-[0_8px_24px_-8px_rgba(219,39,119,0.45)] hover:bg-brand-500 hover:shadow-[0_10px_30px_-8px_rgba(236,72,153,0.55)]; }
-  .btn-bold { @apply btn bg-gradient-to-r from-brand-600 to-azure-500 text-white shadow-[0_10px_30px_-10px_rgba(219,39,119,0.55)] hover:brightness-110; }
-  .btn-dark { @apply btn bg-navy-900 text-white hover:bg-navy-800; }
-  .btn-secondary { @apply btn border border-stone-200 bg-white text-ink shadow-sm hover:border-stone-300 hover:bg-stone-50; }
-  .btn-ghost { @apply btn text-stone-600 hover:bg-stone-100 hover:text-ink; }
-  .btn-danger { @apply btn border border-rose-200 bg-white text-rose-700 hover:bg-rose-50; }
-  .btn-sm { @apply px-3 py-1.5 text-xs rounded-lg; }
-  .input { @apply block w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-stone-400 focus:border-azure-500 focus:ring-4 focus:ring-azure-50; }
-  .label { @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-stone-500; }
-  .card { @apply rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(23,17,27,0.04),0_8px_24px_-12px_rgba(23,17,27,0.08)]; }
-  .badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold; }
-  .table { @apply w-full text-left text-sm; }
-  .table th { @apply border-b border-stone-200 bg-stone-50/60 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-stone-500; }
-  .table td { @apply border-b border-stone-100 px-4 py-3.5 align-top; }
-  .page-title { @apply font-display text-3xl font-semibold sm:text-4xl; }
-  .section-title { @apply font-display text-lg font-bold tracking-tight; }
-  .stat-value { @apply font-display text-2xl font-semibold sm:text-3xl; }
+  /* Buttons: pill outlines; the primary one fills with ink */
+  .btn-primary { @apply btn border-ink bg-ink text-paper hover:bg-transparent hover:text-ink; }
+  .btn-bold { @apply btn border-ink bg-ink text-paper hover:bg-transparent hover:text-ink; }
+  .btn-dark { @apply btn border-ink bg-ink text-paper hover:bg-transparent hover:text-ink; }
+  .btn-secondary { @apply btn border-ink bg-transparent text-ink hover:bg-ink hover:text-paper; }
+  .btn-ghost { @apply btn border-transparent bg-transparent text-ink hover:border-ink; }
+  .btn-danger { @apply btn border-ink bg-transparent text-ink hover:bg-pink hover:border-pink hover:text-white; }
+  .btn-sm { @apply px-3.5 py-1.5 text-[11px]; }
+
+  /* Circular text button */
+  .btn-circle { @apply inline-flex h-28 w-28 shrink-0 items-center justify-center rounded-full border-2 border-ink text-center text-[12px] uppercase tracking-[0.06em];
+    transition: background-color .7s var(--ease-out-expo), color .7s var(--ease-out-expo); }
+  .btn-circle:hover { @apply bg-ink text-paper; }
+
+  /* Forms: underline inputs */
+  .input { @apply block w-full rounded-none border-0 border-b border-ink/30 bg-transparent px-0 py-2.5 text-[15px] text-ink outline-none placeholder:text-muted/70 focus:border-ink;
+    transition: border-color .6s var(--ease-out-expo); }
+  select.input { @apply pr-6; }
+  textarea.input { @apply border border-ink/20 px-3; }
+  .label { @apply mb-1 block text-[11px] font-normal uppercase tracking-[0.08em] text-muted; }
+
+  /* Surfaces: flat, ruled */
+  .card { @apply rounded-none border border-ink/15 bg-panel; }
+  .badge { @apply inline-flex items-center gap-1 rounded-full border border-current px-2.5 py-0.5 text-[11px] uppercase tracking-[0.05em]; }
+
+  .table { @apply w-full text-left text-[14px]; }
+  .table th { @apply border-b border-ink px-4 py-3 text-[11px] font-normal uppercase tracking-[0.08em] text-muted; }
+  .table td { @apply border-b border-ink/15 px-4 py-4 align-top; }
+
+  .page-title { @apply font-display text-4xl leading-[0.95] font-normal uppercase sm:text-6xl; }
+  .section-title { @apply text-[13px] font-normal uppercase tracking-[0.06em]; }
+  .stat-value { @apply font-display text-3xl font-normal sm:text-4xl; }
+  .text-gradient { @apply text-ink; }
 }
+
+/* Lens circles: outlined discs that blur whatever sits under them */
+.lens { @apply flex items-center justify-center rounded-full border-2 border-ink text-center uppercase leading-tight;
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+
+@keyframes drift { 0%, 100% { transform: translate3d(0, 0, 0) } 50% { transform: translate3d(0, -14px, 0) } }
+.animate-drift { animation: drift 7s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
-
-@keyframes float-y { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
-.animate-float { animation: float-y 6s ease-in-out infinite; }
-@keyframes spin-slow { to { transform: rotate(360deg) } }
-.animate-spin-slow { animation: spin-slow 24s linear infinite; }

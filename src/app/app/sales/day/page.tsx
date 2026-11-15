@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { DateTime } from "luxon";
-import { ListChecks } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { dayRange, fmtTime, METHOD_LABEL, money, num, todayIso } from "@/lib/format";
@@ -35,7 +34,7 @@ export default async function DaySummary({ searchParams }: { searchParams: Promi
 
   return (
     <div className="max-w-5xl">
-      <PageHeader title="Daily summary" sub={dt.toFormat("cccc d LLLL yyyy")} icon={ListChecks}>
+      <PageHeader title="Daily summary" sub={dt.toFormat("cccc d LLLL yyyy")}>
         <form className="print:hidden"><input type="date" name="date" defaultValue={iso} className="input w-auto" /></form>
         <Link href={`?date=${dt.minus({ days: 1 }).toISODate()}`} className="btn-secondary btn-sm print:hidden">Previous day</Link>
         <PrintButton />

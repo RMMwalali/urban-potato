@@ -43,12 +43,12 @@ export const STATUS_LABEL: Record<string, string> = {
 };
 
 export const STATUS_STYLE: Record<string, string> = {
-  BOOKED: "bg-sky-100 text-sky-800",
-  CONFIRMED: "bg-indigo-100 text-indigo-800",
-  ARRIVED: "bg-amber-100 text-amber-800",
-  COMPLETED: "bg-emerald-100 text-emerald-800",
-  CANCELLED: "bg-stone-200 text-stone-600",
-  NO_SHOW: "bg-rose-100 text-rose-800",
+  BOOKED: "text-azure-600",
+  CONFIRMED: "text-ink",
+  ARRIVED: "text-azure-600",
+  COMPLETED: "text-muted",
+  CANCELLED: "text-muted line-through",
+  NO_SHOW: "text-pink",
 };
 
 export const SOURCE_LABEL: Record<string, string> = {

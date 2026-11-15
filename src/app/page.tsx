@@ -1,169 +1,170 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, BellRing, CalendarDays, Check, Download, HeartHandshake, Link2, ShieldCheck, Smartphone, Sparkles, Users, Wallet, Zap } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { getSettings } from "@/lib/platform";
 import { pageMetadata } from "@/lib/seo";
-import { HeroVisual } from "@/components/landing/HeroVisual";
-import { FlipCard } from "@/components/motion/FlipCard";
-import { TiltCard } from "@/components/motion/Tilt";
-import { Reveal } from "@/components/motion/Reveal";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import { Hero } from "@/components/site/Hero";
+import { FeatureList, type Feature } from "@/components/site/FeatureList";
+import { Lines, Reveal } from "@/components/motion/Reveal";
 
 export async function generateMetadata() {
   const { seo } = await getSettings();
   return pageMetadata("/", { title: seo.defaultTitle, description: seo.description });
 }
 
-// Pain points distilled from real reviews of salon software (Trustpilot, ProductReview, Capterra, Reddit).
-const PAINS = [
-  { pain: "“New client” fees of up to 20% on clients who found you on your own Instagram.", fix: "Zero commission. Every client is yours, however they found you. One flat monthly price." },
-  { pain: "Payouts held for weeks while the platform “reviews” your account.", fix: "Money goes straight to your own M-Pesa till or Pochi. We never hold your funds." },
-  { pain: "No-show fees that fail because the client’s card expired.", fix: "Deposits by M-Pesa when booking, plus no-show tracking on every client profile." },
-  { pain: "Reminders that silently don’t send, then the chair sits empty.", fix: "SMS & WhatsApp reminders with a delivery log, so you can see every message that went out." },
-  { pain: "Support is a chatbot that never answers.", fix: "Real people on WhatsApp and phone, and help setting up your menu during the trial." },
-  { pain: "Leaving means losing years of client history.", fix: "Export clients, bookings and sales to CSV any time. No lock-in." },
+const FEATURES: Feature[] = [
+  { title: "Online booking", body: "A booking link for your Instagram, TikTok and WhatsApp bios. Clients book themselves, any hour.", detail: "No app download and no account to create. Only staff who perform the service are offered, and every slot is re-checked before it's confirmed." },
+  { title: "M-Pesa checkout", body: "Type the M-Pesa code and the payer's name and amount fill in, confirmed by Safaricom.", detail: "Split any bill across cash and M-Pesa, with change worked out. Each code can be used once, so the same payment can't be recorded twice." },
+  { title: "Reminders", body: "Confirmations and reminders by SMS or WhatsApp, with a log of every message sent.", detail: "Every message carries a link that lets clients reschedule or cancel within your policy, so gaps are filled instead of missed." },
+  { title: "Client records", body: "History, allergies, preferences and notes, owned by the salon, not by whoever is on shift.", detail: "Clients are matched by phone number, so there are no duplicates. Export everything to CSV whenever you like." },
+  { title: "Deposits", body: "Ask for an M-Pesa deposit when clients book online. It comes off the bill automatically.", detail: "Repeat no-shows are flagged on the client's profile before you confirm their next visit." },
+  { title: "Reports & payroll", body: "Daily takings by method, staff commission and tips, and a till sheet for the end of the day.", detail: "Each stylist can see their own services, commission and tips for the month." },
 ];
 
-const FEATURES = [
-  { icon: CalendarDays, title: "One calendar for every channel", body: "WhatsApp, Instagram, calls and walk-ins land in one staff calendar. Double-bookings are blocked." },
-  { icon: Link2, title: "Your booking link", body: "Clients book 24/7 from your bio. No app download, no account to create." },
-  { icon: Wallet, title: "M-Pesa first checkout", body: "Record M-Pesa codes, cash and card, issue receipts, track tips per stylist and reconcile the till daily." },
-  { icon: BellRing, title: "Automatic reminders", body: "Confirmations and reminders by SMS or WhatsApp. Clients can cancel or reschedule themselves." },
-  { icon: Users, title: "Client records that stay", body: "History, allergies, preferences and notes, owned by the salon, not the stylist." },
-  { icon: BarChart3, title: "Reports & commission", body: "Daily takings, staff commission, top services and where your bookings come from." },
+const WHY = [
+  "Zero commission on your clients",
+  "Money goes straight to your own till",
+  "Real people on WhatsApp, not a chatbot",
+  "Works on the phone you already have",
+  "Your data exports any time, no lock-in",
+  "One flat price, unlimited staff",
+];
+
+// Paraphrased from public reviews (Trustpilot, ProductReview, Capterra) and Reddit threads; see docs/RESEARCH.md.
+const COMPLAINTS = [
+  { said: "“New client” fees on clients who found the salon on its own Instagram", where: "Reviews", answer: "No commission. Every client is yours." },
+  { said: "Payouts held for weeks while the account is “reviewed”", where: "Reviews", answer: "Payments land in your own M-Pesa till." },
+  { said: "No-show fees fail because the client's card expired", where: "Reddit", answer: "M-Pesa deposits at booking, no card needed." },
+  { said: "Reminders silently stop sending", where: "Reddit", answer: "A delivery log for every message." },
+  { said: "Clients forced to create an account just to book", where: "Reddit", answer: "Name and phone number. That's it." },
+  { said: "Leaving means losing years of client history", where: "Reviews", answer: "CSV export, any time." },
 ];
 
 export default async function Home() {
   const [session, { general }] = await Promise.all([getSession(), getSettings()]);
   const price = `${general.currency} ${general.monthlyPrice.toLocaleString()}`;
+  const name = general.siteName;
+
   return (
-    <main className="overflow-x-hidden bg-canvas">
-      {/* HERO */}
-      <section className="relative bg-navy-950 text-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(236,72,153,0.35),transparent_55%),radial-gradient(ellipse_at_bottom_left,rgba(26,133,214,0.2),transparent_50%)]" />
-        <header className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5 font-display text-xl font-bold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-azure-500"><Sparkles className="h-5 w-5" /></span>
-            {general.siteName}
-          </Link>
-          <nav className="flex items-center gap-2">
-            <a href="#pricing" className="btn-ghost hidden text-white/70 hover:bg-white/10 hover:text-white sm:inline-flex">Pricing</a>
-            {session ? (
-              <Link href="/app" className="btn-bold">Dashboard <ArrowRight className="h-4 w-4" /></Link>
-            ) : (
-              <>
-                <Link href="/login" className="btn-ghost text-white/80 hover:bg-white/10 hover:text-white">Log in</Link>
-                <Link href="/signup" className="btn-bold">Start free</Link>
-              </>
-            )}
-          </nav>
-        </header>
+    <main className="bg-paper">
+      <SiteHeader name={name} signedIn={!!session} />
+      <Hero />
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-2 lg:pt-16 lg:pb-28">
-          <div>
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold ring-1 ring-white/15"><Zap className="h-3.5 w-3.5 text-petal" /> {general.trialDays}-day free trial · no card needed</p>
-            <h1 className="font-display text-5xl leading-[1.02] font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              Ditch the paper book. <span className="text-gradient">Fill every chair.</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg text-white/70">
-              Bookings, client records, M-Pesa checkout and automatic reminders for salons, barbershops and spas, all in one place instead of the notebook and fifty WhatsApp chats.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/signup" className="btn-bold px-6 py-3.5 text-base">Start your free trial <ArrowRight className="h-5 w-5" /></Link>
-              <a href="#how" className="btn px-6 py-3.5 text-base text-white ring-1 ring-white/20 hover:bg-white/10">See how it works</a>
-            </div>
-            <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/70">
-              {["0% commission on clients", "M-Pesa built in", "Cancel any time"].map((t) => <li key={t} className="flex items-center gap-1.5"><Check className="h-4 w-4 text-petal" />{t}</li>)}
-            </ul>
-          </div>
-          <HeroVisual />
+      {/* Statement */}
+      <section className="px-5 pt-24 sm:px-8 md:pt-32">
+        <div className="flex flex-wrap items-end justify-between gap-6 border-b-2 border-ink pb-6">
+          <h2 className="text-[clamp(32px,5vw,72px)] leading-[0.95] uppercase">
+            <Lines inView lines={["Salon & spa", "management, minus the paper"]} />
+          </h2>
+          <Reveal><Link href="/signup" className="btn-secondary">Start free trial</Link></Reveal>
         </div>
       </section>
 
-      {/* PAINS → FIXES */}
-      <section id="how" className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-bold tracking-widest text-brand-600 uppercase">Built from real complaints</p>
-          <h2 className="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">We read what salon owners hate about their software.</h2>
-          <p className="mt-4 text-lg text-stone-600">Then we built the opposite. Hover or tap a card to flip it.</p>
-        </Reveal>
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {PAINS.map((p, i) => (
-            <Reveal key={i} delay={i * 0.06}>
-              <FlipCard
-                className="h-56"
-                front={
-                  <div className="flex h-full flex-col justify-between rounded-3xl bg-white p-6 shadow-lg ring-1 ring-stone-200">
-                    <span className="text-xs font-bold tracking-widest text-brand-600 uppercase">The complaint</span>
-                    <p className="font-display text-xl leading-snug font-bold">{p.pain}</p>
-                    <span className="text-xs text-stone-400">Flip for the fix →</span>
-                  </div>
-                }
-                back={
-                  <div className="flex h-full flex-col justify-between rounded-3xl bg-gradient-to-br from-navy-900 to-brand-700 p-6 text-white shadow-xl">
-                    <span className="text-xs font-bold tracking-widest text-petal uppercase">How we fix it</span>
-                    <p className="text-lg leading-snug font-semibold">{p.fix}</p>
-                    <Check className="h-6 w-6 text-petal" />
-                  </div>
-                }
-              />
-            </Reveal>
-          ))}
-        </div>
+      {/* Features */}
+      <section id="features" className="px-5 pt-32 sm:px-8 md:pt-48">
+        <p className="label-caps mb-10">What it does</p>
+        <Reveal><FeatureList features={FEATURES} /></Reveal>
       </section>
 
-      {/* FEATURES */}
-      <section className="bg-white py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <Reveal className="max-w-2xl">
-            <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Everything the front desk needs. <span className="text-gradient">Nothing it doesn’t.</span></h2>
-          </Reveal>
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map(({ icon: Icon, title, body }, i) => (
-              <Reveal key={title} delay={i * 0.05}>
-                <TiltCard max={7} className="rounded-3xl">
-                  <div className="h-full rounded-3xl border border-stone-200 bg-canvas p-7">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-navy-900 text-petal"><Icon className="h-6 w-6" /></span>
-                    <h3 className="mt-5 font-display text-xl font-bold">{title}</h3>
-                    <p className="mt-2 text-stone-600">{body}</p>
-                  </div>
-                </TiltCard>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
+      {/* Why */}
+      <section id="why" className="px-5 pt-32 sm:px-8 md:pt-56">
+        <div className="grid gap-10 md:grid-cols-2">
+          <p className="label-caps">Why we do it better</p>
           <Reveal>
-            <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">One price. <span className="text-gradient">No surprises.</span></h2>
-            <p className="mt-4 text-lg text-stone-600">No per-stylist fees, no commission on clients, no &quot;boost&quot; charges, no payment holds. Try everything free for {general.trialDays} days.</p>
-            <ul className="mt-6 space-y-3">
-              {[[ShieldCheck, "Your money goes straight to your own M-Pesa"], [Download, "Export all your data whenever you want"], [HeartHandshake, "Real human support on WhatsApp"], [Smartphone, "Works on the phone you already have"]].map(([Icon, t]) => {
-                const I = Icon as typeof ShieldCheck;
-                return <li key={t as string} className="flex items-center gap-3 font-medium"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><I className="h-5 w-5" /></span>{t as string}</li>;
-              })}
-            </ul>
+            <p className="text-[clamp(18px,1.6vw,22px)] leading-[1.45]">
+              {name} replaces the paper diary and the scattered DMs with one calm screen: every booking, client and payment in one place, built for how salons in Kenya actually take money.
+            </p>
           </Reveal>
-          <Reveal delay={0.1}>
-            <TiltCard max={8} className="rounded-[2rem]">
-              <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-navy-950 via-navy-900 to-brand-700 p-10 text-white shadow-2xl shadow-brand-900/30">
-                <div className="animate-spin-slow absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[conic-gradient(from_0deg,rgba(236,72,153,0.5),rgba(26,133,214,0.4),rgba(255,199,223,0.3),rgba(236,72,153,0.5))] blur-3xl" />
-                <p className="relative text-xs font-bold tracking-widest text-petal uppercase">Standard</p>
-                <p className="relative mt-4 font-display text-6xl font-bold">{price}<span className="text-xl font-semibold text-white/60">/mo</span></p>
-                <p className="relative mt-2 text-white/70">Unlimited staff, clients and bookings.</p>
-                <Link href="/signup" className="relative mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 font-bold text-navy-950 hover:bg-petal">Start {general.trialDays}-day free trial <ArrowRight className="h-5 w-5" /></Link>
-              </div>
-            </TiltCard>
+        </div>
+        <ol className="mt-20 grid gap-x-10 gap-y-8 md:mt-28 md:grid-cols-2">
+          {WHY.map((w, i) => (
+            <li key={w}>
+              <Reveal delay={(i % 2) * 0.08} className="flex gap-4 text-[clamp(16px,1.4vw,19px)] text-muted">
+                <sup className="pt-2 text-[11px] text-ink">{i + 1}</sup>{w}
+              </Reveal>
+            </li>
+          ))}
+        </ol>
+        <Reveal className="mt-20 flex justify-center md:mt-24"><Link href="/signup" className="btn-circle">Start free</Link></Reveal>
+      </section>
+
+      {/* Complaints table */}
+      <section id="complaints" className="px-5 pt-32 sm:px-8 md:pt-56">
+        <div className="grid gap-10 md:grid-cols-2">
+          <p className="label-caps">Built from complaints</p>
+          <Reveal>
+            <p className="text-[15px] leading-relaxed md:max-w-md md:justify-self-end">
+              We read what salon owners and stylists say about their booking software in reviews and on Reddit, then built the opposite. Paraphrased, with sources in our research notes.
+            </p>
           </Reveal>
+        </div>
+        <div className="mt-16 overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left">
+            <thead>
+              <tr className="text-[12px] uppercase tracking-[0.06em] text-muted">
+                <th className="w-1/2 pb-4 font-normal">What owners said</th>
+                <th className="pb-4 font-normal">Where</th>
+                <th className="pb-4 text-right font-normal">With {name}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {COMPLAINTS.map((c) => (
+                <tr key={c.said} className="group border-t border-ink/40 transition-colors duration-500 hover:bg-panel">
+                  <td className="py-5 pr-6 text-[clamp(16px,1.4vw,20px)]">{c.said}</td>
+                  <td className="py-5 pr-6 text-[13px] uppercase text-muted">{c.where}</td>
+                  <td className="py-5 text-right text-[15px]">{c.answer}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
-      <footer className="bg-navy-950 py-10 text-center text-sm text-white/50">
-        © {new Date().getFullYear()} {general.siteName}
-        {general.supportEmail && <> · <a href={`mailto:${general.supportEmail}`} className="hover:text-white">{general.supportEmail}</a></>}
-        {general.supportWhatsApp && <> · <a href={`https://wa.me/${general.supportWhatsApp}`} className="hover:text-white">WhatsApp</a></>}
+      {/* Pricing */}
+      <section id="pricing" className="px-5 pt-32 pb-32 sm:px-8 md:pt-56 md:pb-48">
+        <div className="grid gap-10 md:grid-cols-[1fr_2fr]">
+          <p className="label-caps">Pricing</p>
+          <div>
+            <div className="border-t-2 border-ink pt-10 md:pt-16">
+              <div className="flex flex-wrap items-center justify-between gap-10">
+                <h2 className="text-[clamp(30px,3.6vw,52px)] leading-[1.02] uppercase">
+                  <Lines inView lines={["One price.", "No commission."]} />
+                </h2>
+                <Reveal><Link href="/signup" className="btn-circle">Try it free</Link></Reveal>
+              </div>
+              <Reveal>
+                <p className="mt-14 text-[clamp(56px,9vw,128px)] leading-none tracking-[-0.02em]">{price}<span className="text-[clamp(16px,1.6vw,22px)] tracking-normal text-muted"> / month</span></p>
+                <p className="mt-4 text-[15px] text-muted">{general.trialDays} days free. No card needed. Unlimited staff, clients and bookings.</p>
+              </Reveal>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t-2 border-ink px-5 pt-12 pb-8 sm:px-8">
+        <div className="grid gap-10 text-[13px] uppercase tracking-[0.06em] sm:grid-cols-3">
+          <ul className="space-y-2">
+            <li className="text-muted">Product</li>
+            <li><a href="#features" className="hover:opacity-50">Features</a></li>
+            <li><a href="#pricing" className="hover:opacity-50">Pricing</a></li>
+            <li><Link href="/signup" className="hover:opacity-50">Start free trial</Link></li>
+          </ul>
+          <ul className="space-y-2">
+            <li className="text-muted">Account</li>
+            <li><Link href="/login" className="hover:opacity-50">Log in</Link></li>
+            <li><Link href="/signup" className="hover:opacity-50">Create a salon</Link></li>
+          </ul>
+          <ul className="space-y-2">
+            <li className="text-muted">Contact</li>
+            {general.supportWhatsApp && <li><a href={`https://wa.me/${general.supportWhatsApp}`} className="hover:opacity-50">WhatsApp</a></li>}
+            {general.supportEmail && <li><a href={`mailto:${general.supportEmail}`} className="hover:opacity-50 normal-case">{general.supportEmail}</a></li>}
+            {general.supportPhone && <li><a href={`tel:${general.supportPhone}`} className="hover:opacity-50">{general.supportPhone}</a></li>}
+            {!general.supportWhatsApp && !general.supportEmail && !general.supportPhone && <li className="text-muted">Nairobi, Kenya</li>}
+          </ul>
+        </div>
+        <p className="mt-20 text-[clamp(80px,24vw,360px)] leading-[0.78] font-medium tracking-[-0.05em] lowercase">{name}</p>
+        <p className="mt-6 text-[12px] uppercase tracking-[0.06em] text-muted">© {new Date().getFullYear()} {name}</p>
       </footer>
     </main>
   );

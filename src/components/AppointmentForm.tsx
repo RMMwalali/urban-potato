@@ -21,7 +21,7 @@ export function AppointmentForm(props: {
       <fieldset className="space-y-3">
         <legend className="mb-2 text-sm font-semibold">Client</legend>
         {props.client && !newClient ? (
-          <div className="rounded-lg bg-stone-100 px-3 py-2 text-sm">
+          <div className="rounded-none bg-stone-100 px-3 py-2 text-sm">
             <input type="hidden" name="clientId" value={props.client.id} />
             <span className="font-medium">{props.client.name}</span> <span className="text-stone-500">{props.client.extra}</span>
           </div>
@@ -86,7 +86,7 @@ export function AppointmentForm(props: {
         Send booking confirmation to the client
       </label>
 
-      {state?.error && <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
+      {state?.error && <p className="rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
       <button className="btn-primary" disabled={pending}>{pending ? "Saving…" : "Book appointment"}</button>
     </form>
   );

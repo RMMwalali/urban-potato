@@ -1,5 +1,4 @@
 import { DateTime } from "luxon";
-import { BarChart3 } from "lucide-react";
 import { TitleIcon } from "@/components/ui";
 import { db } from "@/lib/db";
 import { MANAGERS, requireUser } from "@/lib/auth";
@@ -67,7 +66,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="page-title flex items-center gap-3"><TitleIcon icon={BarChart3} />Reports</h1>
+        <h1 className="page-title flex items-center gap-3"><TitleIcon />Reports</h1>
         <form className="flex items-end gap-2">
           <div><label className="label">From</label><input type="date" name="from" defaultValue={from} className="input" /></div>
           <div><label className="label">To</label><input type="date" name="to" defaultValue={to} className="input" /></div>
