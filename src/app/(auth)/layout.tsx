@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 import { getSettings } from "@/lib/platform";
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -7,8 +8,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
     <main className="grid min-h-screen bg-paper lg:grid-cols-2">
       <div className="flex flex-col justify-between px-5 py-8 sm:px-8">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-[20px] font-medium text-paper">{general.siteName[0].toLowerCase()}</span>
-          <span className="text-[26px] font-semibold tracking-[-0.03em] lowercase text-pink">{general.siteName}</span>
+          <Logo name={general.siteName} className="text-[26px]" />
         </Link>
         <div className="mx-auto w-full max-w-md py-16">{children}</div>
         <p className="label-caps text-muted">{general.trialDays} days free · no card · no commission</p>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 import { requireAdmin } from "@/lib/admin-auth";
 import { getSettings } from "@/lib/platform";
 import { adminLogout } from "@/app/actions/admin";
@@ -13,8 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="sticky top-0 z-30 border-b border-ink bg-paper/95 px-5 sm:px-8">
         <div className="flex h-20 items-center justify-between gap-6">
           <Link href="/admin" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-[18px] font-medium text-paper">{general.siteName[0].toLowerCase()}</span>
-            <span className="text-[22px] font-semibold tracking-[-0.03em] lowercase text-pink">{general.siteName}</span>
+            <Logo name={general.siteName} className="text-[22px]" />
             <span className="label-caps hidden text-muted sm:inline">HQ</span>
           </Link>
           <div className="hidden lg:block"><AdminNav /></div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 import { getSession } from "@/lib/auth";
 import { getSettings } from "@/lib/platform";
 import { pageMetadata } from "@/lib/seo";
@@ -132,7 +133,7 @@ export default async function Home() {
             {general.supportPhone && <li><a href={`tel:${general.supportPhone}`} className="hover:opacity-50">{general.supportPhone}</a></li>}
           </ul>}
         </div>
-        <p className="mt-20 text-[clamp(80px,24vw,360px)] leading-[0.78] font-medium tracking-[-0.05em] lowercase text-pink">{name}</p>
+        <p className="mt-20"><Logo name={name} className="block text-[clamp(64px,19vw,300px)] leading-[0.8] tracking-[-0.04em]" /></p>
         <p className="mt-6 text-[12px] uppercase tracking-[0.06em] text-muted">© {new Date().getFullYear()} {name}</p>
       </footer>
     </main>

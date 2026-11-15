@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -25,13 +26,10 @@ export function SiteHeader({ name, signedIn }: { name: string; signedIn: boolean
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-40 flex h-[88px] items-center justify-between px-5 sm:px-8 md:h-[110px]">
+      <header className={`fixed inset-x-0 top-0 z-40 flex h-[88px] items-center justify-between px-5 transition-[background-color,height] duration-700 sm:px-8 ${scrolled && !open ? "bg-paper md:h-[84px]" : "md:h-[110px]"}`}>
         <Link href="/" className="relative flex items-center" aria-label={name}>
-          <span className={`flex h-12 w-12 items-center justify-center rounded-full bg-ink text-[22px] font-medium text-paper transition-all duration-700 `}>{name[0].toLowerCase()}</span>
-          <span className={`ml-3 flex items-baseline gap-3 transition-all duration-700 ${scrolled && !open ? "pointer-events-none -translate-y-2 opacity-0" : "opacity-100"}`}>
-            <span className="text-[30px] font-semibold leading-none tracking-[-0.03em] lowercase text-pink">{name}</span>
-            <span className="hidden text-[10px] leading-[1.1] font-medium uppercase sm:block">Salon &amp; spa<br />software</span>
-          </span>
+          <Logo name={name} className="text-[28px] sm:text-[32px]" />
+          <span className={`ml-3 hidden text-[10px] leading-[1.1] font-medium uppercase transition-all duration-700 sm:block ${scrolled && !open ? "pointer-events-none -translate-y-2 opacity-0" : "opacity-100"}`}>Salon &amp; spa<br />software</span>
         </Link>
 
         <button onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="absolute left-1/2 hidden h-10 w-[70px] -translate-x-1/2 md:block">
