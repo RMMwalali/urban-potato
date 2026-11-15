@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Receipt } from "lucide-react";
+import { TitleIcon } from "@/components/ui";
 import { DateTime } from "luxon";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -30,7 +32,7 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="page-title">Sales</h1>
+          <h1 className="page-title flex items-center gap-3"><TitleIcon icon={Receipt} />Sales</h1>
           <p className="text-sm text-stone-500">{label}</p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
@@ -39,6 +41,8 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
             <div><label className="label">To</label><input type="date" name="to" defaultValue={to} className="input" /></div>
             <button className="btn-secondary">Show</button>
           </form>
+          <Link href={`/app/sales/day?date=${to}`} className="btn-secondary">Daily summary</Link>
+          {["OWNER", "MANAGER"].includes(user.role) && <a href="/app/export/sales" className="btn-secondary">Export CSV</a>}
           <Link href="/app/sales/new" className="btn-primary">+ Quick sale</Link>
         </div>
       </div>

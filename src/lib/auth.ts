@@ -5,6 +5,7 @@ import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
 import type { Role } from "@prisma/client";
+import { accessState } from "./platform";
 
 const COOKIE = "spadesk_session";
 const secret = () => {
@@ -49,7 +50,7 @@ export async function getSession(): Promise<Session | null> {
 }
 
 /** Use in every protected page/action. Returns the signed-in user with their business (tenant). */
-export async function requireUser(roles?: Role[]) {
+export async function requireUser(roles?: Role[], opts?: { allowLocked?: boolean }) {
   const s = await getSession();
   if (!s) redirect("/login");
   const user = await db.user.findFirst({
@@ -57,6 +58,8 @@ export async function requireUser(roles?: Role[]) {
     include: { business: true },
   });
   if (!user) redirect("/login");
+  // Trial ended / suspended salons can only reach the billing page.
+  if (!opts?.allowLocked && !accessState(user.business).ok) redirect("/app/billing");
   if (roles && !roles.includes(user.role)) redirect("/app?denied=1");
   return user;
 }

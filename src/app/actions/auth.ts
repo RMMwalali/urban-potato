@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
 import { slugify } from "@/lib/format";
+import { getSettings } from "@/lib/platform";
 
 export type FormState = { error?: string } | undefined;
 
@@ -19,6 +20,8 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const { businessName, name, email, password } = parsed.data;
 
+  const settings = await getSettings();
+  if (!settings.general.signupEnabled) return { error: "New sign-ups are paused right now. Please contact us." };
   if (await db.user.findUnique({ where: { email } })) return { error: "An account with this email already exists" };
 
   const base = slugify(businessName) || "salon";
@@ -26,21 +29,15 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
   for (let i = 2; await db.business.findUnique({ where: { slug } }); i++) slug = `${base}-${i}`;
 
   const user = await db.$transaction(async (tx) => {
-    const business = await tx.business.create({ data: { name: businessName, slug, email } });
-    await tx.service.createMany({
-      data: [
-        { businessId: business.id, name: "Haircut & blow-dry", category: "Hair", durationMin: 60, price: 1500 },
-        { businessId: business.id, name: "Manicure", category: "Nails", durationMin: 45, price: 1000 },
-        { businessId: business.id, name: "Full body massage", category: "Spa", durationMin: 60, price: 3500 },
-      ],
-    });
+    const trialEndsAt = new Date(Date.now() + settings.general.trialDays * 86400_000);
+    const business = await tx.business.create({ data: { name: businessName, slug, email, trialEndsAt } });
     return tx.user.create({
       data: { businessId: business.id, name, email, passwordHash: await hashPassword(password), role: "OWNER", title: "Owner" },
     });
   });
 
   await createSession({ userId: user.id, businessId: user.businessId, role: user.role });
-  redirect("/app?welcome=1");
+  redirect("/app");
 }
 
 export async function login(_: FormState, fd: FormData): Promise<FormState> {

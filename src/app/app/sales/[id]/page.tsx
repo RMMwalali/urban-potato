@@ -57,6 +57,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
         {num(s.discount) > 0 && <div className="flex justify-between"><span>Discount</span><span>−{money(s.discount, c)}</span></div>}
         {num(s.tip) > 0 && <div className="flex justify-between"><span>Tip</span><span>{money(s.tip, c)}</span></div>}
         <div className="flex justify-between text-base font-semibold"><span>TOTAL</span><span>{money(s.total, c)}</span></div>
+        {num(s.depositApplied) > 0 && <div className="flex justify-between"><span>Deposit paid earlier</span><span>−{money(s.depositApplied, c)}</span></div>}
+        {num(s.depositApplied) > 0 && <div className="flex justify-between font-semibold"><span>Paid today</span><span>{money(Math.max(num(s.total) - num(s.depositApplied), 0), c)}</span></div>}
         <p className="mt-2 text-xs">Paid by {METHOD_LABEL[s.method]}{s.reference ? ` · ${s.reference}` : ""}</p>
         <p className="mt-4 text-center text-xs text-stone-500">Thank you for visiting!</p>
       </div>

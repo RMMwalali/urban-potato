@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { CalendarClock } from "lucide-react";
+import { TitleIcon } from "@/components/ui";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { setStatus, sendReminderNow } from "@/app/actions/appointments";
-import { displayPhone, fmtDate, fmtDateTime, fmtTime, inTz, money, SOURCE_LABEL, STATUS_LABEL, STATUS_STYLE } from "@/lib/format";
+import { setStatus, sendReminderNow, verifyDeposit } from "@/app/actions/appointments";
+import { displayPhone, fmtDate, fmtDateTime, fmtTime, inTz, money, num, SOURCE_LABEL, STATUS_LABEL, STATUS_STYLE } from "@/lib/format";
 import { RescheduleForm } from "@/components/RescheduleForm";
 import type { AppointmentStatus } from "@prisma/client";
 
@@ -18,6 +20,7 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
     include: { client: true, service: true, staff: true, sale: true },
   });
   if (!a) notFound();
+  const noShows = await db.appointment.count({ where: { clientId: a.clientId, status: "NO_SHOW" } });
   const [staff, messages] = await Promise.all([
     db.user.findMany({ where: { businessId: b.id, active: true, bookable: true }, orderBy: { name: "asc" } }),
     db.messageLog.findMany({ where: { appointmentId: a.id }, orderBy: { createdAt: "desc" } }),
@@ -31,7 +34,7 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
       <Link href={`/app/calendar?date=${inTz(a.startAt, tz).toISODate()}`} className="text-sm text-stone-500">← Calendar</Link>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="page-title">{a.service.name}</h1>
+          <h1 className="page-title flex items-center gap-3"><TitleIcon icon={CalendarClock} />{a.service.name}</h1>
           <p className="text-stone-600">
             {fmtDate(a.startAt, tz)}, {fmtTime(a.startAt, tz)}–{fmtTime(a.endAt, tz)} · {a.staff?.name ?? "Unassigned"}
           </p>
@@ -52,6 +55,13 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
                 <a className="btn-secondary btn-sm" target="_blank" href={`https://wa.me/${a.client.phone}`}>WhatsApp</a>
               </div>
             </div>
+            {noShows >= 2 && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"><b>Heads up:</b> {noShows} previous no-shows. Consider asking for a deposit.</p>}
+            {num(a.depositAmount) > 0 && (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-lime-glow/30 px-3 py-2 text-sm">
+                <span><b>Deposit {money(a.depositAmount, b.currency)}</b> · M-Pesa {a.depositRef ?? "-"} {a.depositVerified ? "· verified" : "· not yet checked"}</span>
+                {!a.depositVerified && <form action={verifyDeposit.bind(null, a.id)}><button className="btn-secondary btn-sm">Mark verified</button></form>}
+              </div>
+            )}
             {a.client.allergies && (
               <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800"><b>Allergies:</b> {a.client.allergies}</p>
             )}

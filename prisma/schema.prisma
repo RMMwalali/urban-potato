@@ -25,6 +25,21 @@ model Business {
   reminderHours     Int      @default(24)
   bookingEnabled    Boolean  @default(true)
   messageChannel    Channel  @default(SMS)
+  // Subscription / trial
+  status            BusinessStatus @default(TRIAL)
+  trialEndsAt       DateTime
+  paidUntil         DateTime?
+  plan              String   @default("standard")
+  adminNotes        String?
+  // Booking policies
+  depositPercent    Int      @default(0) // 0 = no deposit asked
+  cancelPolicyHours Int      @default(24) // client self-cancel allowed until N hours before
+  cancelPolicyText  String?
+  bufferMinutes     Int      @default(0) // clean-up time after each appointment
+  mpesaType         String?  // TILL | PAYBILL | POCHI | PHONE
+  mpesaNumber       String?
+  mpesaAccount      String?  // paybill account number
+  onboardingDone    Boolean  @default(false)
   createdAt         DateTime @default(now())
 
   users        User[]
@@ -33,6 +48,14 @@ model Business {
   appointments Appointment[]
   sales        Sale[]
   messages     MessageLog[]
+}
+
+enum BusinessStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  SUSPENDED
+  CANCELLED
 }
 
 enum Role {
@@ -143,6 +166,11 @@ model Appointment {
   price      Decimal           @db.Decimal(10, 2) // price at time of booking
   notes      String?
   reminderSentAt DateTime?
+  depositAmount Decimal          @default(0) @db.Decimal(10, 2)
+  depositRef    String? // M-Pesa code supplied by client
+  depositVerified Boolean        @default(false)
+  manageToken   String           @unique @default(cuid()) // client self-service link
+  cancelledBy   String? // CLIENT | STAFF
   createdAt  DateTime          @default(now())
 
   sale Sale?
@@ -172,6 +200,8 @@ model Sale {
   subtotal      Decimal       @db.Decimal(10, 2)
   discount      Decimal       @default(0) @db.Decimal(10, 2)
   tip           Decimal       @default(0) @db.Decimal(10, 2)
+  tipStaffId    String?
+  depositApplied Decimal      @default(0) @db.Decimal(10, 2)
   total         Decimal       @db.Decimal(10, 2)
   method        PaymentMethod
   reference     String? // M-Pesa code, card ref, etc.
@@ -225,4 +255,60 @@ model MessageLog {
   createdAt  DateTime      @default(now())
 
   @@index([businessId, createdAt])
+}
+
+// ---------- Platform (super-admin) ----------
+
+model PlatformAdmin {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+// Key/value platform configuration: SEO defaults, trial length, signup switch, etc.
+model PlatformSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+// Third-party credentials managed from the admin panel. Values are AES-256-GCM encrypted.
+model ApiCredential {
+  id        String   @id @default(cuid())
+  provider  String // africastalking | whatsapp | mpesa | smtp | custom
+  name      String // e.g. AT_API_KEY
+  label     String?
+  encValue  String
+  last4     String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([provider, name])
+}
+
+// Per-route SEO overrides (title, description, OG image...)
+model SeoPage {
+  id          String   @id @default(cuid())
+  path        String   @unique // "/", "/signup", "/pricing", "/book/*"
+  title       String?
+  description String?
+  keywords    String?
+  ogImage     String?
+  noIndex     Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actor      String // admin email
+  action     String
+  targetType String?
+  targetId   String?
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
 }

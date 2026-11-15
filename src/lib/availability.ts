@@ -59,9 +59,11 @@ export async function getSlots(opts: {
   for (let t = open; t.plus({ minutes: service.durationMin }) <= close; t = t.plus({ minutes: business.slotMinutes })) {
     if (t < now) continue;
     const s = t.toJSDate();
-    const e = t.plus({ minutes: service.durationMin }).toJSDate();
+    // Buffer (clean-up time) is kept free after every appointment, including the new one.
+    const buf = business.bufferMinutes * 60_000;
+    const e = new Date(t.plus({ minutes: service.durationMin }).toMillis() + buf);
     const free = staff
-      .filter((st) => !appts.some((a) => a.staffId === st.id && a.startAt < e && a.endAt > s))
+      .filter((st) => !appts.some((a) => a.staffId === st.id && a.startAt < e && a.endAt.getTime() + buf > s.getTime()))
       .map((st) => st.id);
     if (free.length) slots.push({ start: s.toISOString(), staffIds: free });
   }

@@ -1,4 +1,5 @@
 "use client";
+import { keepValues } from "./useKeepForm";
 import { useActionState, useState } from "react";
 import { createSale, type SaleState } from "@/app/actions/sales";
 
@@ -13,6 +14,7 @@ export function CheckoutForm(props: {
   initialItems: Row[];
   appointmentId?: string;
   client?: { id: string; name: string } | null;
+  deposit?: { amount: number; ref: string | null } | null;
 }) {
   const [state, action, pending] = useActionState<SaleState, FormData>(createSale, undefined);
   const [items, setItems] = useState<Row[]>(props.initialItems);
@@ -22,11 +24,14 @@ export function CheckoutForm(props: {
 
   const subtotal = items.reduce((t, i) => t + i.unitPrice * i.quantity, 0);
   const total = Math.max(subtotal - discount, 0) + tip;
+  const depositAmt = props.deposit?.amount ?? 0;
+  const due = Math.max(total - depositAmt, 0);
+  const tipStaffDefault = props.initialItems.find((i) => i.staffId)?.staffId ?? "";
   const fmt = (n: number) => `${props.currency} ${n.toLocaleString()}`;
   const update = (i: number, patch: Partial<Row>) => setItems(items.map((r, j) => (j === i ? { ...r, ...patch } : r)));
 
   return (
-    <form action={action} className="card max-w-3xl space-y-5 p-5">
+    <form onSubmit={keepValues(action)} className="card max-w-3xl space-y-5 p-5">
       {props.appointmentId && <input type="hidden" name="appointmentId" value={props.appointmentId} />}
       <input type="hidden" name="items" value={JSON.stringify(items)} />
 
@@ -75,6 +80,15 @@ export function CheckoutForm(props: {
       <div className="grid gap-3 sm:grid-cols-2">
         <div><label className="label">Discount</label><input name="discount" type="number" min={0} className="input" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} /></div>
         <div><label className="label">Tip</label><input name="tip" type="number" min={0} className="input" value={tip} onChange={(e) => setTip(Number(e.target.value))} /></div>
+        {tip > 0 && (
+          <div className="sm:col-span-2">
+            <label className="label">Tip goes to</label>
+            <select name="tipStaffId" className="input" defaultValue={tipStaffDefault}>
+              <option value="">The salon (shared)</option>
+              {props.staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
+        )}
         <div>
           <label className="label">Payment method</label>
           <select name="method" className="input" value={method} onChange={(e) => setMethod(e.target.value)}>
@@ -85,7 +99,7 @@ export function CheckoutForm(props: {
             <option value="OTHER">Other</option>
           </select>
         </div>
-        {method !== "CASH" && (
+        {method !== "CASH" && (due > 0 || method !== "MPESA") && (
           <div>
             <label className="label">{method === "MPESA" ? "M-Pesa code" : "Reference"}</label>
             <input name="reference" className="input uppercase" placeholder={method === "MPESA" ? "e.g. SKF3H7XQ2P" : ""} required={method === "MPESA"} />
@@ -98,10 +112,12 @@ export function CheckoutForm(props: {
         {discount > 0 && <div className="flex justify-between"><span>Discount</span><span>−{fmt(Math.min(discount, subtotal))}</span></div>}
         {tip > 0 && <div className="flex justify-between"><span>Tip</span><span>{fmt(tip)}</span></div>}
         <div className="flex justify-between border-t border-stone-200 pt-2 text-base font-semibold"><span>Total</span><span>{fmt(total)}</span></div>
+        {depositAmt > 0 && <div className="flex justify-between text-emerald-700"><span>Deposit paid{props.deposit?.ref ? ` (${props.deposit.ref})` : ""}</span><span>−{fmt(depositAmt)}</span></div>}
+        {depositAmt > 0 && <div className="flex justify-between font-display text-lg font-bold"><span>Due now</span><span>{fmt(due)}</span></div>}
       </div>
 
       {state?.error && <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
-      <button className="btn-primary w-full sm:w-auto" disabled={pending || items.length === 0}>{pending ? "Saving…" : `Record payment · ${fmt(total)}`}</button>
+      <button className="btn-primary w-full sm:w-auto" disabled={pending || items.length === 0}>{pending ? "Saving…" : `Record payment · ${fmt(due)}`}</button>
     </form>
   );
 }

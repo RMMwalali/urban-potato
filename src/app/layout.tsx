@@ -1,11 +1,11 @@
-import type { Metadata, Viewport } from "next";
+import type { Viewport } from "next";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/bricolage-grotesque";
 import "./globals.css";
+import { rootMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: { default: "SpaDesk", template: "%s · SpaDesk" },
-  description: "Bookings, client records, payments and reminders for salons and spas.",
-};
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#a83269" };
+export const generateMetadata = rootMetadata;
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#1c1023" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

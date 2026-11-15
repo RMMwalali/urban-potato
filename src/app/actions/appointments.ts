@@ -127,3 +127,9 @@ export async function reschedule(_: ApptState, fd: FormData): Promise<ApptState>
   revalidatePath(`/app/appointments/${id}`);
   return { error: undefined };
 }
+
+export async function verifyDeposit(id: string) {
+  const { a } = await ownAppointment(id);
+  await db.appointment.update({ where: { id: a.id }, data: { depositVerified: true } });
+  revalidatePath(`/app/appointments/${id}`);
+}

@@ -1,4 +1,5 @@
 "use client";
+import { keepValues } from "./useKeepForm";
 import { useActionState } from "react";
 import type { FormState } from "@/app/actions/auth";
 
@@ -13,7 +14,7 @@ export function AuthForm({
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={keepValues(formAction)} className="space-y-4">
       {fields.map((f) => (
         <div key={f.name}>
           <label className="label" htmlFor={f.name}>{f.label}</label>
@@ -21,7 +22,7 @@ export function AuthForm({
         </div>
       ))}
       {state?.error && <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
-      <button className="btn-primary w-full" disabled={pending}>{pending ? "Please wait…" : submit}</button>
+      <button className="btn-bold w-full py-3" disabled={pending}>{pending ? "Please wait…" : submit}</button>
     </form>
   );
 }

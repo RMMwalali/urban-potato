@@ -1,4 +1,5 @@
 "use client";
+import { keepValues } from "./useKeepForm";
 import { useActionState, useState } from "react";
 import { createAppointment, type ApptState } from "@/app/actions/appointments";
 import { SOURCE_LABEL } from "@/lib/format";
@@ -9,14 +10,14 @@ export function AppointmentForm(props: {
   services: (Opt & { category: string })[];
   staff: Opt[];
   client?: Opt | null;
-  defaults: { date: string; time?: string; staffId?: string };
+  defaults: { date: string; time?: string; staffId?: string; source?: string };
 }) {
   const [state, action, pending] = useActionState<ApptState, FormData>(createAppointment, undefined);
   const [newClient] = useState(!props.client);
   const categories = [...new Set(props.services.map((s) => s.category))];
 
   return (
-    <form action={action} className="card max-w-2xl space-y-5 p-5">
+    <form onSubmit={keepValues(action)} className="card max-w-2xl space-y-5 p-5">
       <fieldset className="space-y-3">
         <legend className="mb-2 text-sm font-semibold">Client</legend>
         {props.client && !newClient ? (
@@ -62,7 +63,7 @@ export function AppointmentForm(props: {
         </div>
         <div>
           <label className="label">Booked via</label>
-          <select name="source" className="input" defaultValue="WALK_IN">
+          <select name="source" className="input" defaultValue={props.defaults.source ?? "WALK_IN"}>
             {Object.entries(SOURCE_LABEL).filter(([k]) => k !== "ONLINE").map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </div>

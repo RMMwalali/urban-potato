@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { MessageSquare } from "lucide-react";
+import { TitleIcon } from "@/components/ui";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { displayPhone, fmtDateTime } from "@/lib/format";
@@ -16,7 +18,7 @@ export default async function MessagesPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="page-title">Messages</h1>
+        <h1 className="page-title flex items-center gap-3"><TitleIcon icon={MessageSquare} />Messages</h1>
         <p className="text-sm text-stone-500">
           Every confirmation, reminder and message sent to clients. Reminders go out automatically {b.reminderHours}h before each appointment.
           {failed > 0 && <span className="text-rose-700"> {failed} failed recently.</span>}

@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { Receipt } from "lucide-react";
+import { TitleIcon } from "@/components/ui";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { num } from "@/lib/format";
@@ -22,13 +24,14 @@ export default async function NewSale({ searchParams }: { searchParams: Promise<
 
   return (
     <div className="space-y-5">
-      <h1 className="page-title">{appt ? "Check out appointment" : "Quick sale"}</h1>
+      <h1 className="page-title flex items-center gap-3"><TitleIcon icon={Receipt} />{appt ? "Check out appointment" : "Quick sale"}</h1>
       <CheckoutForm
         currency={b.currency}
         services={services.map((s) => ({ id: s.id, name: s.name, price: num(s.price) }))}
         staff={staff.map((s) => ({ id: s.id, name: s.name }))}
         appointmentId={appt?.id}
         client={client ? { id: client.id, name: client.name } : null}
+        deposit={appt && num(appt.depositAmount) > 0 ? { amount: num(appt.depositAmount), ref: appt.depositRef } : null}
         initialItems={
           appt
             ? [{ serviceId: appt.serviceId, staffId: appt.staffId, name: appt.service.name, quantity: 1, unitPrice: num(appt.price) }]

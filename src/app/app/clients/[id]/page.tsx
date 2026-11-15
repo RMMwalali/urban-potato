@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { User } from "lucide-react";
+import { TitleIcon } from "@/components/ui";
 import { notFound } from "next/navigation";
 import { DateTime } from "luxon";
 import { db } from "@/lib/db";
@@ -33,7 +35,7 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
       {sp.duplicate && <div className="card bg-amber-50 p-3 text-sm text-amber-800">A client with that phone number already exists. Here is their record.</div>}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="page-title">{c.name}</h1>
+          <h1 className="page-title flex items-center gap-3"><TitleIcon icon={User} />{c.name}</h1>
           <p className="text-stone-600">{displayPhone(c.phone)}{c.email && ` · ${c.email}`}</p>
         </div>
         <div className="flex flex-wrap gap-2">

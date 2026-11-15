@@ -1,4 +1,6 @@
 import { DateTime } from "luxon";
+import { BarChart3 } from "lucide-react";
+import { TitleIcon } from "@/components/ui";
 import { db } from "@/lib/db";
 import { MANAGERS, requireUser } from "@/lib/auth";
 import { dayRange, METHOD_LABEL, money, num, SOURCE_LABEL, todayIso } from "@/lib/format";
@@ -60,11 +62,12 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const staffName = (id: string) => staff.find((s) => s.id === id)?.name ?? "Unknown";
   const byStaff = sum(items, (i) => i.staffId, (i) => num(i.unitPrice) * i.quantity);
   const commission = new Map(sum(items, (i) => i.staffId, (i) => num(i.commission)));
+  const tipsBy = new Map(sum(sales, (s) => s.tipStaffId, (s) => num(s.tip)));
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="page-title">Reports</h1>
+        <h1 className="page-title flex items-center gap-3"><TitleIcon icon={BarChart3} />Reports</h1>
         <form className="flex items-end gap-2">
           <div><label className="label">From</label><input type="date" name="from" defaultValue={from} className="input" /></div>
           <div><label className="label">To</label><input type="date" name="to" defaultValue={to} className="input" /></div>
@@ -97,7 +100,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="card p-5">
           <h2 className="mb-4 font-semibold">Staff performance & commission</h2>
-          <Bars currency={b.currency} rows={byStaff.map(([id, v]) => ({ label: staffName(id), value: v, sub: `· ${money(commission.get(id) ?? 0, b.currency)} comm.` }))} />
+          <Bars currency={b.currency} rows={byStaff.map(([id, v]) => ({ label: staffName(id), value: v, sub: `· ${money(commission.get(id) ?? 0, b.currency)} comm. · ${money(tipsBy.get(id) ?? 0, b.currency)} tips` }))} />
         </section>
         <section className="card p-5">
           <h2 className="mb-4 font-semibold">Top services</h2>

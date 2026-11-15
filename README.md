@@ -1,65 +1,73 @@
 # SpaDesk
 
-Management platform for beauty parlours and spas: bookings, client records, payments and reminders in one place, replacing paper books and scattered social-media DMs.
+Management platform for salons, barbershops and spas: online booking, client records, M-Pesa checkout, SMS/WhatsApp reminders and reports, replacing paper books and scattered Instagram/WhatsApp DMs. Multi-tenant SaaS with a 14-day free trial and a platform admin panel.
 
-Multi-tenant SaaS: each salon signs up, gets its own isolated data and a public booking link (`/book/<salon-slug>`) to put in Instagram / TikTok / Facebook bios and WhatsApp Business profiles.
+Feature choices are based on real complaints about existing salon software; see [`docs/RESEARCH.md`](docs/RESEARCH.md).
 
-## Features (v1)
+## What's in it
 
+### For salons (`/app`)
 | Area | What it does |
 |---|---|
-| **Bookings & calendar** | Day view per staff member, click-to-book, double-booking prevention, reschedule, statuses (booked → confirmed → arrived → completed / no-show / cancelled), tracks *where* each booking came from (WhatsApp, Instagram, walk-in…) |
-| **Online booking** | Public page per salon: pick service → staff (or "any") → day → free slot → name & phone. Only offers staff who perform that service. Server re-checks the slot before confirming. |
-| **Client records** | Auto-created and matched by phone number. Visit history, total spend, no-shows, allergies (shown prominently on appointments), preferences, notes, birthday, marketing opt-in |
-| **Payments & sales** | Checkout from an appointment or quick sale; multiple items, discount, tip; M-Pesa (code captured), cash, card, bank. Sequential receipts, print or send via WhatsApp. Staff commission computed per item. |
-| **Reminders & messaging** | Booking confirmation, automatic reminder N hours before, cancellation notice, ad-hoc messages. SMS via Africa's Talking or WhatsApp Cloud API. Every message logged with delivery status. |
-| **Reports** | Revenue (daily chart), staff performance & commission, top services, booking sources, payment methods, no-show rate, top clients |
-| **Roles** | Owner / Manager (services, staff, reports, settings) / Staff (calendar, clients, checkout) |
+| **Calendar & bookings** | Staff columns, click-to-book, walk-in button, double-booking prevention, reschedule, statuses, booking-source tracking (WhatsApp, Instagram, TikTok, walk-in…) |
+| **Online booking** (`/book/<salon>`) | No app or account for clients. Only offers staff who perform the service. Optional **M-Pesa deposit** (client pays the salon's own till/paybill/Pochi and enters the code). Buffer time between appointments. |
+| **Client self-service** (`/b/<token>`) | Link in every confirmation and reminder: client reschedules or cancels within the salon's cancellation window. |
+| **Client records** | Matched by phone. History, spend, no-show count (warning on repeat no-shows), allergies, preferences, notes. Owned by the salon. |
+| **Checkout** | Multiple items, discount, tip **assigned to a stylist**, deposit deducted automatically, M-Pesa/cash/card/bank, numbered receipts (print or WhatsApp). |
+| **Daily summary** | End-of-day sheet: totals per payment method, per-stylist services, commission and tips, and a list of M-Pesa codes to check against the till statement. |
+| **My earnings** | Every staff member sees their own services, commission and tips per month. |
+| **Reminders** | SMS (Africa's Talking) or WhatsApp confirmations, reminders and cancellations, with a delivery log. |
+| **Reports** | Revenue, staff commission and tips, top services, booking sources, payment methods, no-show rate, top clients. |
+| **Data export** | CSV export of clients, appointments and sales. No lock-in. |
+| **Onboarding** | 5-step setup checklist; opt-in starter menus (hair, barber, nails, spa). |
+| **Trial** | 14-day trial countdown. When it ends the salon is locked to the billing page (data kept, online booking paused) until an admin activates them. |
+
+### For you, the platform admin (`/admin`)
+- **Overview**: salon count, trials, trials ending soon, paying salons, usage.
+- **Salons & trials**: search and filter; **reset trial** (fresh N days), extend by N days, activate for 1/3/6/12 months, mark past-due/suspended/cancelled, internal notes, "open as owner" for support, delete with typed confirmation.
+- **Users**: every salon user; reset passwords, enable/disable, change roles.
+- **API keys**: Africa's Talking, WhatsApp, M-Pesa Daraja, messaging provider. Encrypted at rest (AES-256-GCM), shown masked, environment variables used as fallback.
+- **SEO & meta**: default title, title template, description, keywords, share image, X handle, Google verification, canonical URL; **per-page overrides** (including `/book/*` with a `{name}` placeholder) with a Google preview, noindex switch, and a sitemap and robots.txt generated from these settings.
+- **Platform settings**: name, trial length, price, support contacts (shown to locked salons), sign-up switch, admin accounts, password change.
+- **Audit log**: every admin action.
+
+## Design
+Bold plum/magenta/coral palette with lime accents, Bricolage Grotesque display type, **lucide** icons only. 3D effects (tilt-with-shine, flip cards, mouse-parallax depth layers, 3D reveals) follow the `3d-animations` skill in `.claude/skills/3d-animations` and respect `prefers-reduced-motion`.
 
 ## Stack
+Next.js 15 · PostgreSQL + Prisma 6 · Tailwind CSS 4 · framer-motion · lucide-react · jose/bcrypt sessions · Luxon.
 
-Next.js 15 (App Router, server actions) · PostgreSQL + Prisma 6 · Tailwind CSS 4 · JWT session cookie (jose + bcrypt) · Luxon for timezone-correct scheduling.
-
-## Run locally
+## Setup
 
 ```bash
-cp .env.example .env          # set DATABASE_URL and a long random AUTH_SECRET
+cp .env.example .env     # set DATABASE_URL, AUTH_SECRET (32+ chars), ENCRYPTION_KEY, APP_URL, CRON_SECRET
 npm install
-npx prisma db push            # create tables
-npm run db:seed               # optional demo salon
-npm run dev
+npx prisma db push
 ```
 
-Demo login: `demo@spadesk.app` / `password123`. Demo booking page: http://localhost:3000/book/demo-salon
+Create your platform admin account. Credentials come from the environment and are never stored in code:
 
-## Reminders
+```bash
+ADMIN_EMAIL=you@yourdomain.com ADMIN_PASSWORD='a-long-unique-password' ADMIN_NAME='Your Name' npm run admin:create
+```
 
-Schedule a call every 10–15 minutes (Vercel Cron, GitHub Actions, crontab):
+```bash
+npm run build && npm start   # or: npm run dev
+```
+
+Then sign in at `/admin/login` and fill in **Platform settings** (support WhatsApp/phone, price), **API keys** and **SEO**.
+
+The database starts empty: no demo salons, clients or bookings.
+
+## Reminders cron
+Call every 10–15 minutes:
 
 ```bash
 curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain/api/cron/reminders
 ```
 
-## Messaging providers
-
-Set `MESSAGE_PROVIDER`:
-
-- `console` (default): messages are logged and recorded, not delivered. Good for development.
-- `africastalking`: SMS. Set `AT_USERNAME`, `AT_API_KEY`, optional `AT_SENDER_ID` (use username `sandbox` to test).
-- `whatsapp`: Meta WhatsApp Cloud API. Set `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`. **Note:** business-initiated messages (reminders) must use pre-approved message templates; the current adapter sends free text, which only works inside the 24h customer-service window. Template support is a next step.
-
-## Multi-tenancy
-
-Every table carries `businessId`. Every page/action resolves the tenant from the signed-in user (`requireUser()` in `src/lib/auth.ts`) and scopes all queries by it. Records from other salons return 404.
-
-## Roadmap / next steps
-
-- M-Pesa STK Push (Daraja) so clients pay from their phone and payments reconcile automatically
-- WhatsApp message templates + inbound WhatsApp/Instagram inbox
-- Staff working hours, breaks and leave (currently business opening hours apply to everyone)
-- Deposits for online bookings to further cut no-shows
-- Product inventory & retail sales
-- Client photos (before/after), consent forms
-- Subscription billing for salons, multi-branch support
-- Rate limiting on public booking & login, password reset emails, audit log
-- Automated tests in CI
+## Notes and next steps
+- **Subscription payments** are activated manually by an admin. M-Pesa can't charge recurring subscriptions automatically; the next step is an STK-push "Pay now" on the billing page via Daraja, which activates the salon automatically.
+- **Deposits** are checked by staff (the client's M-Pesa code is shown, plus a "mark verified" button). Automatic verification needs each salon's own Daraja credentials.
+- **WhatsApp** reminders outside the 24h window need Meta-approved templates.
+- Planned: staff working hours and leave, Swahili, offline/PWA mode, inventory, Airtel Money, rate limiting and password-reset emails.

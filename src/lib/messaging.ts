@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "./db";
 import { fmtDateTime } from "./format";
+import { accessState, getCredential } from "./platform";
 import type { Appointment, Business, Channel, Client, Service, User } from "@prisma/client";
 
 /**
@@ -14,12 +15,14 @@ import type { Appointment, Business, Channel, Client, Service, User } from "@pri
 type SendResult = { ok: true; ref?: string } | { ok: false; error: string };
 
 async function sendAfricasTalking(to: string, body: string): Promise<SendResult> {
-  const params = new URLSearchParams({ username: process.env.AT_USERNAME!, to: `+${to}`, message: body });
-  if (process.env.AT_SENDER_ID) params.set("from", process.env.AT_SENDER_ID);
-  const host = process.env.AT_USERNAME === "sandbox" ? "api.sandbox.africastalking.com" : "api.africastalking.com";
+  const [username, apiKey, sender] = await Promise.all([getCredential("AT_USERNAME"), getCredential("AT_API_KEY"), getCredential("AT_SENDER_ID")]);
+  if (!username || !apiKey) return { ok: false, error: "Africa's Talking credentials not configured" };
+  const params = new URLSearchParams({ username, to: `+${to}`, message: body });
+  if (sender) params.set("from", sender);
+  const host = username === "sandbox" ? "api.sandbox.africastalking.com" : "api.africastalking.com";
   const res = await fetch(`https://${host}/version1/messaging`, {
     method: "POST",
-    headers: { apiKey: process.env.AT_API_KEY!, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+    headers: { apiKey, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
     body: params,
   });
   const json = await res.json().catch(() => null);
@@ -29,9 +32,11 @@ async function sendAfricasTalking(to: string, body: string): Promise<SendResult>
 }
 
 async function sendWhatsApp(to: string, body: string): Promise<SendResult> {
-  const res = await fetch(`https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+  const [token, phoneId] = await Promise.all([getCredential("WHATSAPP_TOKEN"), getCredential("WHATSAPP_PHONE_NUMBER_ID")]);
+  if (!token || !phoneId) return { ok: false, error: "WhatsApp credentials not configured" };
+  const res = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ messaging_product: "whatsapp", to, type: "text", text: { body } }),
   });
   const json = await res.json().catch(() => null);
@@ -41,7 +46,7 @@ async function sendWhatsApp(to: string, body: string): Promise<SendResult> {
 
 async function deliver(to: string, body: string): Promise<SendResult> {
   try {
-    switch (process.env.MESSAGE_PROVIDER) {
+    switch (await getCredential("MESSAGE_PROVIDER")) {
       case "africastalking":
         return await sendAfricasTalking(to, body);
       case "whatsapp":
@@ -88,11 +93,12 @@ export function appointmentText(kind: "CONFIRMATION" | "REMINDER" | "CANCELLATIO
   const when = fmtDateTime(a.startAt, b.timezone);
   const first = a.client.name.split(" ")[0];
   const withWho = a.staff ? ` with ${a.staff.name.split(" ")[0]}` : "";
+  const manage = `${process.env.APP_URL ?? ""}/b/${a.manageToken}`;
   switch (kind) {
     case "CONFIRMATION":
-      return `Hi ${first}, your ${a.service.name}${withWho} at ${b.name} is booked for ${when}. ${b.phone ? `Call ${b.phone} to change.` : ""}`.trim();
+      return `Hi ${first}, your ${a.service.name}${withWho} at ${b.name} is booked for ${when}. Change or cancel: ${manage}`;
     case "REMINDER":
-      return `Reminder: ${first}, see you at ${b.name} on ${when} for ${a.service.name}${withWho}.${b.address ? ` ${b.address}.` : ""}`;
+      return `Reminder: ${first}, see you at ${b.name} on ${when} for ${a.service.name}${withWho}.${b.address ? ` ${b.address}.` : ""} Can't make it? ${manage}`;
     case "CANCELLATION":
       return `Hi ${first}, your ${a.service.name} at ${b.name} on ${when} has been cancelled. ${b.phone ? `Call ${b.phone} to rebook.` : ""}`.trim();
   }
@@ -117,7 +123,7 @@ export async function notifyAppointment(kind: "CONFIRMATION" | "REMINDER" | "CAN
 
 /** Send due reminders for all businesses. Called by /api/cron/reminders. */
 export async function sendDueReminders() {
-  const businesses = await db.business.findMany({ select: { id: true, reminderHours: true } });
+  const businesses = (await db.business.findMany({ select: { id: true, reminderHours: true, status: true, trialEndsAt: true, paidUntil: true } })).filter((b) => accessState(b).ok);
   let sent = 0;
   for (const b of businesses) {
     const due = await db.appointment.findMany({

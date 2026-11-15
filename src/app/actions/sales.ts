@@ -32,6 +32,7 @@ const SaleInput = z.object({
   }),
   discount: z.coerce.number().min(0).default(0),
   tip: z.coerce.number().min(0).default(0),
+  tipStaffId: z.string().optional(),
   method: z.enum(["CASH", "MPESA", "CARD", "BANK", "OTHER"]),
   reference: z.string().trim().optional(),
 });
@@ -42,16 +43,17 @@ export async function createSale(_: SaleState, fd: FormData): Promise<SaleState>
   const p = SaleInput.safeParse(Object.fromEntries(fd));
   if (!p.success) return { error: p.error.issues[0].message };
   const d = p.data;
-  if (d.method === "MPESA" && !d.reference) return { error: "Enter the M-Pesa confirmation code" };
 
   let clientId = d.clientId || null;
   let appointmentId: string | null = null;
+  let depositApplied = 0;
   if (d.appointmentId) {
     const a = await db.appointment.findFirst({ where: { id: d.appointmentId, businessId: b.id }, include: { sale: true } });
     if (!a) return { error: "Appointment not found" };
     if (a.sale) return { error: "This appointment has already been paid" };
     appointmentId = a.id;
     clientId = a.clientId;
+    depositApplied = Number(a.depositAmount);
   } else if (!clientId && d.clientPhone) {
     try {
       clientId = (await upsertClient(b, d.clientName || "Walk-in client", d.clientPhone)).id;
@@ -70,7 +72,11 @@ export async function createSale(_: SaleState, fd: FormData): Promise<SaleState>
 
   const subtotal = d.items.reduce((t, i) => t + i.unitPrice * i.quantity, 0);
   const discount = Math.min(d.discount, subtotal);
+  // total = full value of the visit; the deposit was collected earlier and is recorded separately.
   const total = subtotal - discount + d.tip;
+  if (d.method === "MPESA" && total - depositApplied <= 0) d.reference = d.reference || "DEPOSIT";
+  if (d.method === "MPESA" && !d.reference) return { error: "Enter the M-Pesa confirmation code" };
+  const tipStaffId = d.tip > 0 && d.tipStaffId ? (await db.user.findFirst({ where: { id: d.tipStaffId, businessId: b.id }, select: { id: true } }))?.id ?? null : null;
   // Commission is on the discounted service value, shared proportionally across items.
   const factor = subtotal > 0 ? (subtotal - discount) / subtotal : 0;
 
@@ -87,6 +93,8 @@ export async function createSale(_: SaleState, fd: FormData): Promise<SaleState>
             subtotal,
             discount,
             tip: d.tip,
+            tipStaffId,
+            depositApplied,
             total,
             method: d.method,
             reference: d.reference?.toUpperCase() || null,

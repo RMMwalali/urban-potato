@@ -149,8 +149,27 @@ export async function saveSettings(fd: FormData) {
       reminderHours: Number(str(fd, "reminderHours")) || 24,
       bookingEnabled: fd.get("bookingEnabled") === "on",
       messageChannel: str(fd, "messageChannel") === "WHATSAPP" ? "WHATSAPP" : "SMS",
+      mpesaType: ["TILL", "PAYBILL", "POCHI", "PHONE"].includes(str(fd, "mpesaType")) ? str(fd, "mpesaType") : null,
+      mpesaNumber: opt(fd, "mpesaNumber"),
+      mpesaAccount: opt(fd, "mpesaAccount"),
+      depositPercent: Math.max(0, Math.min(100, Number(str(fd, "depositPercent")) || 0)),
+      cancelPolicyHours: Math.max(0, Number(str(fd, "cancelPolicyHours")) || 0),
+      cancelPolicyText: opt(fd, "cancelPolicyText"),
+      bufferMinutes: Math.max(0, Math.min(120, Number(str(fd, "bufferMinutes")) || 0)),
     },
   });
   revalidatePath("/app", "layout");
   redirect("/app/settings?saved=1");
+}
+
+export async function addServiceTemplate(key: string) {
+  const user = await requireUser(MANAGERS);
+  const { SERVICE_TEMPLATES } = await import("@/lib/templates");
+  const t = SERVICE_TEMPLATES[key];
+  if (!t) return;
+  const existing = new Set((await db.service.findMany({ where: { businessId: user.businessId }, select: { name: true } })).map((s) => s.name.toLowerCase()));
+  await db.service.createMany({
+    data: t.items.filter(([n]) => !existing.has(n.toLowerCase())).map(([name, durationMin, price]) => ({ businessId: user.businessId, name, durationMin, price, category: t.label })),
+  });
+  revalidatePath("/app/services");
 }

@@ -1,5 +1,7 @@
 import { MANAGERS, requireUser } from "@/lib/auth";
 import { saveSettings } from "@/app/actions/manage";
+import { Settings, Wallet } from "lucide-react";
+import { PageHeader } from "@/components/ui";
 
 export const metadata = { title: "Settings" };
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -12,12 +14,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
 
   return (
     <form action={saveSettings} className="max-w-3xl space-y-5">
-      <h1 className="page-title">Settings</h1>
+      <PageHeader title="Settings" icon={Settings} />
       {sp.saved && <p className="card bg-emerald-50 p-3 text-sm text-emerald-800">Settings saved.</p>}
       {sp.error === "slug" && <p className="card bg-rose-50 p-3 text-sm text-rose-800">That booking link is already taken. Choose another.</p>}
 
       <section className="card grid gap-3 p-5 sm:grid-cols-2">
-        <h2 className="font-semibold sm:col-span-2">Business</h2>
+        <h2 className="section-title sm:col-span-2">Business</h2>
         <div><label className="label">Name</label><input name="name" defaultValue={b.name} className="input" required /></div>
         <div><label className="label">Phone</label><input name="phone" defaultValue={b.phone ?? ""} className="input" /></div>
         <div><label className="label">Email</label><input name="email" type="email" defaultValue={b.email ?? ""} className="input" /></div>
@@ -28,7 +30,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </section>
 
       <section className="card grid gap-3 p-5 sm:grid-cols-2">
-        <h2 className="font-semibold sm:col-span-2">Opening hours & online booking</h2>
+        <h2 className="section-title sm:col-span-2">Opening hours & online booking</h2>
         <div><label className="label">Opens</label><input type="time" name="openTime" defaultValue={b.openTime} className="input" /></div>
         <div><label className="label">Closes</label><input type="time" name="closeTime" defaultValue={b.closeTime} className="input" /></div>
         <div className="sm:col-span-2">
@@ -52,7 +54,33 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </section>
 
       <section className="card grid gap-3 p-5 sm:grid-cols-2">
-        <h2 className="font-semibold sm:col-span-2">Reminders & messages</h2>
+        <h2 className="section-title flex items-center gap-2 sm:col-span-2"><Wallet className="h-5 w-5 text-brand-600" /> M-Pesa & deposits</h2>
+        <p className="text-sm text-stone-500 sm:col-span-2">Payments go straight to your own M-Pesa. We never hold your money. Deposits cut no-shows: clients pay when booking online and enter the code.</p>
+        <div>
+          <label className="label">Receive payments on</label>
+          <select name="mpesaType" defaultValue={b.mpesaType ?? ""} className="input">
+            <option value="">Not set</option><option value="TILL">Buy Goods Till</option><option value="PAYBILL">Paybill</option><option value="POCHI">Pochi la Biashara</option><option value="PHONE">Send Money (phone)</option>
+          </select>
+        </div>
+        <div><label className="label">Till / paybill / phone number</label><input name="mpesaNumber" defaultValue={b.mpesaNumber ?? ""} className="input" /></div>
+        <div><label className="label">Paybill account (optional)</label><input name="mpesaAccount" defaultValue={b.mpesaAccount ?? ""} className="input" /></div>
+        <div>
+          <label className="label">Online booking deposit</label>
+          <select name="depositPercent" defaultValue={b.depositPercent} className="input">
+            {[0, 10, 20, 25, 30, 50, 100].map((p) => <option key={p} value={p}>{p === 0 ? "No deposit" : `${p}% of service price`}</option>)}
+          </select>
+        </div>
+        <div><label className="label">Clients can cancel online until</label>
+          <select name="cancelPolicyHours" defaultValue={b.cancelPolicyHours} className="input">{[0, 2, 6, 12, 24, 48].map((h) => <option key={h} value={h}>{h === 0 ? "Any time" : `${h} hours before`}</option>)}</select>
+        </div>
+        <div><label className="label">Clean-up time between bookings</label>
+          <select name="bufferMinutes" defaultValue={b.bufferMinutes} className="input">{[0, 5, 10, 15, 20, 30].map((m) => <option key={m} value={m}>{m === 0 ? "None" : `${m} minutes`}</option>)}</select>
+        </div>
+        <div className="sm:col-span-2"><label className="label">Cancellation policy shown to clients (optional)</label><textarea name="cancelPolicyText" defaultValue={b.cancelPolicyText ?? ""} rows={2} className="input" placeholder="Leave blank to use the standard wording" /></div>
+      </section>
+
+      <section className="card grid gap-3 p-5 sm:grid-cols-2">
+        <h2 className="section-title sm:col-span-2">Reminders & messages</h2>
         <div>
           <label className="label">Channel</label>
           <select name="messageChannel" defaultValue={b.messageChannel} className="input">

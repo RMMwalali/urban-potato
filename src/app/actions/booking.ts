@@ -5,8 +5,9 @@ import { getSlots } from "@/lib/availability";
 import { notifyAppointment } from "@/lib/messaging";
 import { fmtDateTime } from "@/lib/format";
 import { upsertClient } from "./appointments";
+import { accessState } from "@/lib/platform";
 
-export type BookState = { error?: string; done?: { when: string; service: string; staff: string | null } } | undefined;
+export type BookState = { error?: string; done?: { when: string; service: string; staff: string | null; manage: string; deposit: number } } | undefined;
 
 const Input = z.object({
   slug: z.string(),
@@ -16,6 +17,7 @@ const Input = z.object({
   name: z.string().trim().min(2, "Enter your name"),
   phone: z.string().trim().min(9, "Enter your phone number"),
   notes: z.string().trim().max(500).optional(),
+  depositRef: z.string().trim().optional(),
   website: z.string().optional(), // honeypot
 });
 
@@ -26,9 +28,13 @@ export async function publicBook(_: BookState, fd: FormData): Promise<BookState>
   if (d.website) return { error: "Something went wrong" };
 
   const business = await db.business.findUnique({ where: { slug: d.slug } });
-  if (!business || !business.bookingEnabled) return { error: "Online booking is not available" };
+  if (!business || !business.bookingEnabled || !accessState(business).ok) return { error: "Online booking is not available" };
   const service = await db.service.findFirst({ where: { id: d.serviceId, businessId: business.id, active: true, onlineBooking: true } });
   if (!service) return { error: "Service not available" };
+
+  const deposit = business.depositPercent > 0 && business.mpesaNumber ? Math.round((Number(service.price) * business.depositPercent) / 100) : 0;
+  const depositRef = d.depositRef?.toUpperCase().replace(/\s/g, "");
+  if (deposit > 0 && !/^[A-Z0-9]{8,12}$/.test(depositRef ?? "")) return { error: "Enter the M-Pesa confirmation code for your deposit (e.g. SKF3H7XQ2P)" };
 
   const start = new Date(d.start);
   if (isNaN(start.getTime())) return { error: "Choose a time" };
@@ -57,9 +63,47 @@ export async function publicBook(_: BookState, fd: FormData): Promise<BookState>
       price: service.price,
       source: "ONLINE",
       notes: d.notes || null,
+      depositAmount: deposit,
+      depositRef: deposit > 0 ? depositRef : null,
     },
     include: { staff: true },
   });
   await notifyAppointment("CONFIRMATION", appt.id);
-  return { done: { when: fmtDateTime(start, business.timezone), service: service.name, staff: appt.staff?.name ?? null } };
+  return { done: { when: fmtDateTime(start, business.timezone), service: service.name, staff: appt.staff?.name ?? null, manage: `/b/${appt.manageToken}`, deposit } };
+}
+
+/* ---------- Client self-service (link in confirmation/reminder) ---------- */
+
+async function byToken(token: string) {
+  return db.appointment.findUnique({ where: { manageToken: token }, include: { business: true, service: true } });
+}
+
+export async function clientCancel(token: string): Promise<BookState> {
+  const a = await byToken(token);
+  if (!a || !["BOOKED", "CONFIRMED"].includes(a.status)) return { error: "This appointment can no longer be changed." };
+  if (a.startAt.getTime() - Date.now() < a.business.cancelPolicyHours * 3600_000)
+    return { error: `Online cancellation closes ${a.business.cancelPolicyHours}h before your appointment. Please call the salon.` };
+  await db.appointment.update({ where: { id: a.id }, data: { status: "CANCELLED", cancelledBy: "CLIENT" } });
+  await notifyAppointment("CANCELLATION", a.id);
+  return undefined;
+}
+
+export async function clientReschedule(_: BookState, fd: FormData): Promise<BookState> {
+  const a = await byToken(String(fd.get("token")));
+  if (!a || !["BOOKED", "CONFIRMED"].includes(a.status)) return { error: "This appointment can no longer be changed." };
+  if (a.startAt.getTime() - Date.now() < a.business.cancelPolicyHours * 3600_000)
+    return { error: `Online changes close ${a.business.cancelPolicyHours}h before your appointment. Please call the salon.` };
+  const start = new Date(String(fd.get("start")));
+  if (isNaN(start.getTime())) return { error: "Choose a new time" };
+  const isoDate = new Intl.DateTimeFormat("en-CA", { timeZone: a.business.timezone }).format(start);
+  const slots = await getSlots({ business: a.business, serviceId: a.serviceId, isoDate, staffId: a.staffId, excludeAppointmentId: a.id });
+  const slot = slots.find((s) => s.start === start.toISOString());
+  if (!slot) return { error: "Sorry, that time isn't available any more." };
+  const updated = await db.appointment.update({
+    where: { id: a.id },
+    data: { startAt: start, endAt: new Date(start.getTime() + a.service.durationMin * 60000), staffId: a.staffId ?? slot.staffIds[0], reminderSentAt: null },
+    include: { staff: true },
+  });
+  await notifyAppointment("CONFIRMATION", a.id);
+  return { done: { when: fmtDateTime(start, a.business.timezone), service: a.service.name, staff: updated.staff?.name ?? null, manage: `/b/${a.manageToken}`, deposit: 0 } };
 }

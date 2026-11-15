@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { login } from "@/app/actions/auth";
 import { AuthForm } from "@/components/AuthForm";
-export const metadata = { title: "Log in" };
+import { pageMetadata } from "@/lib/seo";
+
+export const generateMetadata = () => pageMetadata("/login", { title: "Log in", description: "Log in to your salon dashboard." });
+
 export default function LoginPage() {
   return (
     <>
-      <h1 className="mb-5 text-lg font-semibold">Log in</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">Welcome back</h1>
+      <p className="mt-1 mb-8 text-stone-500">Log in to your salon dashboard.</p>
       <AuthForm
         action={login}
         submit="Log in"
@@ -14,8 +18,8 @@ export default function LoginPage() {
           { name: "password", label: "Password", type: "password", autoComplete: "current-password" },
         ]}
       />
-      <p className="mt-5 text-center text-sm text-stone-600">
-        New here? <Link href="/signup" className="font-medium text-brand-700">Create a salon account</Link>
+      <p className="mt-6 text-sm text-stone-600">
+        New here? <Link href="/signup" className="font-semibold text-brand-600">Start a free trial</Link>
       </p>
     </>
   );

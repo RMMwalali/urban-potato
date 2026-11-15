@@ -1,11 +1,12 @@
 "use client";
+import { keepValues } from "./useKeepForm";
 import { useActionState } from "react";
 import { reschedule, type ApptState } from "@/app/actions/appointments";
 
 export function RescheduleForm(props: { id: string; date: string; time: string; staffId: string; staff: { id: string; name: string }[] }) {
   const [state, action, pending] = useActionState<ApptState, FormData>(reschedule, undefined);
   return (
-    <form action={action} className="space-y-3">
+    <form onSubmit={keepValues(action)} className="space-y-3">
       <input type="hidden" name="id" value={props.id} />
       <div className="grid grid-cols-2 gap-2">
         <input type="date" name="date" defaultValue={props.date} className="input" required />
