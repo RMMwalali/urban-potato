@@ -6,6 +6,7 @@ import { dayRange, fmtTime, money, num, STATUS_LABEL, todayIso } from "@/lib/for
 import { Empty, Stat } from "@/components/ui";
 import { Reveal } from "@/components/motion/Reveal";
 import { CopyButton } from "@/components/CopyButton";
+import { bookingBlockers } from "@/lib/booking-status";
 
 export const metadata = { title: "Dashboard" };
 
@@ -28,6 +29,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   ]);
 
   const active = appts.filter((a) => a.status !== "CANCELLED");
+  const blockers = await bookingBlockers(b);
   const bookingUrl = `${appUrl()}/book/${b.slug}`;
   const isManager = ["OWNER", "MANAGER"].includes(user.role);
   const steps = [
@@ -123,7 +125,14 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             <CopyButton text={bookingUrl} className="btn btn-sm border-paper bg-paper text-ink hover:bg-transparent hover:text-paper">Copy link</CopyButton>
             <a className="btn btn-sm border-paper text-paper hover:bg-paper hover:text-ink" target="_blank" href={`https://wa.me/?text=${encodeURIComponent(`Book your next appointment at ${b.name}: ${bookingUrl}`)}`}>Share on WhatsApp</a>
           </div>
-          {!b.bookingEnabled && <p className="mt-4 text-[13px] text-paper/70">Online booking is switched off in Settings.</p>}
+          {blockers.length > 0 && (
+            <div className="mt-6 border-t border-paper/30 pt-4">
+              <p className="label-caps text-[#f9b4d3]">Not taking bookings yet</p>
+              <ul className="mt-2 space-y-2 text-[14px]">
+                {blockers.map((x) => <li key={x.reason}>{x.reason} <Link href={x.href} className="underline decoration-1 underline-offset-4 hover:opacity-60">{x.fix}</Link></li>)}
+              </ul>
+            </div>
+          )}
         </section>
       </div>
     </div>
