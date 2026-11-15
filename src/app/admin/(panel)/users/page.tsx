@@ -16,8 +16,8 @@ export default async function AdminUsers({ searchParams }: { searchParams: Promi
   return (
     <div>
       <PageHeader title="Users" sub="Everyone who can log in to a salon account">
-        <form className="relative">
-                    <input name="q" defaultValue={q} placeholder="Name, email or salon…" className="input w-72 pl-9" />
+        <form className="relative w-full sm:w-auto">
+                    <input name="q" defaultValue={q} placeholder="Name, email or salon…" className="input w-full sm:w-72" />
         </form>
       </PageHeader>
       <div className="card overflow-x-auto">

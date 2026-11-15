@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { TitleIcon } from "@/components/ui";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { displayPhone, fmtDateTime } from "@/lib/format";
@@ -17,9 +16,9 @@ export default async function MessagesPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="page-title flex items-center gap-3"><TitleIcon />Messages</h1>
+        <h1 className="page-title">Messages</h1>
         <p className="text-sm text-stone-500">
-          Every confirmation, reminder and message sent to clients. Reminders go out automatically {b.reminderHours}h before each appointment.
+          Reminders go out {b.reminderHours}h before each appointment.
           {failed > 0 && <span className="text-rose-700"> {failed} failed recently.</span>}
         </p>
       </div>
@@ -36,7 +35,7 @@ export default async function MessagesPage() {
                   <span className="block text-xs text-stone-500">{displayPhone(m.to)} · {m.channel}</span>
                 </td>
                 <td className="text-xs">{m.kind}</td>
-                <td className="max-w-md">{m.body}</td>
+                <td className="max-w-md [overflow-wrap:anywhere]">{m.body}</td>
                 <td>
                   <span className={`badge ${m.status === "SENT" ? "bg-emerald-100 text-emerald-800" : m.status === "FAILED" ? "bg-rose-100 text-rose-800" : "bg-stone-100"}`}>{m.status}</span>
                   {m.error && <span className="block text-xs text-rose-700">{m.error}</span>}

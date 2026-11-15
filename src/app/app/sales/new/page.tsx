@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { TitleIcon } from "@/components/ui";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { num } from "@/lib/format";
@@ -24,7 +23,7 @@ export default async function NewSale({ searchParams }: { searchParams: Promise<
 
   return (
     <div className="space-y-5">
-      <h1 className="page-title flex items-center gap-3"><TitleIcon />{appt ? "Check out appointment" : "Quick sale"}</h1>
+      <h1 className="page-title">{appt ? "Check out appointment" : "Quick sale"}</h1>
       <CheckoutForm
         currency={b.currency}
         paymentMethods={b.paymentMethods}

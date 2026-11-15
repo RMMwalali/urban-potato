@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const items = [
   { href: "/app", label: "Dashboard" },
@@ -19,19 +20,34 @@ const items = [
 
 export function Nav({ isManager }: { isManager: boolean }) {
   const path = usePathname();
+  const [open, setOpen] = useState(false);
+  useEffect(() => setOpen(false), [path]);
+  const visible = items.filter((i) => !i.manager || isManager);
+  const isActive = (href: string) => (href === "/app" ? path === "/app" : path.startsWith(href));
+  const current = visible.find((i) => isActive(i.href))?.label ?? "Menu";
+
   return (
-    <nav className="flex gap-x-5 gap-y-1 overflow-x-auto px-5 pb-4 md:flex-col md:overflow-visible md:pb-0">
-      {items
-        .filter((i) => !i.manager || isManager)
-        .map(({ href, label }) => {
-          const active = href === "/app" ? path === "/app" : path.startsWith(href);
-          return (
-            <Link key={href} href={href} className={`label-caps group flex shrink-0 items-center gap-2 py-1.5 transition-colors duration-500 ${active ? "text-ink" : "text-muted hover:text-ink"}`}>
-              <span className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${active ? "bg-pink" : "bg-transparent group-hover:bg-ink/30"}`} />
-              {label}
-            </Link>
-          );
-        })}
-    </nav>
+    <>
+      {/* Phones: one row with the current page; tap to open the full list */}
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className="mx-5 mb-4 flex w-[calc(100%-2.5rem)] items-center justify-between border-y border-ink py-3 md:hidden">
+        <span className="label-caps flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-pink" />{current}</span>
+        <span className="label-caps">{open ? "Close" : "Menu"}</span>
+      </button>
+      <nav className={`${open ? "block" : "hidden"} px-5 pb-4 md:block md:pb-0`}>
+        <ul className="md:space-y-0">
+          {visible.map(({ href, label }) => {
+            const active = isActive(href);
+            return (
+              <li key={href} className="border-b border-ink/15 md:border-0">
+                <Link href={href} className={`label-caps group flex items-center gap-2 py-3 transition-colors duration-500 md:py-1.5 ${active ? "text-ink" : "text-muted hover:text-ink"}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${active ? "bg-pink" : "bg-transparent group-hover:bg-ink/30"}`} />
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </>
   );
 }

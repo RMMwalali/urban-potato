@@ -1,5 +1,4 @@
 import { DateTime } from "luxon";
-import { TitleIcon } from "@/components/ui";
 import { db } from "@/lib/db";
 import { MANAGERS, requireUser } from "@/lib/auth";
 import { dayRange, METHOD_LABEL, money, num, SOURCE_LABEL, todayIso } from "@/lib/format";
@@ -66,23 +65,23 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="page-title flex items-center gap-3"><TitleIcon />Reports</h1>
-        <form className="flex items-end gap-2">
-          <div><label className="label">From</label><input type="date" name="from" defaultValue={from} className="input" /></div>
-          <div><label className="label">To</label><input type="date" name="to" defaultValue={to} className="input" /></div>
+        <h1 className="page-title">Reports</h1>
+        <form className="flex w-full flex-wrap items-end gap-3 sm:w-auto">
+          <div className="min-w-[130px] flex-1"><label className="label">From</label><input type="date" name="from" defaultValue={from} className="input" /></div>
+          <div className="min-w-[130px] flex-1"><label className="label">To</label><input type="date" name="to" defaultValue={to} className="input" /></div>
           <button className="btn-secondary">Update</button>
         </form>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="card p-4"><p className="text-xs text-stone-500">Revenue</p><p className="text-xl font-semibold">{money(revenue, b.currency)}</p><p className="text-xs text-stone-500">incl. {money(tips, b.currency)} tips</p></div>
-        <div className="card p-4"><p className="text-xs text-stone-500">Sales</p><p className="text-xl font-semibold">{sales.length}</p><p className="text-xs text-stone-500">avg {money(Math.round(avg), b.currency)}</p></div>
-        <div className="card p-4"><p className="text-xs text-stone-500">Appointments</p><p className="text-xl font-semibold">{appts.length}</p><p className="text-xs text-stone-500">{appts.filter((a) => a.status === "CANCELLED").length} cancelled</p></div>
-        <div className="card p-4"><p className="text-xs text-stone-500">No-show rate</p><p className={`text-xl font-semibold ${noShowRate > 10 ? "text-rose-700" : ""}`}>{noShowRate.toFixed(1)}%</p><p className="text-xs text-stone-500">reminders help bring this down</p></div>
+        <div className="border-t-2 border-ink py-4 pr-3"><p className="label-caps text-muted">Revenue</p><p className="stat-value mt-2">{money(revenue, b.currency)}</p><p className="text-[13px] text-muted">incl. {money(tips, b.currency)} tips</p></div>
+        <div className="border-t-2 border-ink py-4 pr-3"><p className="label-caps text-muted">Sales</p><p className="stat-value mt-2">{sales.length}</p><p className="text-[13px] text-muted">avg {money(Math.round(avg), b.currency)}</p></div>
+        <div className="border-t-2 border-ink py-4 pr-3"><p className="label-caps text-muted">Appointments</p><p className="stat-value mt-2">{appts.length}</p><p className="text-[13px] text-muted">{appts.filter((a) => a.status === "CANCELLED").length} cancelled</p></div>
+        <div className="border-t-2 border-ink py-4 pr-3"><p className="label-caps text-muted">No-show rate</p><p className={`stat-value mt-2 ${noShowRate > 10 ? "text-rose-700" : ""}`}>{noShowRate.toFixed(1)}%</p></div>
       </div>
 
       <section className="card p-5">
-        <h2 className="mb-4 font-semibold">Daily revenue</h2>
+        <h2 className="section-title mb-4">Daily revenue</h2>
         <div className="flex h-40 items-end gap-0.5">
           {days.map((d) => (
             <div key={d.label} className="group relative flex-1">
@@ -98,23 +97,23 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
 
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="card p-5">
-          <h2 className="mb-4 font-semibold">Staff performance & commission</h2>
+          <h2 className="section-title mb-4">Staff performance & commission</h2>
           <Bars currency={b.currency} rows={byStaff.map(([id, v]) => ({ label: staffName(id), value: v, sub: `· ${money(commission.get(id) ?? 0, b.currency)} comm. · ${money(tipsBy.get(id) ?? 0, b.currency)} tips` }))} />
         </section>
         <section className="card p-5">
-          <h2 className="mb-4 font-semibold">Top services</h2>
+          <h2 className="section-title mb-4">Top services</h2>
           <Bars currency={b.currency} rows={sum(items, (i) => i.name, (i) => num(i.unitPrice) * i.quantity).slice(0, 8).map(([label, value]) => ({ label, value }))} />
         </section>
         <section className="card p-5">
-          <h2 className="mb-4 font-semibold">Where bookings come from</h2>
+          <h2 className="section-title mb-4">Where bookings come from</h2>
           <Bars rows={sum(appts, (a) => a.source, () => 1).map(([k, v]) => ({ label: SOURCE_LABEL[k], value: v }))} />
         </section>
         <section className="card p-5">
-          <h2 className="mb-4 font-semibold">Payment methods</h2>
+          <h2 className="section-title mb-4">Payment methods</h2>
           <Bars currency={b.currency} rows={sum(sales.flatMap((s) => s.payments), (p) => p.method, (p) => num(p.amount)).map(([k, v]) => ({ label: METHOD_LABEL[k], value: v }))} />
         </section>
         <section className="card p-5 lg:col-span-2">
-          <h2 className="mb-4 font-semibold">Top clients</h2>
+          <h2 className="section-title mb-4">Top clients</h2>
           <Bars currency={b.currency} rows={sum(sales, (s) => s.client?.name ?? null, (s) => num(s.total)).slice(0, 10).map(([label, value]) => ({ label, value }))} />
         </section>
       </div>

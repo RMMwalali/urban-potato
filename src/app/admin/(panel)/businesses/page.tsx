@@ -33,8 +33,8 @@ export default async function BusinessesPage({ searchParams }: { searchParams: P
   return (
     <div>
       <PageHeader title="Salons & trials" sub={`${all.length} salons`}>
-        <form className="relative">
-                    <input name="q" defaultValue={q} placeholder="Name, link, email, phone…" className="input w-72 pl-9" />
+        <form className="relative w-full sm:w-auto">
+                    <input name="q" defaultValue={q} placeholder="Name, link, email, phone…" className="input w-full sm:w-72" />
           <input type="hidden" name="status" value={status} />
         </form>
       </PageHeader>

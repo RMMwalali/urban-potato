@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { TitleIcon } from "@/components/ui";
 import { DateTime } from "luxon";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -31,13 +30,13 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="page-title flex items-center gap-3"><TitleIcon />Sales</h1>
+          <h1 className="page-title">Sales</h1>
           <p className="text-sm text-stone-500">{label}</p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
-          <form className="flex items-end gap-2">
-            <div><label className="label">From</label><input type="date" name="from" defaultValue={from} className="input" /></div>
-            <div><label className="label">To</label><input type="date" name="to" defaultValue={to} className="input" /></div>
+          <form className="flex w-full flex-wrap items-end gap-3 sm:w-auto">
+            <div className="min-w-[130px] flex-1"><label className="label">From</label><input type="date" name="from" defaultValue={from} className="input" /></div>
+            <div className="min-w-[130px] flex-1"><label className="label">To</label><input type="date" name="to" defaultValue={to} className="input" /></div>
             <button className="btn-secondary">Show</button>
           </form>
           <Link href={`/app/sales/day?date=${to}`} className="btn-secondary">Daily summary</Link>
@@ -47,9 +46,9 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="card p-4"><p className="text-xs text-stone-500">Total</p><p className="text-xl font-semibold">{money(total, b.currency)}</p><p className="text-xs text-stone-500">{sales.length} sales</p></div>
+        <div className="border-t-2 border-ink py-4 pr-3"><p className="label-caps text-muted">Total</p><p className="stat-value mt-2">{money(total, b.currency)}</p><p className="text-[13px] text-muted">{sales.length} sales</p></div>
         {[...byMethod].map(([m, v]) => (
-          <div key={m} className="card p-4"><p className="text-xs text-stone-500">{METHOD_LABEL[m]}</p><p className="text-xl font-semibold">{money(v, b.currency)}</p></div>
+          <div key={m} className="card p-4"><p className="text-[13px] text-muted">{METHOD_LABEL[m]}</p><p className="stat-value mt-2">{money(v, b.currency)}</p></div>
         ))}
       </div>
 

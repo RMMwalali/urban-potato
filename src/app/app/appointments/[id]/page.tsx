@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { TitleIcon } from "@/components/ui";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -33,7 +32,7 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
       <Link href={`/app/calendar?date=${inTz(a.startAt, tz).toISODate()}`} className="text-sm text-stone-500">← Calendar</Link>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="page-title flex items-center gap-3"><TitleIcon />{a.service.name}</h1>
+          <h1 className="page-title">{a.service.name}</h1>
           <p className="text-stone-600">
             {fmtDate(a.startAt, tz)}, {fmtTime(a.startAt, tz)}–{fmtTime(a.endAt, tz)} · {a.staff?.name ?? "Unassigned"}
           </p>
@@ -44,7 +43,7 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
       <div className="grid gap-5 md:grid-cols-3">
         <div className="space-y-5 md:col-span-2">
           <section className="card p-5">
-            <div className="flex items-start justify-between">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <Link href={`/app/clients/${a.client.id}`} className="text-lg font-semibold hover:text-brand-700">{a.client.name}</Link>
                 <p className="text-sm text-stone-600">{displayPhone(a.client.phone)}</p>
@@ -75,7 +74,7 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
           </section>
 
           <section className="card p-5">
-            <h2 className="mb-3 font-semibold">Payment</h2>
+            <h2 className="section-title mb-3">Payment</h2>
             {a.sale ? (
               <p className="text-sm">
                 Paid {money(a.sale.total, b.currency)}.{" "}
@@ -89,15 +88,15 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
           </section>
 
           <section className="card p-5">
-            <h2 className="mb-3 font-semibold">Messages</h2>
+            <h2 className="section-title mb-3">Messages</h2>
             {messages.length === 0 ? (
               <p className="text-sm text-stone-500">No messages sent for this appointment.</p>
             ) : (
               <ul className="space-y-2 text-sm">
                 {messages.map((m) => (
                   <li key={m.id} className="rounded-none bg-stone-50 px-3 py-2">
-                    <p className="text-xs text-stone-500">{m.kind} · {m.channel} · {fmtDateTime(m.createdAt, tz)} · {m.status}{m.error ? `: ${m.error}` : ""}</p>
-                    <p>{m.body}</p>
+                    <p className="text-[13px] text-muted">{m.kind} · {m.channel} · {fmtDateTime(m.createdAt, tz)} · {m.status}{m.error ? `: ${m.error}` : ""}</p>
+                    <p className="[overflow-wrap:anywhere]">{m.body}</p>
                   </li>
                 ))}
               </ul>
@@ -108,7 +107,7 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
         <aside className="space-y-5">
           {open && (
             <section className="card space-y-2 p-4">
-              <h2 className="mb-1 text-sm font-semibold">Update status</h2>
+              <h2 className="section-title mb-1">Update status</h2>
               {a.status === "BOOKED" && <form action={action("CONFIRMED")}><button className="btn-secondary w-full">Mark confirmed</button></form>}
               {a.status !== "ARRIVED" && <form action={action("ARRIVED")}><button className="btn-secondary w-full">Client arrived</button></form>}
               <form action={action("COMPLETED")}><button className="btn-secondary w-full">Mark completed</button></form>
@@ -124,7 +123,7 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
           )}
           {open && (
             <section className="card p-4">
-              <h2 className="mb-3 text-sm font-semibold">Reschedule</h2>
+              <h2 className="section-title mb-3">Reschedule</h2>
               <RescheduleForm
                 id={a.id}
                 date={inTz(a.startAt, tz).toISODate()!}

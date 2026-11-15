@@ -32,7 +32,7 @@ export default async function ApiKeysPage() {
                   <li key={name} className="flex flex-wrap items-center gap-3 px-5 py-3">
                     <div className="w-60">
                       <p className="font-mono text-sm font-semibold">{name}</p>
-                      <p className="text-xs text-stone-500">{c ? <>••••{c.last4} · updated {fmtDateTime(c.updatedAt, "Africa/Nairobi")}</> : process.env[name] ? "Using server environment value" : HELP[name] ?? "Not set"}</p>
+                      <p className="text-[13px] text-muted">{c ? <>••••{c.last4} · updated {fmtDateTime(c.updatedAt, "Africa/Nairobi")}</> : process.env[name] ? "Using server environment value" : HELP[name] ?? "Not set"}</p>
                     </div>
                     <form action={saveCredential} className="flex flex-1 gap-2">
                       <input type="hidden" name="provider" value={provider} /><input type="hidden" name="name" value={name} />

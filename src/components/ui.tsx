@@ -40,10 +40,6 @@ export function Alert({ tone = "info", children }: { tone?: "info" | "success" |
   return <div className={`border-l-2 bg-panel px-4 py-3 text-[14px] ${t}`}>{children}</div>;
 }
 
-export function TitleIcon(_: { icon?: unknown }) {
-  return null;
-}
-
 /** Arrow glyph used instead of icons. */
 export const Arrow = ({ dir = "ne" }: { dir?: "ne" | "e" }) => <span aria-hidden className="inline-block">{dir === "ne" ? "↗" : "→"}</span>;
 

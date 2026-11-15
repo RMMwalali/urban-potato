@@ -3,7 +3,6 @@ import { db } from "@/lib/db";
 import { accessState, getSettings } from "@/lib/platform";
 import { fmtDate } from "@/lib/format";
 import { BUSINESS_STATUS_STYLE, PageHeader, Stat } from "@/components/ui";
-import { TiltCard } from "@/components/motion/Tilt";
 
 export default async function AdminHome() {
   const week = new Date(Date.now() - 7 * 86400_000);
@@ -27,10 +26,10 @@ export default async function AdminHome() {
     <div>
       <PageHeader title="Platform overview" sub={`${settings.general.siteName} · ${settings.general.trialDays}-day free trial`} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <TiltCard max={8}><Stat tone="brand" label="Salons" value={businesses.length} sub={`${newThisWeek} new this week`} /></TiltCard>
-        <TiltCard max={8}><Stat tone="dark" label="On trial" value={trials.length} sub={`${expiring.length} ending in 3 days`} /></TiltCard>
-        <TiltCard max={8}><Stat tone="lime" label="Paying" value={paying.length} sub={`${locked.length} locked / expired`} /></TiltCard>
-        <TiltCard max={8}><Stat tone="plain" label="Users" value={users} sub={`${appts7} bookings · ${sales7} sales (7d)`} /></TiltCard>
+        <Stat label="Salons" value={businesses.length} sub={`${newThisWeek} new this week`} />
+        <Stat label="On trial" value={trials.length} sub={`${expiring.length} ending in 3 days`} />
+        <Stat label="Paying" value={paying.length} sub={`${locked.length} locked / expired`} />
+        <Stat label="Users" value={users} sub={`${appts7} bookings · ${sales7} sales (7d)`} />
       </div>
 
       {credCount === 0 && (

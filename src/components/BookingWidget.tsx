@@ -105,7 +105,7 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
               <input name="depositRef" className="input mt-3 uppercase" placeholder="M-Pesa code, e.g. SKF3H7XQ2P" required />
             </div>
           )}
-          {props.policy && <p className="text-xs text-stone-500">{props.policy}</p>}
+          {props.policy && <p className="text-[13px] text-muted">{props.policy}</p>}
           {state?.error && <p className="rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
           <button className="btn-bold w-full py-3.5 text-base" disabled={pending}>
             {pending ? "Booking…" : `Confirm booking · ${money(service.price)}`}

@@ -15,7 +15,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       </div>
       <div className="hidden flex-col justify-between border-l border-ink bg-panel p-8 lg:flex">
         <p className="label-caps">Salon &amp; spa software</p>
-        <p className="text-[clamp(48px,5.4vw,96px)] leading-[0.85] uppercase">Booked in.<br />Paid.<br />Reminded.</p>
+        <p className="text-[clamp(48px,5.4vw,96px)] leading-[0.85] uppercase">Not a website.<br />A booking<br />engine.</p>
         <ul className="label-caps space-y-2 border-t border-ink pt-6">
           <li>Bookings from every channel in one calendar</li>
           <li>M-Pesa, cash &amp; card with receipts</li>

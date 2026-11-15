@@ -50,17 +50,17 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
   return (
     <div className="space-y-6">
       <PageHeader title="Finance" sub="Every M-Pesa, cash and card payment, matched to receipts">
-        <form className="flex items-end gap-2">
-          <div><label className="label">From</label><input type="date" name="from" defaultValue={from} className="input" /></div>
-          <div><label className="label">To</label><input type="date" name="to" defaultValue={to} className="input" /></div>
+        <form className="flex w-full flex-wrap items-end gap-3 sm:w-auto">
+          <div className="min-w-[130px] flex-1"><label className="label">From</label><input type="date" name="from" defaultValue={from} className="input" /></div>
+          <div className="min-w-[130px] flex-1"><label className="label">To</label><input type="date" name="to" defaultValue={to} className="input" /></div>
           {unmatchedOnly && <input type="hidden" name="show" value="unmatched" />}
           <button className="btn-secondary">Show</button>
         </form>
       </PageHeader>
 
       {!connected && (
-        <div className="flex flex-wrap items-center gap-3 rounded-none border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                    <p className="flex-1"><b>Automatic M-Pesa verification is off.</b> Connect your till or paybill so payments appear here as they arrive, with the payer&apos;s name and amount filled in when you type a code at checkout.</p>
+        <div className="flex flex-wrap items-center gap-4 border-l-2 border-pink bg-panel px-4 py-3 text-[14px]">
+          <p className="flex-1">M-Pesa isn&apos;t connected. Connect your till or paybill and payments appear here automatically, verified by Safaricom.</p>
           {["OWNER", "MANAGER"].includes(user.role) && <Link href="/app/settings#payments" className="btn-secondary btn-sm">Connect M-Pesa</Link>}
         </div>
       )}

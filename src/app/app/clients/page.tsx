@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { TitleIcon } from "@/components/ui";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { displayPhone, fmtDate, normalizePhone } from "@/lib/format";
@@ -30,9 +29,9 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="page-title flex items-center gap-3"><TitleIcon />Clients</h1>
-        <div className="flex gap-2">
-          <form><input name="q" defaultValue={q} placeholder="Search name or phone…" className="input w-64" /></form>
+        <h1 className="page-title">Clients</h1>
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+          <form className="w-full sm:w-auto"><input name="q" defaultValue={q} placeholder="Search name or phone…" className="input w-full sm:w-64" /></form>
           {["OWNER", "MANAGER"].includes(user.role) && <a href="/app/export/clients" className="btn-secondary">Export CSV</a>}
           <Link href="?new=1" className="btn-primary">+ Add client</Link>
         </div>

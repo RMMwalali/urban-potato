@@ -42,8 +42,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
       <div className="card p-6 font-mono text-sm">
         <div className="text-center">
           <p className="text-base font-semibold">{b.name}</p>
-          {b.address && <p className="text-xs text-stone-500">{b.address}</p>}
-          {b.phone && <p className="text-xs text-stone-500">{b.phone}</p>}
+          {b.address && <p className="text-[13px] text-muted">{b.address}</p>}
+          {b.phone && <p className="text-[13px] text-muted">{b.phone}</p>}
           <p className="mt-3 text-xs">Receipt #{s.number} · {fmtDateTime(s.createdAt, b.timezone)}</p>
           {s.client && <p className="text-xs">Client: {s.client.name}</p>}
         </div>

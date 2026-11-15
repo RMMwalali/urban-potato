@@ -12,16 +12,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-paper md:flex">
       <aside className="border-b border-ink md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-r md:border-b-0">
-        <div className="px-5 pt-6 pb-5">
+        <div className="flex items-start justify-between px-5 pt-6 pb-5">
+          <div className="min-w-0">
           <Link href="/app" className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-[18px] font-medium text-paper">{general.siteName[0].toLowerCase()}</span>
             <span className="text-[22px] font-semibold tracking-[-0.03em] lowercase text-pink">{general.siteName}</span>
           </Link>
           <p className="label-caps mt-4 truncate text-muted">{user.business.name}</p>
+          </div>
+          <form action={logout} className="md:hidden"><button className="label-caps pt-3 hover:opacity-50">Log out</button></form>
         </div>
         <div className="md:flex-1 md:overflow-y-auto">
           <Nav isManager={MANAGERS.includes(user.role)} />
-          {isPlatformAdmin && <Link href="/admin" className="label-caps mx-5 mt-4 block border-t border-ink pt-3 hover:opacity-50">Platform admin ↗</Link>}
+          {isPlatformAdmin && <Link href="/admin" className="label-caps mx-5 mt-4 mb-4 block border-t border-ink pt-3 hover:opacity-50 md:mb-0">Platform admin ↗</Link>}
         </div>
         {access.reason === "trial" && (
           <Link href="/app/billing" className="mx-5 mb-4 hidden border-t border-ink pt-3 md:block">

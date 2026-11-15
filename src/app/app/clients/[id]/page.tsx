@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { TitleIcon } from "@/components/ui";
 import { notFound } from "next/navigation";
 import { DateTime } from "luxon";
 import { db } from "@/lib/db";
@@ -34,7 +33,7 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
       {sp.duplicate && <div className="card bg-amber-50 p-3 text-sm text-amber-800">A client with that phone number already exists. Here is their record.</div>}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="page-title flex items-center gap-3"><TitleIcon />{c.name}</h1>
+          <h1 className="page-title">{c.name}</h1>
           <p className="text-stone-600">{displayPhone(c.phone)}{c.email && ` · ${c.email}`}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -45,16 +44,16 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="card p-4"><p className="text-xs text-stone-500">Total spent</p><p className="text-lg font-semibold">{money(spent, b.currency)}</p></div>
-        <div className="card p-4"><p className="text-xs text-stone-500">Completed visits</p><p className="text-lg font-semibold">{visits}</p></div>
-        <div className="card p-4"><p className="text-xs text-stone-500">No-shows</p><p className={`text-lg font-semibold ${noShows ? "text-rose-700" : ""}`}>{noShows}</p></div>
-        <div className="card p-4"><p className="text-xs text-stone-500">Client since</p><p className="text-lg font-semibold">{DateTime.fromJSDate(c.createdAt).toFormat("LLL yyyy")}</p></div>
+        <div className="border-t-2 border-ink py-4 pr-3"><p className="label-caps text-muted">Total spent</p><p className="stat-value mt-2">{money(spent, b.currency)}</p></div>
+        <div className="border-t-2 border-ink py-4 pr-3"><p className="label-caps text-muted">Completed visits</p><p className="stat-value mt-2">{visits}</p></div>
+        <div className="border-t-2 border-ink py-4 pr-3"><p className="label-caps text-muted">No-shows</p><p className={`stat-value mt-2 ${noShows ? "text-rose-700" : ""}`}>{noShows}</p></div>
+        <div className="border-t-2 border-ink py-4 pr-3"><p className="label-caps text-muted">Client since</p><p className="stat-value mt-2">{DateTime.fromJSDate(c.createdAt).toFormat("LLL yyyy")}</p></div>
       </div>
 
       <div className="grid gap-5 md:grid-cols-3">
         <div className="space-y-5 md:col-span-2">
           <section className="card">
-            <h2 className="border-b border-stone-200 px-4 py-3 font-semibold">Appointment history</h2>
+            <h2 className="section-title border-b border-stone-200 px-4 py-3">Appointment history</h2>
             {c.appointments.length === 0 ? <p className="p-4 text-sm text-stone-500">No appointments yet.</p> : (
               <ul className="divide-y divide-stone-100">
                 {c.appointments.map((a) => (
@@ -72,7 +71,7 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
             )}
           </section>
           <section className="card p-4">
-            <h2 className="mb-3 font-semibold">Send a message</h2>
+            <h2 className="section-title mb-3">Send a message</h2>
             <form action={messageClient} className="space-y-2">
               <input type="hidden" name="clientId" value={c.id} />
               <textarea name="body" rows={2} className="input" placeholder={`Hi ${c.name.split(" ")[0]}, …`} required />
@@ -82,8 +81,8 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
               <ul className="mt-4 space-y-2 text-sm">
                 {messages.map((m) => (
                   <li key={m.id} className="rounded-none bg-stone-50 px-3 py-2">
-                    <p className="text-xs text-stone-500">{m.kind} · {fmtDateTime(m.createdAt, tz)} · {m.status}</p>
-                    <p>{m.body}</p>
+                    <p className="text-[13px] text-muted">{m.kind} · {fmtDateTime(m.createdAt, tz)} · {m.status}</p>
+                    <p className="[overflow-wrap:anywhere]">{m.body}</p>
                   </li>
                 ))}
               </ul>
@@ -107,12 +106,12 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
             </form>
           ) : (
             <section className="card space-y-3 p-4 text-sm">
-              <h2 className="font-semibold">Profile</h2>
+              <h2 className="section-title">Profile</h2>
               {c.allergies && <p className="rounded-none bg-rose-50 px-3 py-2 text-rose-800"><b>Allergies:</b> {c.allergies}</p>}
-              <div><p className="text-xs text-stone-500">Preferences</p><p>{c.preferences || "-"}</p></div>
-              <div><p className="text-xs text-stone-500">Notes</p><p className="whitespace-pre-wrap">{c.notes || "-"}</p></div>
-              <div><p className="text-xs text-stone-500">Birthday</p><p>{c.birthday ? DateTime.fromJSDate(c.birthday, { zone: "utc" }).toFormat("d LLLL") : "-"}</p></div>
-              <div><p className="text-xs text-stone-500">Marketing</p><p>{c.marketingOk ? "Opted in" : "Opted out"}</p></div>
+              <div><p className="text-[13px] text-muted">Preferences</p><p>{c.preferences || "-"}</p></div>
+              <div><p className="text-[13px] text-muted">Notes</p><p className="whitespace-pre-wrap">{c.notes || "-"}</p></div>
+              <div><p className="text-[13px] text-muted">Birthday</p><p>{c.birthday ? DateTime.fromJSDate(c.birthday, { zone: "utc" }).toFormat("d LLLL") : "-"}</p></div>
+              <div><p className="text-[13px] text-muted">Marketing</p><p>{c.marketingOk ? "Opted in" : "Opted out"}</p></div>
             </section>
           )}
         </aside>

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { TitleIcon } from "@/components/ui";
 import { DateTime } from "luxon";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -46,12 +45,12 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="page-title flex items-center gap-3"><TitleIcon />{dt.toFormat("cccc d LLLL")}</h1>
+          <h1 className="page-title">{dt.toFormat("cccc d LLLL")}</h1>
           <p className="text-sm text-stone-500">
             {appts.length} appointments{closed && " · closed day"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link href={`?date=${nav(-1)}`} className="btn-secondary">←</Link>
           <Link href="?" className="btn-secondary">Today</Link>
           <Link href={`?date=${nav(1)}`} className="btn-secondary">→</Link>

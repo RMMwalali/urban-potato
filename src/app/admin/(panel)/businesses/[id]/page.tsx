@@ -66,7 +66,7 @@ export default async function BusinessDetail({ params, searchParams }: { params:
               </select>
               <button className="btn-primary">Activate</button>
             </div>
-            {b.paidUntil && <p className="text-xs text-stone-500">Paid until {fmtDate(b.paidUntil, tz)}</p>}
+            {b.paidUntil && <p className="text-[13px] text-muted">Paid until {fmtDate(b.paidUntil, tz)}</p>}
           </form>
           <div className="flex flex-wrap gap-2">
             {(["PAST_DUE", "SUSPENDED", "CANCELLED"] as const).map((st) => (

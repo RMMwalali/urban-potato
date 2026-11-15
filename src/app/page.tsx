@@ -21,15 +21,6 @@ const FEATURES: Feature[] = [
   { title: "Reports & payroll", body: "Daily takings by method, staff commission and tips, and a till sheet for the end of the day.", detail: "Each stylist can see their own services, commission and tips for the month." },
 ];
 
-const WHY = [
-  "Zero commission on your clients",
-  "Money goes straight to your own till",
-  "Real people on WhatsApp, not a chatbot",
-  "Works on the phone you already have",
-  "Your data exports any time, no lock-in",
-  "One flat price, unlimited staff",
-];
-
 // Paraphrased from public reviews (Trustpilot, ProductReview, Capterra) and Reddit threads; see docs/RESEARCH.md.
 const COMPLAINTS = [
   { said: "“New client” fees on clients who found the salon on its own Instagram", where: "Reviews", answer: "No commission. Every client is yours." },
@@ -66,27 +57,6 @@ export default async function Home() {
         <Reveal><FeatureList features={FEATURES} /></Reveal>
       </section>
 
-      {/* Why */}
-      <section id="why" className="px-5 pt-32 sm:px-8 md:pt-56">
-        <div className="grid gap-10 md:grid-cols-2">
-          <p className="label-caps">Why we do it better</p>
-          <Reveal>
-            <p className="text-[clamp(18px,1.6vw,22px)] leading-[1.45]">
-              A website shows off your work; it doesn&apos;t fill your chairs. {name} replaces the paper diary and the scattered DMs with a booking engine and client records: every booking, client and payment in one place, built for how salons in Kenya actually take money.
-            </p>
-          </Reveal>
-        </div>
-        <ol className="mt-20 grid gap-x-10 gap-y-8 md:mt-28 md:grid-cols-2">
-          {WHY.map((w, i) => (
-            <li key={w}>
-              <Reveal delay={(i % 2) * 0.08} className="flex gap-4 text-[clamp(16px,1.4vw,19px)] text-muted">
-                <sup className="pt-2 text-[11px] text-ink">{i + 1}</sup>{w}
-              </Reveal>
-            </li>
-          ))}
-        </ol>
-        <Reveal className="mt-20 flex justify-center md:mt-24"><Link href="/signup" className="btn-circle">Start free</Link></Reveal>
-      </section>
 
       {/* Complaints table */}
       <section id="complaints" className="px-5 pt-32 sm:px-8 md:pt-56">
@@ -94,7 +64,7 @@ export default async function Home() {
           <p className="label-caps">Built from complaints</p>
           <Reveal>
             <p className="text-[15px] leading-relaxed md:max-w-md md:justify-self-end">
-              We read what salon owners and stylists say about their booking software in reviews and on Reddit, then built the opposite. Paraphrased, with sources in our research notes.
+              What salon owners and stylists say about their booking software in reviews and on Reddit, and how {name} answers it.
             </p>
           </Reveal>
         </div>
@@ -155,13 +125,12 @@ export default async function Home() {
             <li><Link href="/login" className="hover:opacity-50">Log in</Link></li>
             <li><Link href="/signup" className="hover:opacity-50">Create a salon</Link></li>
           </ul>
-          <ul className="space-y-2">
+          {(general.supportWhatsApp || general.supportEmail || general.supportPhone) && <ul className="space-y-2">
             <li className="text-muted">Contact</li>
             {general.supportWhatsApp && <li><a href={`https://wa.me/${general.supportWhatsApp}`} className="hover:opacity-50">WhatsApp</a></li>}
             {general.supportEmail && <li><a href={`mailto:${general.supportEmail}`} className="hover:opacity-50 normal-case">{general.supportEmail}</a></li>}
             {general.supportPhone && <li><a href={`tel:${general.supportPhone}`} className="hover:opacity-50">{general.supportPhone}</a></li>}
-            {!general.supportWhatsApp && !general.supportEmail && !general.supportPhone && <li className="text-muted">Nairobi, Kenya</li>}
-          </ul>
+          </ul>}
         </div>
         <p className="mt-20 text-[clamp(80px,24vw,360px)] leading-[0.78] font-medium tracking-[-0.05em] lowercase text-pink">{name}</p>
         <p className="mt-6 text-[12px] uppercase tracking-[0.06em] text-muted">© {new Date().getFullYear()} {name}</p>

@@ -50,7 +50,7 @@ export function CheckoutForm(props: {
       ) : null}
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold">Items</h2>
+        <h2 className="section-title mb-2">Items</h2>
         <div className="space-y-2">
           {items.map((r, i) => (
             <div key={i} className="grid grid-cols-12 gap-2">
@@ -106,7 +106,7 @@ export function CheckoutForm(props: {
       </div>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold">Payment</h2>
+        <h2 className="section-title mb-2">Payment</h2>
         {due > 0 ? (
           <PaymentRows initialCode={props.initialCode} due={due} methods={props.paymentMethods} requireVerified={props.requireVerified} currency={props.currency} onChange={(rows, ok) => { setPayments(rows); setPayOk(ok); }} />
         ) : (

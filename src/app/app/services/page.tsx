@@ -66,7 +66,7 @@ export default async function ServicesPage() {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-stone-500">Prices shown as {money(0, b.currency).replace(" 0", "")}. Archived services stay on old records but can&apos;t be booked.</p>
+      <p className="text-[13px] text-muted">Archived services stay on past records but can&apos;t be booked.</p>
     </div>
   );
 }

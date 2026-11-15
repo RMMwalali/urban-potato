@@ -12,10 +12,10 @@ export function ManageBooking({ token, days, timezone, canChange, policy }: { to
   const [state, action, pending] = useActionState<BookState, FormData>(clientReschedule, undefined);
 
   if (mode === "cancelled")
-    return <div className="card p-6 text-center"><p className="mt-2 font-display text-xl font-bold">Appointment cancelled</p><p className="text-sm text-stone-500">We&apos;ve let the salon know.</p></div>;
+    return <div className="border-t-2 border-ink pt-6"><p className="text-[26px] leading-tight uppercase">Appointment cancelled</p><p className="mt-2 text-[14px] text-muted">We&apos;ve let the salon know.</p></div>;
   if (state?.done)
-    return <div className="card p-6 text-center"><p className="mt-2 font-display text-xl font-bold">Moved to {state.done.when}</p><p className="text-sm text-stone-500">A new confirmation is on its way.</p></div>;
-  if (!canChange) return <p className="card p-5 text-sm text-stone-600">{policy} To change this appointment, please contact the salon.</p>;
+    return <div className="border-t-2 border-ink pt-6"><p className="text-[26px] leading-tight uppercase">Moved to {state.done.when}</p><p className="mt-2 text-[14px] text-muted">A new confirmation is on its way.</p></div>;
+  if (!canChange) return <p className="border-l-2 border-ink bg-panel px-4 py-3 text-[14px]">{policy} To change this appointment, please contact the salon.</p>;
 
   return (
     <div className="space-y-4">
@@ -40,10 +40,10 @@ export function ManageBooking({ token, days, timezone, canChange, policy }: { to
       )}
       {cancelErr && <p className="rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-700">{cancelErr}</p>}
       {mode === "move" && (
-        <form onSubmit={keepValues(action)} className="card space-y-4 p-5">
+        <form onSubmit={keepValues(action)} className="space-y-5 border-t-2 border-ink pt-5">
           <input type="hidden" name="token" value={token} />
           <input type="hidden" name="start" value={start} />
-          <p className="font-display text-lg font-bold">Pick a new time</p>
+          <p className="label-caps">Pick a new time</p>
           <SlotPicker days={days} timezone={timezone} value={start} onChange={setStart} query={`token=${token}`} refreshKey={state?.error} />
           {state?.error && <p className="rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
           <div className="flex gap-2">
@@ -52,7 +52,7 @@ export function ManageBooking({ token, days, timezone, canChange, policy }: { to
           </div>
         </form>
       )}
-      <p className="text-xs text-stone-500">{policy}</p>
+      <p className="text-[13px] text-muted">{policy}</p>
     </div>
   );
 }

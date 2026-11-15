@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { TitleIcon } from "@/components/ui";
 import { db } from "@/lib/db";
 import { MANAGERS, requireUser } from "@/lib/auth";
 import { displayPhone, num } from "@/lib/format";
@@ -20,7 +19,7 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
   return (
     <div className="space-y-5">
       <div className="flex items-end justify-between">
-        <h1 className="page-title flex items-center gap-3"><TitleIcon />Staff</h1>
+        <h1 className="page-title">Staff</h1>
         <Link href="?new=1" className="btn-primary">+ Add staff member</Link>
       </div>
 

@@ -17,22 +17,20 @@ export default async function ManagePage({ params }: { params: Promise<{ token: 
   const days = openDays(b, DateTime.now().setZone(b.timezone).startOf("day"));
 
   return (
-    <main className="min-h-screen bg-canvas px-4 py-10">
-      <div className="mx-auto max-w-lg space-y-5">
-        <div className="card overflow-hidden">
-          <div className="bg-ink p-6 text-white">
-            <p className="text-xs font-bold tracking-widest text-petal uppercase">{b.name}</p>
-            <h1 className="mt-2 font-display text-2xl font-bold">{a.service.name}</h1>
-            <span className="mt-2 inline-block rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold">{STATUS_LABEL[a.status]}</span>
-          </div>
-          <ul className="space-y-3 p-6 text-sm">
-            <li className="flex items-center gap-3">{fmtDate(a.startAt, b.timezone)}</li>
-            <li className="flex items-center gap-3">{fmtTime(a.startAt, b.timezone)}–{fmtTime(a.endAt, b.timezone)} · {money(a.price, b.currency)}</li>
-            {a.staff && <li className="flex items-center gap-3">with {a.staff.name}</li>}
-            {b.address && <li className="flex items-center gap-3">{b.address}</li>}
-          </ul>
+    <main className="min-h-screen bg-paper px-5 py-10 sm:px-8">
+      <div className="mx-auto max-w-lg space-y-10">
+        <div>
+          <p className="label-caps text-muted">{b.name} · {STATUS_LABEL[a.status]}</p>
+          <h1 className="mt-4 text-[clamp(36px,9vw,64px)] leading-[0.9] uppercase">{a.service.name}</h1>
+          <dl className="mt-8 border-t-2 border-ink text-[16px]">
+            <div className="flex justify-between gap-4 border-b border-ink/20 py-3"><dt className="label-caps text-muted">Date</dt><dd>{fmtDate(a.startAt, b.timezone)}</dd></div>
+            <div className="flex justify-between gap-4 border-b border-ink/20 py-3"><dt className="label-caps text-muted">Time</dt><dd className="tabular-nums">{fmtTime(a.startAt, b.timezone)}–{fmtTime(a.endAt, b.timezone)}</dd></div>
+            <div className="flex justify-between gap-4 border-b border-ink/20 py-3"><dt className="label-caps text-muted">Price</dt><dd>{money(a.price, b.currency)}</dd></div>
+            {a.staff && <div className="flex justify-between gap-4 border-b border-ink/20 py-3"><dt className="label-caps text-muted">With</dt><dd>{a.staff.name}</dd></div>}
+            {b.address && <div className="flex justify-between gap-4 border-b border-ink/20 py-3"><dt className="label-caps text-muted">Where</dt><dd className="text-right">{b.address}</dd></div>}
+          </dl>
         </div>
-        {active ? <ManageBooking token={token} days={days} timezone={b.timezone} canChange={canChange} policy={policyText(b)} /> : <p className="card p-5 text-sm text-stone-600">This appointment can no longer be changed online.{b.phone && ` Call ${b.phone}.`}</p>}
+        {active ? <ManageBooking token={token} days={days} timezone={b.timezone} canChange={canChange} policy={policyText(b)} /> : <p className="border-l-2 border-ink bg-panel px-4 py-3 text-[14px]">This appointment can no longer be changed online.{b.phone && ` Call ${b.phone}.`}</p>}
       </div>
     </main>
   );

@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "framer-motion";
 const EASE = [0.19, 1, 0.22, 1] as const;
 const MENU = [
   { href: "#features", label: "What it does" },
-  { href: "#why", label: "Why Darling" },
   { href: "#complaints", label: "Built from complaints" },
   { href: "#pricing", label: "Pricing" },
   { href: "/login", label: "Log in" },
@@ -28,7 +27,7 @@ export function SiteHeader({ name, signedIn }: { name: string; signedIn: boolean
     <>
       <header className="fixed inset-x-0 top-0 z-40 flex h-[88px] items-center justify-between px-5 sm:px-8 md:h-[110px]">
         <Link href="/" className="relative flex items-center" aria-label={name}>
-          <span className={`flex h-12 w-12 items-center justify-center rounded-full bg-ink text-[22px] font-medium text-paper transition-all duration-700 ${scrolled || open ? "opacity-100" : "opacity-100"}`}>{name[0].toLowerCase()}</span>
+          <span className={`flex h-12 w-12 items-center justify-center rounded-full bg-ink text-[22px] font-medium text-paper transition-all duration-700 `}>{name[0].toLowerCase()}</span>
           <span className={`ml-3 flex items-baseline gap-3 transition-all duration-700 ${scrolled && !open ? "pointer-events-none -translate-y-2 opacity-0" : "opacity-100"}`}>
             <span className="text-[30px] font-semibold leading-none tracking-[-0.03em] lowercase text-pink">{name}</span>
             <span className="hidden text-[10px] leading-[1.1] font-medium uppercase sm:block">Salon &amp; spa<br />software</span>
@@ -46,8 +45,7 @@ export function SiteHeader({ name, signedIn }: { name: string; signedIn: boolean
             <a href="#pricing" className="label-caps hover:opacity-50 transition-opacity duration-500">Pricing</a>
             {signedIn ? <Link href="/app" className="btn-secondary">Dashboard</Link> : <><Link href="/login" className="label-caps hover:opacity-50 transition-opacity duration-500">Log in</Link><Link href="/signup" className="btn-secondary">Start free trial</Link></>}
           </nav>
-          <button onClick={() => setOpen(!open)} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-ink text-[12px] md:hidden" aria-label="Open menu (mobile)">{open ? "×" : "≡"}</button>
-          <Link href={signedIn ? "/app" : "/signup"} className="hidden h-10 w-10 items-center justify-center rounded-full border-2 border-ink text-[11px] font-medium md:flex" title="Kenya · KES">KE</Link>
+          <button onClick={() => setOpen(!open)} className="btn-secondary btn-sm md:hidden" aria-label="Open menu (mobile)">{open ? "Close" : "Menu"}</button>
         </div>
       </header>
 
