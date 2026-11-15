@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #fdf4f8;
+  --color-brand-100: #fbe8f1;
+  --color-brand-200: #f6cfe2;
+  --color-brand-500: #c2417f;
+  --color-brand-600: #a83269;
+  --color-brand-700: #8a2856;
+  --color-ink: #1f1a1d;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+body { @apply bg-stone-50 text-ink antialiased; }
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:opacity-50 cursor-pointer;
+}
+
+@layer components {
+  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700; }
+  .btn-secondary { @apply btn border border-stone-300 bg-white text-ink hover:bg-stone-100; }
+  .btn-danger { @apply btn border border-rose-200 bg-white text-rose-700 hover:bg-rose-50; }
+  .btn-sm { @apply px-2.5 py-1 text-xs; }
+  .input { @apply block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100; }
+  .label { @apply mb-1 block text-xs font-medium text-stone-600; }
+  .card { @apply rounded-xl border border-stone-200 bg-white; }
+  .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium; }
+  .table { @apply w-full text-left text-sm; }
+  .table th { @apply border-b border-stone-200 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-stone-500; }
+  .table td { @apply border-b border-stone-100 px-4 py-3 align-top; }
+  .page-title { @apply text-2xl font-semibold tracking-tight; }
+}

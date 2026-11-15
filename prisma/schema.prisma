@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// A Business is a tenant: one salon/spa account. Every record below is scoped to one.
+model Business {
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique // public booking link: /book/<slug>
+  phone             String?
+  email             String?
+  address           String?
+  currency          String   @default("KES")
+  timezone          String   @default("Africa/Nairobi")
+  countryCode       String   @default("254") // used to normalise local phone numbers
+  openTime          String   @default("08:00")
+  closeTime         String   @default("19:00")
+  openDays          Int[]    @default([1, 2, 3, 4, 5, 6]) // ISO weekdays, 1 = Monday
+  slotMinutes       Int      @default(15)
+  reminderHours     Int      @default(24)
+  bookingEnabled    Boolean  @default(true)
+  messageChannel    Channel  @default(SMS)
+  createdAt         DateTime @default(now())
+
+  users        User[]
+  clients      Client[]
+  services     Service[]
+  appointments Appointment[]
+  sales        Sale[]
+  messages     MessageLog[]
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+// Staff members. Anyone who can be booked or can log in.
+model User {
+  id             String   @id @default(cuid())
+  businessId     String
+  business       Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name           String
+  email          String   @unique
+  phone          String?
+  passwordHash   String
+  role           Role     @default(STAFF)
+  title          String? // e.g. "Senior stylist"
+  bookable       Boolean  @default(true)
+  commissionRate Decimal  @default(0) @db.Decimal(5, 2) // percent of service revenue
+  color          String   @default("#c084fc")
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  appointments Appointment[]
+  saleItems    SaleItem[]
+  services     Service[] @relation("StaffServices") // empty = can perform every service
+
+  @@index([businessId])
+}
+
+model Client {
+  id          String    @id @default(cuid())
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String // normalised, e.g. 254712345678
+  email       String?
+  birthday    DateTime? @db.Date
+  allergies   String?
+  preferences String?
+  notes       String?
+  marketingOk Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  appointments Appointment[]
+  sales        Sale[]
+
+  @@unique([businessId, phone])
+  @@index([businessId, name])
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name        String
+  category    String   @default("General")
+  description String?
+  durationMin Int
+  price       Decimal  @db.Decimal(10, 2)
+  active      Boolean  @default(true)
+  onlineBooking Boolean @default(true)
+  createdAt   DateTime @default(now())
+
+  appointments Appointment[]
+  saleItems    SaleItem[]
+  staff        User[] @relation("StaffServices")
+
+  @@index([businessId])
+}
+
+enum AppointmentStatus {
+  BOOKED
+  CONFIRMED
+  ARRIVED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum BookingSource {
+  WALK_IN
+  PHONE
+  ONLINE
+  WHATSAPP
+  INSTAGRAM
+  FACEBOOK
+  TIKTOK
+  OTHER
+}
+
+model Appointment {
+  id         String            @id @default(cuid())
+  businessId String
+  business   Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  clientId   String
+  client     Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  staffId    String?
+  staff      User?             @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  serviceId  String
+  service    Service           @relation(fields: [serviceId], references: [id])
+  startAt    DateTime
+  endAt      DateTime
+  status     AppointmentStatus @default(BOOKED)
+  source     BookingSource     @default(WALK_IN)
+  price      Decimal           @db.Decimal(10, 2) // price at time of booking
+  notes      String?
+  reminderSentAt DateTime?
+  createdAt  DateTime          @default(now())
+
+  sale Sale?
+
+  @@index([businessId, startAt])
+  @@index([staffId, startAt])
+  @@index([clientId])
+}
+
+enum PaymentMethod {
+  CASH
+  MPESA
+  CARD
+  BANK
+  OTHER
+}
+
+model Sale {
+  id            String        @id @default(cuid())
+  businessId    String
+  business      Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  number        Int // receipt number, sequential per business
+  clientId      String?
+  client        Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  appointmentId String?       @unique
+  appointment   Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  subtotal      Decimal       @db.Decimal(10, 2)
+  discount      Decimal       @default(0) @db.Decimal(10, 2)
+  tip           Decimal       @default(0) @db.Decimal(10, 2)
+  total         Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod
+  reference     String? // M-Pesa code, card ref, etc.
+  createdById   String?
+  createdAt     DateTime      @default(now())
+
+  items SaleItem[]
+
+  @@unique([businessId, number])
+  @@index([businessId, createdAt])
+}
+
+model SaleItem {
+  id        String   @id @default(cuid())
+  saleId    String
+  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  serviceId String?
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  staffId   String?
+  staff     User?    @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  name      String
+  quantity  Int      @default(1)
+  unitPrice Decimal  @db.Decimal(10, 2)
+  commission Decimal @default(0) @db.Decimal(10, 2)
+}
+
+enum Channel {
+  SMS
+  WHATSAPP
+}
+
+enum MessageStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+model MessageLog {
+  id         String        @id @default(cuid())
+  businessId String
+  business   Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  clientId   String?
+  appointmentId String?
+  channel    Channel
+  to         String
+  kind       String // CONFIRMATION, REMINDER, CANCELLATION, CUSTOM
+  body       String
+  status     MessageStatus @default(QUEUED)
+  providerRef String?
+  error      String?
+  createdAt  DateTime      @default(now())
+
+  @@index([businessId, createdAt])
+}
