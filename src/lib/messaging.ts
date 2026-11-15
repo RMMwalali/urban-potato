@@ -98,11 +98,11 @@ export function appointmentText(kind: "CONFIRMATION" | "REMINDER" | "CANCELLATIO
   const manage = `${appUrl()}/b/${a.manageToken}`;
   switch (kind) {
     case "CONFIRMATION":
-      return `Hi ${first}, your ${a.service.name}${withWho} at ${b.name} is booked for ${when}. Change or cancel: ${manage}`;
+      return `Hi ${first}, your ${a.service.name}${a.styleName ? ` (${a.styleName})` : ""}${withWho} at ${b.name} is booked for ${when}. Change or cancel: ${manage}`;
     case "REMINDER":
-      return `Reminder: ${first}, see you at ${b.name} on ${when} for ${a.service.name}${withWho}.${b.address ? ` ${b.address}.` : ""} Can't make it? ${manage}`;
+      return `Reminder: ${first}, see you at ${b.name} on ${when} for ${a.service.name}${a.styleName ? ` (${a.styleName})` : ""}${withWho}.${b.address ? ` ${b.address}.` : ""} Can't make it? ${manage}`;
     case "CANCELLATION":
-      return `Hi ${first}, your ${a.service.name} at ${b.name} on ${when} has been cancelled. ${b.phone ? `Call ${b.phone} to rebook.` : ""}`.trim();
+      return `Hi ${first}, your ${a.service.name}${a.styleName ? ` (${a.styleName})` : ""} at ${b.name} on ${when} has been cancelled. ${b.phone ? `Call ${b.phone} to rebook.` : ""}`.trim();
   }
 }
 

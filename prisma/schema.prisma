@@ -63,6 +63,11 @@ model Business {
   locationSource    String? // "county" (typed county centre) | "ip" (network location at sign-up)
   signupGeo         Json? // network location seen at sign-up: { country, region, city, latitude, longitude }
   isShowcase        Boolean  @default(false) // admin-created salon used only to film reels; excluded from stats and maps
+  // Brand and homepage features
+  logoId            String? // Media id of the salon's uploaded logo
+  featureConsent    Boolean  @default(false) // salon allows Darling to show its logo and service photos on darling's website
+  homeLogo          Boolean  @default(false) // admin: show this salon's logo in "Salons on Darling"
+  homeServices      Boolean  @default(false) // admin: show this salon's service photos in the homepage carousel
   createdAt         DateTime @default(now())
 
   users        User[]
@@ -74,6 +79,7 @@ model Business {
   mpesaTxns    MpesaTransaction[]
   payRuns      PayRun[]
   advances     StaffAdvance[]
+  media        Media[]
 }
 
 enum BusinessStatus {
@@ -161,6 +167,9 @@ model Service {
   saleItems    SaleItem[]
   staff        User[] @relation("StaffServices")
 
+  styles       ServiceStyle[]
+  media        Media[]
+
   @@index([businessId])
 }
 
@@ -200,6 +209,8 @@ model Appointment {
   source     BookingSource     @default(WALK_IN)
   price      Decimal           @db.Decimal(10, 2) // price at time of booking
   notes      String?
+  styleId    String?
+  styleName  String? // the style chosen, kept even if the style is later renamed or removed
   reminderSentAt DateTime?
   depositAmount Decimal          @default(0) @db.Decimal(10, 2)
   depositRef    String? // M-Pesa code supplied by client
@@ -497,4 +508,45 @@ model SignupEvent {
   @@index([createdAt])
   @@index([visitorId])
   @@index([stage, createdAt])
+}
+
+// A variation of a service the client can choose, e.g. Box braids → Knotless, Bohemian, Jumbo.
+// Price and duration fall back to the service's when empty.
+model ServiceStyle {
+  id          String   @id @default(cuid())
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  name        String
+  price       Decimal? @db.Decimal(10, 2)
+  durationMin Int?
+  position    Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  media       Media[]
+
+  @@index([serviceId])
+}
+
+// Uploaded images (service photos, style photos, salon logos), stored as compressed WebP/JPEG/PNG.
+// Served from /img/<id>/<slug>.<ext> with long-lived caching, so search engines can index them.
+model Media {
+  id         String        @id @default(cuid())
+  businessId String
+  business   Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  kind       String // "service" | "logo"
+  serviceId  String?
+  service    Service?      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  styleId    String?
+  style      ServiceStyle? @relation(fields: [styleId], references: [id], onDelete: SetNull)
+  mime       String
+  width      Int
+  height     Int
+  data       Bytes
+  thumb      Bytes? // ~480px wide version for lists and carousels
+  alt        String
+  position   Int           @default(0)
+  createdAt  DateTime      @default(now())
+
+  @@index([businessId, kind])
+  @@index([serviceId, position])
 }

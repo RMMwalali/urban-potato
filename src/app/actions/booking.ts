@@ -6,12 +6,14 @@ import { notifyAppointment } from "@/lib/messaging";
 import { fmtDateTime } from "@/lib/format";
 import { upsertClient } from "./appointments";
 import { accessState } from "@/lib/platform";
+import { bookingSlip, type Slip } from "@/lib/slip";
 
-export type BookState = { error?: string; done?: { when: string; service: string; staff: string | null; manage: string; deposit: number } } | undefined;
+export type BookState = { error?: string; done?: { when: string; service: string; staff: string | null; manage: string; deposit: number; slip: Slip | null } } | undefined;
 
 const Input = z.object({
   slug: z.string(),
   serviceId: z.string().min(1, "Choose a service"),
+  styleId: z.string().optional(),
   staffId: z.string().optional(),
   start: z.string().min(1, "Choose a time"),
   name: z.string().trim().min(2, "Enter your name"),
@@ -31,8 +33,13 @@ export async function publicBook(_: BookState, fd: FormData): Promise<BookState>
   if (!business || !business.bookingEnabled || !accessState(business).ok) return { error: "Online booking is not available" };
   const service = await db.service.findFirst({ where: { id: d.serviceId, businessId: business.id, active: true, onlineBooking: true } });
   if (!service) return { error: "Service not available" };
+  const style = d.styleId ? await db.serviceStyle.findFirst({ where: { id: d.styleId, serviceId: service.id, active: true } }) : null;
+  if (d.styleId && !style) return { error: "That style is no longer available. Please choose another." };
+  const price = style?.price != null ? Number(style.price) : Number(service.price);
+  const durationMin = style?.durationMin ?? service.durationMin;
+  const label = `${service.name}${style ? ` (${style.name})` : ""}`;
 
-  const deposit = business.depositPercent > 0 && business.mpesaNumber ? Math.round((Number(service.price) * business.depositPercent) / 100) : 0;
+  const deposit = business.depositPercent > 0 && business.mpesaNumber ? Math.round((price * business.depositPercent) / 100) : 0;
   const depositRef = d.depositRef?.toUpperCase().replace(/\s/g, "");
   if (deposit > 0 && !/^[A-Z0-9]{8,12}$/.test(depositRef ?? "")) return { error: "Enter the M-Pesa confirmation code for your deposit (e.g. SKF3H7XQ2P)" };
 
@@ -50,7 +57,7 @@ export async function publicBook(_: BookState, fd: FormData): Promise<BookState>
   if (isNaN(start.getTime())) return { error: "Choose a time" };
   const isoDate = new Intl.DateTimeFormat("en-CA", { timeZone: business.timezone }).format(start);
   // Re-check availability on the server: the slot may have been taken since the page loaded.
-  const slots = await getSlots({ business, serviceId: service.id, isoDate, staffId: d.staffId || null });
+  const slots = await getSlots({ business, serviceId: service.id, isoDate, staffId: d.staffId || null, durationMin });
   const slot = slots.find((s) => s.start === start.toISOString());
   if (!slot) return { error: "Sorry, that time was just taken. Please pick another." };
 
@@ -69,8 +76,10 @@ export async function publicBook(_: BookState, fd: FormData): Promise<BookState>
       serviceId: service.id,
       staffId,
       startAt: start,
-      endAt: new Date(start.getTime() + service.durationMin * 60000),
-      price: service.price,
+      endAt: new Date(start.getTime() + durationMin * 60000),
+      price,
+      styleId: style?.id ?? null,
+      styleName: style?.name ?? null,
       source: "ONLINE",
       notes: d.notes || null,
       depositAmount: deposit,
@@ -93,7 +102,7 @@ export async function publicBook(_: BookState, fd: FormData): Promise<BookState>
     }
   }
   await notifyAppointment("CONFIRMATION", appt.id);
-  return { done: { when: fmtDateTime(start, business.timezone), service: service.name, staff: appt.staff?.name ?? null, manage: `/b/${appt.manageToken}`, deposit } };
+  return { done: { when: fmtDateTime(start, business.timezone), service: label, staff: appt.staff?.name ?? null, manage: `/b/${appt.manageToken}`, deposit, slip: await bookingSlip(appt.id) } };
 }
 
 /* ---------- Client self-service (link in confirmation/reminder) ---------- */
@@ -120,14 +129,15 @@ export async function clientReschedule(_: BookState, fd: FormData): Promise<Book
   const start = new Date(String(fd.get("start")));
   if (isNaN(start.getTime())) return { error: "Choose a new time" };
   const isoDate = new Intl.DateTimeFormat("en-CA", { timeZone: a.business.timezone }).format(start);
-  const slots = await getSlots({ business: a.business, serviceId: a.serviceId, isoDate, staffId: a.staffId, excludeAppointmentId: a.id });
+  const dur = Math.round((a.endAt.getTime() - a.startAt.getTime()) / 60000); // keeps a style's length
+  const slots = await getSlots({ business: a.business, serviceId: a.serviceId, isoDate, staffId: a.staffId, excludeAppointmentId: a.id, durationMin: dur });
   const slot = slots.find((s) => s.start === start.toISOString());
   if (!slot) return { error: "Sorry, that time isn't available any more." };
   const updated = await db.appointment.update({
     where: { id: a.id },
-    data: { startAt: start, endAt: new Date(start.getTime() + a.service.durationMin * 60000), staffId: a.staffId ?? slot.staffIds[0], reminderSentAt: null },
+    data: { startAt: start, endAt: new Date(start.getTime() + dur * 60000), staffId: a.staffId ?? slot.staffIds[0], reminderSentAt: null },
     include: { staff: true },
   });
   await notifyAppointment("CONFIRMATION", a.id);
-  return { done: { when: fmtDateTime(start, a.business.timezone), service: a.service.name, staff: updated.staff?.name ?? null, manage: `/b/${a.manageToken}`, deposit: 0 } };
+  return { done: { when: fmtDateTime(start, a.business.timezone), service: a.service.name, staff: updated.staff?.name ?? null, manage: `/b/${a.manageToken}`, deposit: 0, slip: null } };
 }

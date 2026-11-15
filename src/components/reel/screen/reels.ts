@@ -71,7 +71,7 @@ export const REELS: ReelDef[] = [
       { do: "type", to: { sel: 'input[name="depositRef"]' }, text: "{depositCode}", cps: 9 },
       { do: "click", to: btn("Confirm booking") },
       { do: "waitFor", to: { text: "You're booked" } },
-      { do: "focus", to: { text: "Deposit of" }, ms: 1800 },
+      { do: "focus", to: { text: "Deposit paid" }, ms: 1800 },
     ],
   },
   {

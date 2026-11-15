@@ -13,11 +13,14 @@ export async function GET(req: Request) {
   if (token) {
     const a = await db.appointment.findUnique({ where: { manageToken: token }, include: { business: true } });
     if (!a || !accessState(a.business).ok) return NextResponse.json({ slots: [] });
-    const slots = await getSlots({ business: a.business, serviceId: a.serviceId, isoDate: date, staffId: a.staffId, excludeAppointmentId: a.id });
+    const slots = await getSlots({ business: a.business, serviceId: a.serviceId, isoDate: date, staffId: a.staffId, excludeAppointmentId: a.id, durationMin: Math.round((a.endAt.getTime() - a.startAt.getTime()) / 60000) });
     return NextResponse.json({ slots: slots.map((s) => s.start) });
   }
   const business = await db.business.findUnique({ where: { slug: u.searchParams.get("slug") ?? "" } });
   if (!business || !business.bookingEnabled || !accessState(business).ok) return NextResponse.json({ slots: [] });
-  const slots = await getSlots({ business, serviceId: u.searchParams.get("serviceId") ?? "", isoDate: date, staffId: u.searchParams.get("staffId") || null });
+  const serviceId = u.searchParams.get("serviceId") ?? "";
+  const styleId = u.searchParams.get("styleId");
+  const style = styleId ? await db.serviceStyle.findFirst({ where: { id: styleId, serviceId, active: true }, select: { durationMin: true } }) : null;
+  const slots = await getSlots({ business, serviceId, isoDate: date, staffId: u.searchParams.get("staffId") || null, durationMin: style?.durationMin ?? undefined });
   return NextResponse.json({ slots: slots.map((s) => s.start) });
 }

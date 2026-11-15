@@ -20,6 +20,8 @@ export const SETTING_DEFAULTS = {
     lifetimeEnabled: true,
     lifetimeLimit: 25, // lifetime places available
     currency: "KES",
+    homeServicesEnabled: true, // landing page: carousel of service photos from salons the admin features
+    homeLogosEnabled: false, // landing page: "Who we work with" logo marquee
     // Founding offer: the first N salons that actually pay get X% off for M months
     foundingOfferEnabled: true,
     foundingSlots: 50,

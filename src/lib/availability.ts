@@ -16,6 +16,7 @@ export async function getSlots(opts: {
   isoDate: string;
   staffId?: string | null;
   excludeAppointmentId?: string;
+  durationMin?: number; // a style (or an existing booking) can take longer or shorter than the service
 }): Promise<Slot[]> {
   const { business, isoDate } = opts;
   const tz = business.timezone;
@@ -24,6 +25,7 @@ export async function getSlots(opts: {
 
   const service = await db.service.findFirst({ where: { id: opts.serviceId, businessId: business.id, active: true } });
   if (!service) return [];
+  const dur = opts.durationMin && opts.durationMin > 0 ? opts.durationMin : service.durationMin;
 
   const staff = await db.user.findMany({
     where: {
@@ -56,12 +58,12 @@ export async function getSlots(opts: {
 
   const now = DateTime.now();
   const slots: Slot[] = [];
-  for (let t = open; t.plus({ minutes: service.durationMin }) <= close; t = t.plus({ minutes: business.slotMinutes })) {
+  for (let t = open; t.plus({ minutes: dur }) <= close; t = t.plus({ minutes: business.slotMinutes })) {
     if (t < now) continue;
     const s = t.toJSDate();
     // Buffer (clean-up time) is kept free after every appointment, including the new one.
     const buf = business.bufferMinutes * 60_000;
-    const e = new Date(t.plus({ minutes: service.durationMin }).toMillis() + buf);
+    const e = new Date(t.plus({ minutes: dur }).toMillis() + buf);
     const free = staff
       .filter((st) => !appts.some((a) => a.staffId === st.id && a.startAt < e && a.endAt.getTime() + buf > s.getTime()))
       .map((st) => st.id);

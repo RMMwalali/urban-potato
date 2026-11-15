@@ -126,3 +126,26 @@ input[type="checkbox"], input[type="radio"] { width: 1.15rem; height: 1.15rem; a
 .reel-ripple { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 99px; border: 3px solid #f06fae; transform: translateZ(16px); animation: reel-ripple 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
 @keyframes reel-ripple { from { opacity: 1; transform: translateZ(16px) scale(0.4); } to { opacity: 0; transform: translateZ(16px) scale(3.6); } }
 .reel-stage.light .reel-device { box-shadow: 0 60px 120px rgba(28, 31, 36, 0.28), 0 0 0 1px rgba(28, 31, 36, 0.12); }
+
+/* Booking slip that prints (adapted from the receipt-printer skill) */
+.bk-card { position: relative; z-index: 1; background: #1c1f24; color: #ededed; padding: 18px; border-radius: 4px; }
+.bk-status { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 14px; color: rgba(237, 237, 237, 0.6); }
+.bk-dot { width: 14px; height: 14px; border-radius: 99px; border: 2px solid currentColor; border-top-color: transparent; animation: bk-spin 0.8s linear infinite; }
+.bk-card.is-done .bk-status { color: #ededed; }
+.bk-card.is-done .bk-dot { animation: none; border: 0; background: #f06fae; }
+@keyframes bk-spin { to { transform: rotate(360deg); } }
+.bk-slot { overflow: hidden; transition: height 1.5s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.bk-wrap { margin: 0 12px; filter: drop-shadow(0 18px 30px rgba(28, 31, 36, 0.28)); transition: transform 1.5s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.bk-paper { --tear: 9px; display: block; padding: 22px 20px calc(26px + var(--tear)); background: #fff; color: #1c1f24; font-size: 13px; font-variant-numeric: tabular-nums;
+  -webkit-mask: linear-gradient(#000 0 0) top/100% calc(100% - var(--tear)) no-repeat, conic-gradient(from -45deg at bottom, #0000 0 90deg, #000 0) bottom/14px var(--tear) repeat-x;
+  mask: linear-gradient(#000 0 0) top/100% calc(100% - var(--tear)) no-repeat, conic-gradient(from -45deg at bottom, #0000 0 90deg, #000 0) bottom/14px var(--tear) repeat-x; }
+.bk-rule { border: 0; border-top: 1px dashed #c9c9cc; margin: 12px 0; }
+.bk-row { display: flex; justify-content: space-between; gap: 12px; }
+.bk-row + .bk-row { margin-top: 5px; }
+.bk-faint { color: #85898f; }
+.bk-strong { font-size: 14px; font-weight: 600; }
+.bk-meta { font-size: 11.5px; }
+.bk-barcode { margin-top: 18px; height: 42px; background: repeating-linear-gradient(90deg, #1c1f24 0 2px, transparent 2px 4px, #1c1f24 4px 5px, transparent 5px 9px, #1c1f24 9px 12px, transparent 12px 14px); }
+.bk-link { display: block; margin-top: 14px; text-align: center; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+@media print { .bk-card { display: none; } .bk-slot { height: auto !important; overflow: visible; } .bk-wrap { transform: none !important; filter: none; margin: 0; } }
+@media (prefers-reduced-motion: reduce) { .bk-slot, .bk-wrap { transition: none !important; } .bk-dot { animation: none !important; } }
