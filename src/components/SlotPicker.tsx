@@ -25,7 +25,7 @@ export function SlotPicker({ days, query, timezone, value, onChange, refreshKey 
           const on = date === d;
           return (
             <button type="button" key={d} onClick={() => { setDate(d); onChange(""); }}
-              className={`shrink-0 rounded-2xl border px-3.5 py-2.5 text-center text-xs transition ${on ? "border-transparent bg-plum-900 text-white shadow-lg shadow-plum-900/30" : "border-stone-200 bg-white hover:border-stone-300"}`}>
+              className={`shrink-0 rounded-2xl border px-3.5 py-2.5 text-center text-xs transition ${on ? "border-transparent bg-navy-900 text-white shadow-lg shadow-navy-900/30" : "border-stone-200 bg-white hover:border-stone-300"}`}>
               <span className={`block ${on ? "text-white/70" : "text-stone-500"}`}>{dt.toLocaleDateString("en-GB", { weekday: "short" })}</span>
               <span className="block font-display text-lg font-bold">{dt.getDate()}</span>
               <span className={`block ${on ? "text-white/70" : "text-stone-500"}`}>{dt.toLocaleDateString("en-GB", { month: "short" })}</span>
@@ -42,7 +42,7 @@ export function SlotPicker({ days, query, timezone, value, onChange, refreshKey 
           <motion.div key={date} initial={{ opacity: 0, rotateX: -20 }} animate={{ opacity: 1, rotateX: 0 }} transition={{ duration: 0.35 }} style={{ transformPerspective: 800 }} className="grid grid-cols-4 gap-2 sm:grid-cols-6">
             {slots.map((s) => (
               <button type="button" key={s} onClick={() => onChange(s)}
-                className={`rounded-xl border py-2.5 text-sm font-semibold transition ${value === s ? "border-transparent bg-gradient-to-br from-brand-600 to-coral-500 text-white shadow-lg shadow-brand-500/30" : "border-stone-200 bg-white hover:border-brand-400 hover:text-brand-600"}`}>
+                className={`rounded-xl border py-2.5 text-sm font-semibold transition ${value === s ? "border-transparent bg-gradient-to-br from-brand-600 to-azure-500 text-white shadow-lg shadow-brand-500/30" : "border-stone-200 bg-white hover:border-brand-400 hover:text-brand-600"}`}>
                 {fmt.format(new Date(s))}
               </button>
             ))}

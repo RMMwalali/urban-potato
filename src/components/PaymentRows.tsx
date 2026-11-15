@@ -74,7 +74,7 @@ export function PaymentRows({ initialCode, due, methods, requireVerified, curren
                   const I = META[m]?.icon ?? Banknote;
                   return (
                     <button type="button" key={m} onClick={() => update(i, { method: m, lookup: null, reference: "", payerName: null, smsText: null, tendered: null })}
-                      className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition ${r.method === m ? "bg-plum-900 text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}>
+                      className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition ${r.method === m ? "bg-navy-900 text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}>
                       <I className="h-4 w-4" />{META[m]?.label ?? m}
                     </button>
                   );
@@ -113,7 +113,7 @@ export function PaymentRows({ initialCode, due, methods, requireVerified, curren
                 )}
                 {!requireVerified && !(lk && (lk.status === "verified" || lk.status === "unverified")) && (
                   <details className="text-sm" open={!!r.smsText}>
-                    <summary className="flex cursor-pointer items-center gap-1.5 font-semibold text-brand-600"><MessageSquareText className="h-4 w-4" /> Paste the M-Pesa SMS instead</summary>
+                    <summary className="flex cursor-pointer items-center gap-1.5 font-semibold text-azure-600"><MessageSquareText className="h-4 w-4" /> Paste the M-Pesa SMS instead</summary>
                     <textarea rows={3} className="input mt-2" placeholder="SKF3H7XQ2P Confirmed. Ksh1,500.00 received from JOHN DOE 0712345678 on…" value={r.smsText ?? ""}
                       onChange={(e) => {
                         const text = e.target.value;
@@ -134,7 +134,7 @@ export function PaymentRows({ initialCode, due, methods, requireVerified, curren
                 <label className="flex items-center gap-2 text-stone-600">Cash received
                   <input type="number" min={0} value={r.tendered ?? ""} onChange={(e) => update(i, { tendered: e.target.value ? Number(e.target.value) : null })} className="input w-28" placeholder={String(r.amount)} />
                 </label>
-                {r.tendered != null && r.tendered >= r.amount && <span className="rounded-lg bg-lime-glow/40 px-2.5 py-1 font-semibold">Change: {fmt(r.tendered - r.amount)}</span>}
+                {r.tendered != null && r.tendered >= r.amount && <span className="rounded-lg bg-petal/40 px-2.5 py-1 font-semibold">Change: {fmt(r.tendered - r.amount)}</span>}
                 {r.tendered != null && r.tendered > 0 && r.tendered < r.amount && <span className="text-rose-600">Less than the cash amount</span>}
               </div>
             )}

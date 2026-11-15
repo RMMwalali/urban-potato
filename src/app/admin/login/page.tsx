@@ -9,11 +9,11 @@ export const metadata = { title: "Admin sign in", robots: { index: false, follow
 export default async function AdminLogin() {
   if (await getAdmin()) redirect("/admin");
   return (
-    <main className="flex min-h-screen items-center justify-center bg-plum-950 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-navy-950 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-white">
-          <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-glow text-plum-950"><ShieldCheck className="h-6 w-6" /></span>
-          <h1 className="font-display text-2xl font-bold">SpaDesk HQ</h1>
+          <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-petal text-navy-950"><ShieldCheck className="h-6 w-6" /></span>
+          <h1 className="font-display text-2xl font-bold">Darling HQ</h1>
           <p className="text-sm text-white/50">Platform administrators only</p>
         </div>
         <div className="card p-6">

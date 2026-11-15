@@ -67,7 +67,7 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
           ))}
         </div>
         <details className="mt-4 rounded-xl border border-dashed border-stone-300 p-4">
-          <summary className="cursor-pointer text-sm font-semibold text-brand-600">+ Add another path</summary>
+          <summary className="cursor-pointer text-sm font-semibold text-azure-600">+ Add another path</summary>
           <ActionForm action={saveSeoPage} submit="Add" className="mt-3 grid gap-3 sm:grid-cols-2">
             <input name="path" placeholder="/pricing" className="input" required />
             <input name="title" placeholder="Title" className="input" />

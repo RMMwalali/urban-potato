@@ -1,4 +1,4 @@
-# SpaDesk
+# Darling
 
 Management platform for salons, barbershops and spas: online booking, client records, M-Pesa checkout, SMS/WhatsApp reminders and reports, replacing paper books and scattered Instagram/WhatsApp DMs. Multi-tenant SaaS with a 14-day free trial and a platform admin panel.
 
@@ -34,10 +34,10 @@ Feature choices are based on real complaints about existing salon software; see 
 - **Audit log**: every admin action.
 
 ## Design
-Bold plum/magenta/coral palette with lime accents, Bricolage Grotesque display type, **lucide** icons only. 3D effects (tilt-with-shine, flip cards, mouse-parallax depth layers, 3D reveals) follow the `3d-animations` skill in `.claude/skills/3d-animations` and respect `prefers-reduced-motion`.
+Pink, blue and white. Pink (`brand-*`, #db2777/#ec4899) for primary actions, blue (`azure-*`, #2563eb) for links and accents, deep blue (`navy-*`) for the sidebar and hero, and a near-white page (#f8fafc) with white cards. Typography follows databricks.com, two fonts only: **DM Sans** for all text (headings medium/semibold, slightly tight tracking) and **DM Mono** for M-Pesa codes and receipts. **lucide** icons only. 3D effects (tilt-with-shine, flip cards, mouse-parallax depth layers, 3D reveals) follow the `3d-animations` skill in `.claude/skills/3d-animations` and respect `prefers-reduced-motion`.
 
 ## Stack
-Next.js 15 · PostgreSQL + Prisma 6 · Tailwind CSS 4 · framer-motion · lucide-react · jose/bcrypt sessions · Luxon.
+Next.js 15 · Neon Postgres + Prisma 6 (node-postgres adapter) · Tailwind CSS 4 · framer-motion · lucide-react · jose/bcrypt sessions · Luxon.
 
 ## Deploy to Vercel
 

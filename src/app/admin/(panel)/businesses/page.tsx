@@ -43,7 +43,7 @@ export default async function BusinessesPage({ searchParams }: { searchParams: P
       {deleted && <div className="mb-4"><Alert tone="success">Salon deleted.</Alert></div>}
       <div className="mb-4 flex flex-wrap gap-2">
         {FILTERS.map(([k, label]) => (
-          <Link key={k} href={`?status=${k}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${status === k ? "bg-plum-900 text-white" : "bg-white text-stone-600 ring-1 ring-stone-200 hover:ring-stone-300"}`}>{label}</Link>
+          <Link key={k} href={`?status=${k}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${status === k ? "bg-navy-900 text-white" : "bg-white text-stone-600 ring-1 ring-stone-200 hover:ring-stone-300"}`}>{label}</Link>
         ))}
       </div>
       <div className="card overflow-x-auto">

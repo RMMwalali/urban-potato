@@ -5,7 +5,7 @@ export function PageHeader({ title, sub, icon: Icon, children }: { title: string
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="flex items-center gap-4">
         {Icon && (
-          <span className="hidden h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-coral-500 text-white shadow-lg shadow-brand-500/30 sm:flex">
+          <span className="hidden h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-azure-500 text-white shadow-lg shadow-brand-500/30 sm:flex">
             <Icon className="h-6 w-6" strokeWidth={2.2} />
           </span>
         )}
@@ -21,12 +21,12 @@ export function PageHeader({ title, sub, icon: Icon, children }: { title: string
 
 export function Stat({ label, value, sub, icon: Icon, tone = "brand" }: { label: string; value: React.ReactNode; sub?: React.ReactNode; icon?: LucideIcon; tone?: "brand" | "dark" | "lime" | "plain" }) {
   const tones = {
-    brand: "bg-gradient-to-br from-brand-600 to-coral-500 text-white border-transparent",
-    dark: "bg-plum-900 text-white border-transparent",
-    lime: "bg-lime-glow text-plum-950 border-transparent",
+    brand: "bg-gradient-to-br from-brand-600 to-azure-500 text-white border-transparent",
+    dark: "bg-navy-900 text-white border-transparent",
+    lime: "bg-petal text-navy-950 border-transparent",
     plain: "bg-white",
   } as const;
-  const subTone = tone === "plain" ? "text-stone-500" : tone === "lime" ? "text-plum-800/70" : "text-white/70";
+  const subTone = tone === "plain" ? "text-stone-500" : tone === "lime" ? "text-navy-800/70" : "text-white/70";
   return (
     <div className={`card relative h-full overflow-hidden p-5 ${tones[tone]}`}>
       {Icon && <Icon className={`absolute -right-3 -bottom-3 h-20 w-20 ${tone === "plain" ? "text-stone-100" : "opacity-15"}`} strokeWidth={1.5} />}
@@ -62,7 +62,7 @@ export const BUSINESS_STATUS_STYLE: Record<string, string> = {
 
 export function TitleIcon({ icon: Icon }: { icon: LucideIcon }) {
   return (
-    <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-coral-500 text-white shadow-lg shadow-brand-500/30 sm:inline-flex">
+    <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-azure-500 text-white shadow-lg shadow-brand-500/30 sm:inline-flex">
       <Icon className="h-5 w-5" strokeWidth={2.2} />
     </span>
   );

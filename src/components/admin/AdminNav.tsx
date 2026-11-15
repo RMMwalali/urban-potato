@@ -21,7 +21,7 @@ export function AdminNav() {
         const active = href === "/admin" ? path === "/admin" : path.startsWith(href);
         return (
           <Link key={href} href={href} className={`flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white"}`}>
-            <Icon className={`h-[18px] w-[18px] ${active ? "text-lime-glow" : ""}`} />
+            <Icon className={`h-[18px] w-[18px] ${active ? "text-petal" : ""}`} />
             {label}
           </Link>
         );

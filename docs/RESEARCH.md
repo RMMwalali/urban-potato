@@ -29,7 +29,7 @@ Ranked roughly by how often each came up.
 
 reddit.com blocks automated access, so 652 posts and comments were pulled from the Arctic Shift archive of Reddit. Quotes are verbatim archive text with their original permalinks (live pages weren't loaded, so posts may since have been edited). Some threads were written by founders promoting their own tools. **There was no Kenya/M-Pesa content on Reddit.** Counts are rough.
 
-| # | Pain point | Example | Status in SpaDesk |
+| # | Pain point | Example | Status in Darling |
 |---|---|---|---|
 | 1 | **No-shows, late cancels, deposits** (by far the biggest, ~167 hits) | "people trying to dispute their deposit with their bank because they cancelled their appointment day of" ([r/lashextensions](https://www.reddit.com/r/lashextensions/comments/1cb0t8v/)) | ✅ M-Pesa deposits verified against Safaricom, policy shown at booking. ⏳ STK-push "pay to hold the slot" with auto-expiry |
 | 2 | **Forced client accounts** (Vagaro, StyleSeat, Booksy) | "booking is too difficult, because of the account creation burden" ([r/MassageTherapists](https://www.reddit.com/r/MassageTherapists/comments/1x0qiq3/)) | ✅ Guest booking with name + phone, no app or account |

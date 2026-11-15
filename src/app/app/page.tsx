@@ -49,7 +49,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-brand-600">{greeting}, {user.name.split(" ")[0]}</p>
+          <p className="text-sm font-semibold text-azure-600">{greeting}, {user.name.split(" ")[0]}</p>
           <h1 className="page-title mt-1">{b.name}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -62,12 +62,12 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       {isManager && doneCount < steps.length && (
         <Reveal>
           <section className="card overflow-hidden">
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-plum-950 to-plum-800 px-6 py-5 text-white">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-navy-950 to-navy-800 px-6 py-5 text-white">
               <div>
                 <p className="font-display text-xl font-bold">Get set up in 5 steps</p>
                 <p className="text-sm text-white/60">{doneCount} of {steps.length} done</p>
               </div>
-              <div className="h-2 w-48 rounded-full bg-white/10"><div className="h-2 rounded-full bg-gradient-to-r from-lime-glow to-emerald-400" style={{ width: `${(doneCount / steps.length) * 100}%` }} /></div>
+              <div className="h-2 w-48 rounded-full bg-white/10"><div className="h-2 rounded-full bg-gradient-to-r from-petal to-emerald-400" style={{ width: `${(doneCount / steps.length) * 100}%` }} /></div>
             </div>
             <ul className="divide-y divide-stone-100">
               {steps.map((s) => (
@@ -95,7 +95,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         <section className="card lg:col-span-2">
           <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
             <h2 className="section-title">Today&apos;s schedule</h2>
-            <Link href="/app/calendar" className="flex items-center gap-1 text-sm font-semibold text-brand-600">Calendar <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="/app/calendar" className="flex items-center gap-1 text-sm font-semibold text-azure-600">Calendar <ArrowRight className="h-4 w-4" /></Link>
           </div>
           {appts.length === 0 ? (
             <Empty icon={CalendarDays} title="Nothing booked today yet">Share your booking link or add a walk-in.</Empty>
@@ -120,13 +120,13 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         </section>
 
         <TiltCard max={6} className="rounded-2xl">
-          <section className="relative h-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-500 to-coral-500 p-6 text-white shadow-xl shadow-brand-500/30">
+          <section className="relative h-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-500 to-azure-500 p-6 text-white shadow-xl shadow-brand-500/30">
             <Link2 className="absolute -right-6 -bottom-6 h-36 w-36 opacity-15" />
             <h2 className="font-display text-xl font-bold">Your booking link</h2>
             <p className="mt-1 text-sm text-white/80">Put it in your Instagram, TikTok and Facebook bios and your WhatsApp Business profile. Clients book themselves, no app needed.</p>
             <code className="mt-4 block break-all rounded-xl bg-black/20 px-3 py-2.5 text-xs">{bookingUrl}</code>
             <div className="relative mt-4 flex flex-wrap gap-2">
-              <CopyButton text={bookingUrl} className="btn btn-sm bg-white text-brand-700 hover:bg-lime-glow"><Copy className="h-3.5 w-3.5" /> Copy</CopyButton>
+              <CopyButton text={bookingUrl} className="btn btn-sm bg-white text-brand-700 hover:bg-petal"><Copy className="h-3.5 w-3.5" /> Copy</CopyButton>
               <a className="btn btn-sm bg-white/15 text-white ring-1 ring-white/30 hover:bg-white/25" target="_blank" href={`https://wa.me/?text=${encodeURIComponent(`Book your next appointment at ${b.name}: ${bookingUrl}`)}`}><MessageSquare className="h-3.5 w-3.5" /> Share on WhatsApp</a>
             </div>
             {!b.bookingEnabled && <p className="relative mt-3 text-xs text-white/90">Online booking is switched off in Settings.</p>}

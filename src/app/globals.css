@@ -1,56 +1,63 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Bricolage Grotesque Variable", "Inter Variable", ui-sans-serif, sans-serif;
+  /* Two fonts only, as on databricks.com: DM Sans for all text, DM Mono for codes and receipts */
+  --font-sans: "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
 
-  /* Brand: bold magenta → coral, on deep plum */
-  --color-brand-50: #fff0f6;
-  --color-brand-100: #ffe1ee;
-  --color-brand-200: #ffc2dc;
-  --color-brand-300: #ff8fbd;
-  --color-brand-400: #ff4f96;
-  --color-brand-500: #f0197a;
-  --color-brand-600: #d10a66;
-  --color-brand-700: #a80853;
-  --color-coral-400: #ff8a5c;
-  --color-coral-500: #ff6b3d;
-  --color-plum-950: #120a17;
-  --color-plum-900: #1c1023;
-  --color-plum-800: #2a1834;
-  --color-plum-700: #3b2348;
-  --color-lime-glow: #d4ff5a;
-  --color-ink: #17111b;
-  --color-canvas: #f6f2ef;
+  /* Darling palette: pink (primary), blue (secondary, links, dark surfaces), white */
+  --color-brand-50: #fdf2f8;   /* pink */
+  --color-brand-100: #fce7f3;
+  --color-brand-200: #fbcfe8;
+  --color-brand-300: #f9a8d4;
+  --color-brand-400: #f472b6;
+  --color-brand-500: #ec4899;
+  --color-brand-600: #db2777;
+  --color-brand-700: #be185d;
+  --color-petal: #fbcfe8;      /* soft pink highlight */
+  --color-azure-50: #eff6ff;   /* blue */
+  --color-azure-400: #60a5fa;
+  --color-azure-500: #3b82f6;
+  --color-azure-600: #2563eb;
+  --color-azure-700: #1d4ed8;
+  --color-navy-950: #0b1b3a;   /* deep blue surfaces (sidebar, hero) */
+  --color-navy-900: #12264d;
+  --color-navy-800: #1c3766;
+  --color-navy-700: #284a80;
+  --color-ink: #0f1f3d;
+  --color-canvas: #f8fafc;     /* near-white page background; cards are pure white */
+  --color-oat: #f1f5f9;
 }
 
-body { @apply bg-canvas text-ink antialiased; font-feature-settings: "cv11", "ss01"; }
+body { @apply bg-canvas text-ink antialiased; }
+h1, h2, h3, .page-title, .section-title, .stat-value { letter-spacing: -0.01em; }
 
 @utility btn {
   @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:scale-[0.98] whitespace-nowrap;
 }
 @utility text-gradient {
-  @apply bg-gradient-to-r from-brand-500 via-brand-400 to-coral-500 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-brand-500 via-brand-400 to-azure-500 bg-clip-text text-transparent;
 }
 
 @layer components {
-  .btn-primary { @apply btn bg-brand-600 text-white shadow-[0_8px_24px_-8px_rgba(209,10,102,0.6)] hover:bg-brand-500 hover:shadow-[0_10px_30px_-8px_rgba(240,25,122,0.7)]; }
-  .btn-bold { @apply btn bg-gradient-to-r from-brand-600 to-coral-500 text-white shadow-[0_10px_30px_-10px_rgba(240,25,122,0.8)] hover:brightness-110; }
-  .btn-dark { @apply btn bg-plum-900 text-white hover:bg-plum-800; }
+  .btn-primary { @apply btn bg-brand-600 text-white shadow-[0_8px_24px_-8px_rgba(219,39,119,0.45)] hover:bg-brand-500 hover:shadow-[0_10px_30px_-8px_rgba(236,72,153,0.55)]; }
+  .btn-bold { @apply btn bg-gradient-to-r from-brand-600 to-azure-500 text-white shadow-[0_10px_30px_-10px_rgba(219,39,119,0.55)] hover:brightness-110; }
+  .btn-dark { @apply btn bg-navy-900 text-white hover:bg-navy-800; }
   .btn-secondary { @apply btn border border-stone-200 bg-white text-ink shadow-sm hover:border-stone-300 hover:bg-stone-50; }
   .btn-ghost { @apply btn text-stone-600 hover:bg-stone-100 hover:text-ink; }
   .btn-danger { @apply btn border border-rose-200 bg-white text-rose-700 hover:bg-rose-50; }
   .btn-sm { @apply px-3 py-1.5 text-xs rounded-lg; }
-  .input { @apply block w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-stone-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100; }
+  .input { @apply block w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-stone-400 focus:border-azure-500 focus:ring-4 focus:ring-azure-50; }
   .label { @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-stone-500; }
   .card { @apply rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(23,17,27,0.04),0_8px_24px_-12px_rgba(23,17,27,0.08)]; }
   .badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold; }
   .table { @apply w-full text-left text-sm; }
   .table th { @apply border-b border-stone-200 bg-stone-50/60 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-stone-500; }
   .table td { @apply border-b border-stone-100 px-4 py-3.5 align-top; }
-  .page-title { @apply font-display text-3xl font-bold tracking-tight sm:text-4xl; }
+  .page-title { @apply font-display text-3xl font-semibold sm:text-4xl; }
   .section-title { @apply font-display text-lg font-bold tracking-tight; }
-  .stat-value { @apply font-display text-2xl font-bold tracking-tight sm:text-3xl; }
+  .stat-value { @apply font-display text-2xl font-semibold sm:text-3xl; }
 }
 
 @media (prefers-reduced-motion: reduce) {

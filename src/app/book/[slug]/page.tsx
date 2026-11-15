@@ -28,11 +28,11 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
 
   return (
     <main className="min-h-screen bg-canvas">
-      <header className="relative overflow-hidden bg-plum-950 px-4 pt-10 pb-24 text-center text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(240,25,122,0.45),transparent_60%)]" />
+      <header className="relative overflow-hidden bg-navy-950 px-4 pt-10 pb-24 text-center text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(236,72,153,0.45),transparent_60%)]" />
         <div className="relative">
-          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-coral-500 font-display text-2xl font-extrabold shadow-xl shadow-brand-600/40">{b.name[0]}</span>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{b.name}</h1>
+          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-azure-500 font-display text-2xl font-bold shadow-xl shadow-brand-600/40">{b.name[0]}</span>
+          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{b.name}</h1>
           <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm text-white/70">
             {b.address && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" />{b.address}</span>}
             <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" />{b.openTime}–{b.closeTime}</span>
@@ -56,7 +56,7 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
             policy={policyText(b)}
           />
         )}
-        <p className="mt-8 flex items-center justify-center gap-1.5 text-xs text-stone-400"><Sparkles className="h-3.5 w-3.5" /> Powered by SpaDesk</p>
+        <p className="mt-8 flex items-center justify-center gap-1.5 text-xs text-stone-400"><Sparkles className="h-3.5 w-3.5" /> Powered by Darling</p>
       </div>
     </main>
   );

@@ -78,7 +78,7 @@ export async function toggleService(id: string) {
 
 /* ---------- Staff ---------- */
 
-const COLORS = ["#c084fc", "#f472b6", "#60a5fa", "#34d399", "#fbbf24", "#fb7185", "#22d3ee", "#a3e635"];
+const COLORS = ["#ec4899", "#3b82f6", "#f472b6", "#60a5fa", "#db2777", "#2563eb", "#f9a8d4", "#93c5fd"]; // pinks & blues
 
 export async function saveStaff(fd: FormData) {
   const user = await requireUser(MANAGERS);

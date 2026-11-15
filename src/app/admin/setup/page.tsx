@@ -14,10 +14,10 @@ export default async function AdminSetup({ searchParams }: { searchParams: Promi
   if ((await db.platformAdmin.count()) > 0) redirect("/admin/login");
   const ok = !!process.env.ADMIN_SETUP_TOKEN && token === process.env.ADMIN_SETUP_TOKEN;
   return (
-    <main className="flex min-h-screen items-center justify-center bg-plum-950 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-navy-950 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-white">
-          <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-glow text-plum-950"><ShieldCheck className="h-6 w-6" /></span>
+          <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-petal text-navy-950"><ShieldCheck className="h-6 w-6" /></span>
           <h1 className="font-display text-2xl font-bold">Create the first admin</h1>
         </div>
         <div className="card p-6">

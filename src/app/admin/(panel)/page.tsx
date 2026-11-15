@@ -45,7 +45,7 @@ export default async function AdminHome() {
         <section className="card">
           <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
             <h2 className="section-title">Trials ending soon</h2>
-            <Link href="/admin/businesses?status=trial" className="text-sm font-semibold text-brand-600">All trials</Link>
+            <Link href="/admin/businesses?status=trial" className="text-sm font-semibold text-azure-600">All trials</Link>
           </div>
           {expiring.length === 0 ? <p className="p-5 text-sm text-stone-500">No trials ending in the next 3 days.</p> : (
             <ul className="divide-y divide-stone-100">
@@ -60,7 +60,7 @@ export default async function AdminHome() {
         <section className="card">
           <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
             <h2 className="section-title">Newest salons</h2>
-            <Link href="/admin/businesses" className="text-sm font-semibold text-brand-600">All salons</Link>
+            <Link href="/admin/businesses" className="text-sm font-semibold text-azure-600">All salons</Link>
           </div>
           {businesses.length === 0 ? <p className="p-5 text-sm text-stone-500">No salons have signed up yet.</p> : (
             <ul className="divide-y divide-stone-100">

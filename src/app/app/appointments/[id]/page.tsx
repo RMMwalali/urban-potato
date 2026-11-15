@@ -57,7 +57,7 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
             </div>
             {noShows >= 2 && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"><b>Heads up:</b> {noShows} previous no-shows. Consider asking for a deposit.</p>}
             {num(a.depositAmount) > 0 && (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-lime-glow/30 px-3 py-2 text-sm">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-petal/30 px-3 py-2 text-sm">
                 <span><b>Deposit {money(a.depositAmount, b.currency)}</b> · M-Pesa {a.depositRef ?? "-"} {a.depositVerified ? "· verified" : "· not yet checked"}</span>
                 {!a.depositVerified && <form action={verifyDeposit.bind(null, a.id)}><button className="btn-secondary btn-sm">Mark verified</button></form>}
               </div>

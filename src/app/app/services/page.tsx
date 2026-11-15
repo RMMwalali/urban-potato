@@ -18,8 +18,8 @@ export default async function ServicesPage() {
     <div className="space-y-5">
       <PageHeader title="Services & prices" sub="Your menu: what clients can book and what you charge" icon={Scissors} />
       {services.length === 0 && (
-        <div className="card bg-gradient-to-br from-plum-950 to-plum-800 p-6 text-white">
-          <p className="flex items-center gap-2 font-display text-xl font-bold"><Sparkles className="h-5 w-5 text-lime-glow" /> Start from a template</p>
+        <div className="card bg-gradient-to-br from-navy-950 to-navy-800 p-6 text-white">
+          <p className="flex items-center gap-2 font-display text-xl font-bold"><Sparkles className="h-5 w-5 text-petal" /> Start from a template</p>
           <p className="mt-1 text-sm text-white/70">Add a typical menu in one click, then edit names, times and prices to match yours. Or add your own services below.</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {Object.entries(SERVICE_TEMPLATES).map(([k, t]) => (

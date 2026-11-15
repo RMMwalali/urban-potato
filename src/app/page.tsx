@@ -38,11 +38,11 @@ export default async function Home() {
   return (
     <main className="overflow-x-hidden bg-canvas">
       {/* HERO */}
-      <section className="relative bg-plum-950 text-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(240,25,122,0.35),transparent_55%),radial-gradient(ellipse_at_bottom_left,rgba(255,107,61,0.2),transparent_50%)]" />
+      <section className="relative bg-navy-950 text-white">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(236,72,153,0.35),transparent_55%),radial-gradient(ellipse_at_bottom_left,rgba(26,133,214,0.2),transparent_50%)]" />
         <header className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5 font-display text-xl font-bold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-coral-500"><Sparkles className="h-5 w-5" /></span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-azure-500"><Sparkles className="h-5 w-5" /></span>
             {general.siteName}
           </Link>
           <nav className="flex items-center gap-2">
@@ -60,8 +60,8 @@ export default async function Home() {
 
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-2 lg:pt-16 lg:pb-28">
           <div>
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold ring-1 ring-white/15"><Zap className="h-3.5 w-3.5 text-lime-glow" /> {general.trialDays}-day free trial · no card needed</p>
-            <h1 className="font-display text-5xl leading-[1.02] font-extrabold tracking-tight sm:text-6xl lg:text-7xl">
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold ring-1 ring-white/15"><Zap className="h-3.5 w-3.5 text-petal" /> {general.trialDays}-day free trial · no card needed</p>
+            <h1 className="font-display text-5xl leading-[1.02] font-bold tracking-tight sm:text-6xl lg:text-7xl">
               Ditch the paper book. <span className="text-gradient">Fill every chair.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg text-white/70">
@@ -72,7 +72,7 @@ export default async function Home() {
               <a href="#how" className="btn px-6 py-3.5 text-base text-white ring-1 ring-white/20 hover:bg-white/10">See how it works</a>
             </div>
             <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/70">
-              {["0% commission on clients", "M-Pesa built in", "Cancel any time"].map((t) => <li key={t} className="flex items-center gap-1.5"><Check className="h-4 w-4 text-lime-glow" />{t}</li>)}
+              {["0% commission on clients", "M-Pesa built in", "Cancel any time"].map((t) => <li key={t} className="flex items-center gap-1.5"><Check className="h-4 w-4 text-petal" />{t}</li>)}
             </ul>
           </div>
           <HeroVisual />
@@ -83,7 +83,7 @@ export default async function Home() {
       <section id="how" className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-bold tracking-widest text-brand-600 uppercase">Built from real complaints</p>
-          <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">We read what salon owners hate about their software.</h2>
+          <h2 className="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">We read what salon owners hate about their software.</h2>
           <p className="mt-4 text-lg text-stone-600">Then we built the opposite. Hover or tap a card to flip it.</p>
         </Reveal>
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -93,16 +93,16 @@ export default async function Home() {
                 className="h-56"
                 front={
                   <div className="flex h-full flex-col justify-between rounded-3xl bg-white p-6 shadow-lg ring-1 ring-stone-200">
-                    <span className="text-xs font-bold tracking-widest text-rose-500 uppercase">The complaint</span>
+                    <span className="text-xs font-bold tracking-widest text-brand-600 uppercase">The complaint</span>
                     <p className="font-display text-xl leading-snug font-bold">{p.pain}</p>
                     <span className="text-xs text-stone-400">Flip for the fix →</span>
                   </div>
                 }
                 back={
-                  <div className="flex h-full flex-col justify-between rounded-3xl bg-gradient-to-br from-plum-900 to-brand-700 p-6 text-white shadow-xl">
-                    <span className="text-xs font-bold tracking-widest text-lime-glow uppercase">How we fix it</span>
+                  <div className="flex h-full flex-col justify-between rounded-3xl bg-gradient-to-br from-navy-900 to-brand-700 p-6 text-white shadow-xl">
+                    <span className="text-xs font-bold tracking-widest text-petal uppercase">How we fix it</span>
                     <p className="text-lg leading-snug font-semibold">{p.fix}</p>
-                    <Check className="h-6 w-6 text-lime-glow" />
+                    <Check className="h-6 w-6 text-petal" />
                   </div>
                 }
               />
@@ -115,14 +115,14 @@ export default async function Home() {
       <section className="bg-white py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <Reveal className="max-w-2xl">
-            <h2 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Everything the front desk needs. <span className="text-gradient">Nothing it doesn’t.</span></h2>
+            <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Everything the front desk needs. <span className="text-gradient">Nothing it doesn’t.</span></h2>
           </Reveal>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map(({ icon: Icon, title, body }, i) => (
               <Reveal key={title} delay={i * 0.05}>
                 <TiltCard max={7} className="rounded-3xl">
                   <div className="h-full rounded-3xl border border-stone-200 bg-canvas p-7">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-900 text-lime-glow"><Icon className="h-6 w-6" /></span>
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-navy-900 text-petal"><Icon className="h-6 w-6" /></span>
                     <h3 className="mt-5 font-display text-xl font-bold">{title}</h3>
                     <p className="mt-2 text-stone-600">{body}</p>
                   </div>
@@ -137,7 +137,7 @@ export default async function Home() {
       <section id="pricing" className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <Reveal>
-            <h2 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">One price. <span className="text-gradient">No surprises.</span></h2>
+            <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">One price. <span className="text-gradient">No surprises.</span></h2>
             <p className="mt-4 text-lg text-stone-600">No per-stylist fees, no commission on clients, no &quot;boost&quot; charges, no payment holds. Try everything free for {general.trialDays} days.</p>
             <ul className="mt-6 space-y-3">
               {[[ShieldCheck, "Your money goes straight to your own M-Pesa"], [Download, "Export all your data whenever you want"], [HeartHandshake, "Real human support on WhatsApp"], [Smartphone, "Works on the phone you already have"]].map(([Icon, t]) => {
@@ -148,19 +148,19 @@ export default async function Home() {
           </Reveal>
           <Reveal delay={0.1}>
             <TiltCard max={8} className="rounded-[2rem]">
-              <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-plum-950 via-plum-900 to-brand-700 p-10 text-white shadow-2xl shadow-brand-900/30">
-                <div className="animate-spin-slow absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[conic-gradient(from_0deg,rgba(240,25,122,0.5),rgba(255,107,61,0.4),rgba(212,255,90,0.3),rgba(240,25,122,0.5))] blur-3xl" />
-                <p className="relative text-xs font-bold tracking-widest text-lime-glow uppercase">Standard</p>
-                <p className="relative mt-4 font-display text-6xl font-extrabold">{price}<span className="text-xl font-semibold text-white/60">/mo</span></p>
+              <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-navy-950 via-navy-900 to-brand-700 p-10 text-white shadow-2xl shadow-brand-900/30">
+                <div className="animate-spin-slow absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[conic-gradient(from_0deg,rgba(236,72,153,0.5),rgba(26,133,214,0.4),rgba(255,199,223,0.3),rgba(236,72,153,0.5))] blur-3xl" />
+                <p className="relative text-xs font-bold tracking-widest text-petal uppercase">Standard</p>
+                <p className="relative mt-4 font-display text-6xl font-bold">{price}<span className="text-xl font-semibold text-white/60">/mo</span></p>
                 <p className="relative mt-2 text-white/70">Unlimited staff, clients and bookings.</p>
-                <Link href="/signup" className="relative mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 font-bold text-plum-950 hover:bg-lime-glow">Start {general.trialDays}-day free trial <ArrowRight className="h-5 w-5" /></Link>
+                <Link href="/signup" className="relative mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 font-bold text-navy-950 hover:bg-petal">Start {general.trialDays}-day free trial <ArrowRight className="h-5 w-5" /></Link>
               </div>
             </TiltCard>
           </Reveal>
         </div>
       </section>
 
-      <footer className="bg-plum-950 py-10 text-center text-sm text-white/50">
+      <footer className="bg-navy-950 py-10 text-center text-sm text-white/50">
         © {new Date().getFullYear()} {general.siteName}
         {general.supportEmail && <> · <a href={`mailto:${general.supportEmail}`} className="hover:text-white">{general.supportEmail}</a></>}
         {general.supportWhatsApp && <> · <a href={`https://wa.me/${general.supportWhatsApp}`} className="hover:text-white">WhatsApp</a></>}

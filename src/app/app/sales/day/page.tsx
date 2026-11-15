@@ -66,7 +66,7 @@ export default async function DaySummary({ searchParams }: { searchParams: Promi
             <tbody>
               {mpesa.length + deposits.filter((d) => d.depositRef).length === 0 && <tr><td colSpan={4} className="text-center text-stone-500">No M-Pesa payments.</td></tr>}
               {mpesa.map((p) => <tr key={p.id}><td>{fmtTime(p.createdAt, tz)}</td><td className="font-mono">{p.reference} {p.verified ? <span className="badge bg-emerald-100 text-emerald-800">verified</span> : <span className="badge bg-amber-100 text-amber-800">check</span>}</td><td>{p.payerName ?? p.sale.client?.name ?? "Walk-in"}</td><td className="text-right">{money(p.amount, c)}</td></tr>)}
-              {deposits.filter((d) => d.depositRef).map((d) => <tr key={d.id}><td>{fmtTime(d.createdAt, tz)}</td><td className="font-mono">{d.depositRef} <span className="badge bg-lime-glow/50 text-plum-900">deposit</span></td><td>{d.client.name}</td><td className="text-right">{money(d.depositAmount, c)}</td></tr>)}
+              {deposits.filter((d) => d.depositRef).map((d) => <tr key={d.id}><td>{fmtTime(d.createdAt, tz)}</td><td className="font-mono">{d.depositRef} <span className="badge bg-petal/50 text-navy-900">deposit</span></td><td>{d.client.name}</td><td className="text-right">{money(d.depositAmount, c)}</td></tr>)}
             </tbody>
           </table>
         </section>

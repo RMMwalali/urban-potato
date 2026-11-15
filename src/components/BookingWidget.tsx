@@ -26,9 +26,9 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
     return (
       <motion.div initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 90, damping: 14 }} style={{ transformPerspective: 1000 }}
         className="card overflow-hidden text-center">
-        <div className="bg-gradient-to-br from-plum-900 to-brand-700 px-6 py-8 text-white">
-          <CircleCheck className="mx-auto h-14 w-14 text-lime-glow" />
-          <h2 className="mt-3 font-display text-2xl font-extrabold">You&apos;re booked!</h2>
+        <div className="bg-gradient-to-br from-navy-900 to-brand-700 px-6 py-8 text-white">
+          <CircleCheck className="mx-auto h-14 w-14 text-petal" />
+          <h2 className="mt-3 font-display text-2xl font-bold">You&apos;re booked!</h2>
         </div>
         <div className="space-y-1 p-6">
           <p className="font-semibold">{state.done.service}{state.done.staff ? ` with ${state.done.staff}` : ""}</p>
@@ -42,7 +42,7 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
 
   const step = (n: number, title: string) => (
     <h2 className="mb-4 flex items-center gap-3 font-display text-lg font-bold">
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-coral-500 text-sm text-white">{n}</span>{title}
+      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-azure-500 text-sm text-white">{n}</span>{title}
     </h2>
   );
 
@@ -99,7 +99,7 @@ export function BookingWidget(props: { slug: string; currency: string; timezone:
           <div><label className="label">Phone number</label><input name="phone" className="input" required inputMode="tel" autoComplete="tel" placeholder="0712 345 678" /></div>
           <div><label className="label">Anything we should know? (optional)</label><textarea name="notes" rows={2} className="input" placeholder="Allergies, hair length, inspiration…" /></div>
           {deposit > 0 && props.mpesa && (
-            <div className="rounded-2xl bg-lime-glow/30 p-4 ring-1 ring-lime-500/30">
+            <div className="rounded-2xl bg-petal/30 p-4 ring-1 ring-lime-500/30">
               <p className="flex items-center gap-2 font-semibold"><Wallet className="h-4 w-4" /> Deposit: {money(deposit)}</p>
               <p className="mt-1 text-sm text-stone-700">
                 Pay via M-Pesa to {props.mpesa.type === "PAYBILL" ? <>Paybill <b>{props.mpesa.number}</b>, account <b>{props.mpesa.account || "your name"}</b></> : props.mpesa.type === "TILL" ? <>Buy Goods Till <b>{props.mpesa.number}</b></> : <><b>{props.mpesa.number}</b></>}, then enter the confirmation code. It comes off your final bill.

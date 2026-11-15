@@ -21,9 +21,9 @@ export default async function ManagePage({ params }: { params: Promise<{ token: 
     <main className="min-h-screen bg-canvas px-4 py-10">
       <div className="mx-auto max-w-lg space-y-5">
         <div className="card overflow-hidden">
-          <div className="bg-gradient-to-br from-plum-950 to-brand-700 p-6 text-white">
-            <p className="text-xs font-bold tracking-widest text-lime-glow uppercase">{b.name}</p>
-            <h1 className="mt-2 font-display text-2xl font-extrabold">{a.service.name}</h1>
+          <div className="bg-gradient-to-br from-navy-950 to-brand-700 p-6 text-white">
+            <p className="text-xs font-bold tracking-widest text-petal uppercase">{b.name}</p>
+            <h1 className="mt-2 font-display text-2xl font-bold">{a.service.name}</h1>
             <span className="mt-2 inline-block rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold">{STATUS_LABEL[a.status]}</span>
           </div>
           <ul className="space-y-3 p-6 text-sm">

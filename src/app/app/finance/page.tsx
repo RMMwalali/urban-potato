@@ -79,8 +79,8 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 px-5 py-4">
             <h2 className="section-title">M-Pesa payments received</h2>
             <div className="flex gap-1.5 text-sm">
-              <Link href={q({})} className={`rounded-full px-3 py-1 font-semibold ${!unmatchedOnly ? "bg-plum-900 text-white" : "bg-stone-100"}`}>All</Link>
-              <Link href={q({ show: "unmatched" })} className={`rounded-full px-3 py-1 font-semibold ${unmatchedOnly ? "bg-plum-900 text-white" : "bg-stone-100"}`}>Unmatched</Link>
+              <Link href={q({})} className={`rounded-full px-3 py-1 font-semibold ${!unmatchedOnly ? "bg-navy-900 text-white" : "bg-stone-100"}`}>All</Link>
+              <Link href={q({ show: "unmatched" })} className={`rounded-full px-3 py-1 font-semibold ${unmatchedOnly ? "bg-navy-900 text-white" : "bg-stone-100"}`}>Unmatched</Link>
             </div>
           </div>
           {txns.length === 0 ? (

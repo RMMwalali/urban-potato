@@ -10,11 +10,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const admin = await requireAdmin();
   return (
     <div className="min-h-screen md:flex">
-      <aside className="bg-plum-950 text-white md:sticky md:top-0 md:flex md:h-screen md:w-64 md:shrink-0 md:flex-col">
+      <aside className="bg-navy-950 text-white md:sticky md:top-0 md:flex md:h-screen md:w-64 md:shrink-0 md:flex-col">
         <div className="flex items-center gap-3 px-5 py-5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-lime-glow text-plum-950"><ShieldCheck className="h-5 w-5" /></span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-petal text-navy-950"><ShieldCheck className="h-5 w-5" /></span>
           <div>
-            <Link href="/admin" className="font-display text-lg font-bold">SpaDesk HQ</Link>
+            <Link href="/admin" className="font-display text-lg font-bold">Darling HQ</Link>
             <p className="text-xs text-white/50">Platform admin</p>
           </div>
         </div>

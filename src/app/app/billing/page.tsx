@@ -22,7 +22,7 @@ export default async function BillingPage() {
   const b = user.business;
   const s = accessState(b);
   const { general } = await getSettings();
-  const wa = general.supportWhatsApp ? `https://wa.me/${general.supportWhatsApp}?text=${encodeURIComponent(`Hi, I'd like to subscribe ${b.name} (${b.slug}) to SpaDesk.`)}` : null;
+  const wa = general.supportWhatsApp ? `https://wa.me/${general.supportWhatsApp}?text=${encodeURIComponent(`Hi, I'd like to subscribe ${b.name} (${b.slug}) to Darling.`)}` : null;
 
   const headline = {
     trial: `${s.daysLeft} ${s.daysLeft === 1 ? "day" : "days"} left in your free trial`,
@@ -37,8 +37,8 @@ export default async function BillingPage() {
     <div className="max-w-5xl">
       <PageHeader title="Plan & billing" icon={CreditCard} />
       {!s.ok && (
-        <div className="mb-6 flex items-start gap-4 rounded-2xl bg-plum-900 p-5 text-white">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10"><Lock className="h-5 w-5 text-lime-glow" /></span>
+        <div className="mb-6 flex items-start gap-4 rounded-2xl bg-navy-900 p-5 text-white">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10"><Lock className="h-5 w-5 text-petal" /></span>
           <div>
             <p className="font-display text-xl font-bold">{headline}</p>
             <p className="mt-1 text-sm text-white/70">Your data is safe: clients, bookings and sales are kept. Online booking is paused until you subscribe. Reach us below and we&apos;ll reactivate you right away.</p>
@@ -48,13 +48,13 @@ export default async function BillingPage() {
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">
           <TiltCard max={6}>
-            <div className="card relative overflow-hidden bg-gradient-to-br from-plum-950 via-plum-900 to-brand-700 p-8 text-white">
-              <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-coral-500/30 blur-3xl" />
-              <p className="text-xs font-semibold uppercase tracking-widest text-lime-glow">SpaDesk Standard</p>
-              <p className="mt-3 font-display text-5xl font-extrabold">{general.currency} {general.monthlyPrice.toLocaleString()}<span className="text-lg font-semibold text-white/60"> / month</span></p>
+            <div className="card relative overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-brand-700 p-8 text-white">
+              <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-azure-500/30 blur-3xl" />
+              <p className="text-xs font-semibold uppercase tracking-widest text-petal">Darling Standard</p>
+              <p className="mt-3 font-display text-5xl font-bold">{general.currency} {general.monthlyPrice.toLocaleString()}<span className="text-lg font-semibold text-white/60"> / month</span></p>
               <p className="mt-2 text-sm text-white/70">One flat price. No per-stylist fees, no commission, no surprises.</p>
               <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
-                {INCLUDED.map((i) => <li key={i} className="flex gap-2 text-sm"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-glow" />{i}</li>)}
+                {INCLUDED.map((i) => <li key={i} className="flex gap-2 text-sm"><Check className="mt-0.5 h-4 w-4 shrink-0 text-petal" />{i}</li>)}
               </ul>
             </div>
           </TiltCard>

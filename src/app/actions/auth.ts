@@ -33,7 +33,7 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
     const passwordHash = await hashPassword(password);
     user = await db.$transaction(async (tx) => {
       const business = await tx.business.create({ data: { name: businessName, slug, email, trialEndsAt } });
-      return tx.user.create({ data: { businessId: business.id, name, email, passwordHash, role: "OWNER", title: "Owner" } });
+      return tx.user.create({ data: { businessId: business.id, name, email, passwordHash, role: "OWNER", title: "Owner", color: "#ec4899" } });
     });
   } catch (e) {
     console.error("signup failed (database):", e);

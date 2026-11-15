@@ -34,8 +34,8 @@ export function Nav({ isManager }: { isManager: boolean }) {
                 active ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white"
               }`}
             >
-              {active && <span className="absolute top-2 bottom-2 left-0 hidden w-1 rounded-r bg-gradient-to-b from-brand-400 to-coral-500 md:block" />}
-              <Icon className={`h-[18px] w-[18px] ${active ? "text-brand-300" : ""}`} />
+              {active && <span className="absolute top-2 bottom-2 left-0 hidden w-1 rounded-r bg-gradient-to-b from-azure-400 to-azure-400 md:block" />}
+              <Icon className={`h-[18px] w-[18px] ${active ? "text-azure-400" : ""}`} />
               {label}
             </Link>
           );

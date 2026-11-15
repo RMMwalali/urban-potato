@@ -8,7 +8,7 @@ import type { Business } from "@prisma/client";
 
 export const SETTING_DEFAULTS = {
   general: {
-    siteName: "SpaDesk",
+    siteName: "Darling",
     supportEmail: "",
     supportPhone: "",
     supportWhatsApp: "",
@@ -18,8 +18,8 @@ export const SETTING_DEFAULTS = {
     currency: "KES",
   },
   seo: {
-    defaultTitle: "SpaDesk: salon & spa booking and management software",
-    titleTemplate: "%s · SpaDesk",
+    defaultTitle: "Darling: booking and management software for salons and spas",
+    titleTemplate: "%s · Darling",
     description: "Online booking, client records, M-Pesa checkout and SMS/WhatsApp reminders for salons, barbershops and spas. Free 14-day trial.",
     keywords: "salon software, spa booking, salon booking app Kenya, M-Pesa salon POS, beauty parlour management",
     ogImage: "",
