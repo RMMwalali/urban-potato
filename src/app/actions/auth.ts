@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
+import { createSession, destroySession, getSession, hashPassword, verifyPassword } from "@/lib/auth";
 import { slugify } from "@/lib/format";
 import { getSettings } from "@/lib/platform";
 import { createAdminSession } from "@/lib/admin-auth";
@@ -94,4 +94,11 @@ export async function login(_: FormState, fd: FormData): Promise<FormState> {
 export async function logout() {
   await destroySession();
   redirect("/login");
+}
+
+/** Product tour finished or skipped; don't auto-start it again. */
+export async function finishTour() {
+  const s = await getSession();
+  if (!s) return;
+  await db.user.updateMany({ where: { id: s.userId, businessId: s.businessId }, data: { tourDoneAt: new Date() } });
 }

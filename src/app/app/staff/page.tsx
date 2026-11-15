@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { MANAGERS, requireUser } from "@/lib/auth";
 import { displayPhone, num } from "@/lib/format";
 import { saveStaff, toggleStaff } from "@/app/actions/manage";
+import { PAY_TYPE_LABEL } from "@/lib/payroll";
 
 export const metadata = { title: "Staff" };
 
@@ -20,7 +21,7 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
     <div className="space-y-5">
       <div className="flex items-end justify-between">
         <h1 className="page-title">Staff</h1>
-        <Link href="?new=1" className="btn-primary">+ Add staff member</Link>
+        <Link href="?new=1" className="btn-primary" data-tour="staff-add">+ Add staff member</Link>
       </div>
 
       {showForm && (
@@ -40,6 +41,24 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
           </div>
           <div><label className="label">Commission %</label><input name="commissionRate" type="number" min={0} max={100} step="0.5" defaultValue={editing ? num(editing.commissionRate) : 0} className="input" /></div>
           <div><label className="label">{editing ? "New password (leave blank to keep)" : "Temporary password"}</label><input name="password" type="password" minLength={8} className="input" required={!editing} /></div>
+          <div className="border-t border-ink/30 pt-4 sm:col-span-3">
+            <p className="label-caps mb-3">Pay</p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className="label">Pay type</label>
+                <select name="payType" defaultValue={editing?.payType ?? "COMMISSION"} className="input">
+                  <option value="COMMISSION">Commission only</option>
+                  <option value="BASE_PLUS_COMMISSION">Base salary + commission</option>
+                  <option value="SALARY">Salary only</option>
+                  <option value="CHAIR_RENTAL">Chair rental (pays the salon)</option>
+                </select>
+              </div>
+              <div><label className="label">Monthly base salary</label><input name="baseSalary" type="number" min={0} defaultValue={editing ? Number(editing.baseSalary) : 0} className="input" /></div>
+              <div><label className="label">Chair rent per pay run</label><input name="chairRent" type="number" min={0} defaultValue={editing ? Number(editing.chairRent) : 0} className="input" /></div>
+              <div><label className="label">Pay to M-Pesa number</label><input name="payoutPhone" defaultValue={editing?.payoutPhone ? displayPhone(editing.payoutPhone) : ""} className="input" placeholder="Same as phone if blank" /></div>
+              <label className="flex items-start gap-2 self-end pb-2 text-sm sm:col-span-2"><input type="checkbox" name="statutory" defaultChecked={editing?.statutory ?? false} className="mt-0.5" /> <span>Employee: apply statutory deductions (PAYE, SHIF, NSSF, housing levy) set in Payroll settings</span></label>
+            </div>
+          </div>
           <label className="flex items-center gap-2 self-end pb-2 text-sm"><input type="checkbox" name="bookable" defaultChecked={editing?.bookable ?? true} className="accent-brand-600" /> Takes appointments</label>
           <fieldset className="sm:col-span-3">
             <legend className="label">Services they perform <span className="font-normal text-stone-400">(none ticked = all services)</span></legend>
@@ -70,7 +89,7 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
                 </td>
                 <td className="capitalize">{s.role.toLowerCase()}</td>
                 <td className="text-xs">{s.email}<br />{s.phone && displayPhone(s.phone)}</td>
-                <td>{num(s.commissionRate)}%</td>
+                <td>{num(s.commissionRate)}%<span className="block text-[12px] text-muted">{PAY_TYPE_LABEL[s.payType]}</span></td>
                 <td>{s.bookable ? "Yes" : "No"}<span className="block text-xs text-stone-500">{s.services.length ? `${s.services.length} services` : "All services"}</span></td>
                 <td className="whitespace-nowrap text-right">
                   <Link href={`?edit=${s.id}`} className="btn-secondary btn-sm">Edit</Link>{" "}

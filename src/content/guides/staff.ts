@@ -2,6 +2,63 @@ import type { Guide } from "./types";
 
 export const staffGuides: Guide[] = [
   {
+    slug: "salon-payroll",
+    title: "How to run payroll for a salon: commission, tips, advances and deductions",
+    description: "A step-by-step way to pay salon and spa staff each week or month: commission from recorded sales, tips, salary advances, chair rent and statutory deductions.",
+    category: "Staff",
+    updated: "2026-11-15",
+    takeaways: [
+      "Calculate commission from recorded sales, after discounts, so nobody argues about the numbers.",
+      "Pay tips out in full and keep them separate from commission.",
+      "Write every salary advance down the day you give it, and deduct it in the next pay run.",
+      "Apply statutory deductions only to employees, using current rates confirmed with KRA or an accountant.",
+    ],
+    blocks: [
+      {
+        p: ["Payday is where trust between a salon owner and the team is won or lost. Most disputes come from three things: commission nobody can check, tips that went missing, and advances that were never written down. A simple, repeatable pay run fixes all three."],
+      },
+      {
+        h: "Before the first pay run",
+        list: [
+          "Record each person's pay type: commission only, base salary plus commission, salary only, or chair rental.",
+          "Agree the commission rate and what it's calculated on (usually the service price after discounts, excluding products and tips).",
+          "Note who is an employee for statutory purposes and who is casual, commission-only or renting a chair.",
+          "Collect the M-Pesa number each person wants to be paid on.",
+        ],
+      },
+      {
+        h: "Running pay each week or month",
+        steps: [
+          "Choose the period. Many salons pay commission weekly and salaries monthly.",
+          "Total each stylist's commission and tips from the sales recorded in that period.",
+          "Add base salary (prorated for weekly runs) and any bonus.",
+          "Subtract statutory deductions for employees, outstanding salary advances and any agreed deductions.",
+          "For chair-rental stylists, record the rent they owe the salon instead of pay.",
+          "Check the totals, approve, then pay each person and record the M-Pesa or bank reference.",
+          "Give everyone a payslip showing exactly how their pay was worked out.",
+        ],
+      },
+      {
+        h: "Advances",
+        p: ["Small advances are common in salons. They only cause problems when they're remembered differently at month end. Record the amount, date and reason when you give it, and let the next pay run deduct it automatically so it appears on the payslip."],
+      },
+      {
+        h: "Statutory deductions",
+        p: ["Employees in Kenya are subject to deductions such as PAYE, SHIF, NSSF and the Affordable Housing Levy, and employers have their own contributions and filing deadlines. Rates and rules have changed several times in recent years, so confirm current rates with KRA or an accountant, and file and remit on time. Casual, commission-only and chair-rental arrangements are treated differently; get advice on how your arrangements are classified."],
+      },
+      {
+        h: "Let staff see their own numbers",
+        p: ["When stylists can see their services, commission, tips and payslips themselves, payday questions mostly disappear. It also motivates people: they can see exactly how much more a fully booked week earns."],
+      },
+    ],
+    faqs: [
+      { q: "How do salons calculate commission?", a: "Usually as a percentage of the service price actually charged, after any discount, excluding products and tips. Calculating it from recorded sales makes it easy to check." },
+      { q: "Should tips be included in a stylist's commission?", a: "No. Tips belong to the stylist and should be paid out in full, shown separately on the payslip." },
+      { q: "How do I handle salary advances?", a: "Record each advance when you give it and deduct it in the next pay run so it shows on the payslip. Agree the repayment in advance if it's large." },
+    ],
+    related: ["stylist-commission-structures", "managing-salon-staff", "mpesa-reconciliation-for-salons"],
+  },
+  {
     slug: "stylist-commission-structures",
     title: "Salary, commission or chair rental: paying salon staff fairly",
     description: "Compare salary, commission, hybrid and chair-rental models for paying stylists, barbers and therapists, and how to calculate commission correctly.",

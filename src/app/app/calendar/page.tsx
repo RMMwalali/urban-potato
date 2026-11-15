@@ -66,7 +66,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
           Add bookable staff on the <Link href="/app/staff" className="underline">Staff page</Link> to see the calendar.
         </div>
       ) : (
-        <div className="card overflow-x-auto">
+        <div className="card overflow-x-auto" data-tour="calendar-grid">
           <div className="flex min-w-fit">
             <div className="w-14 shrink-0 border-r border-stone-200">
               <div className="h-11 border-b border-stone-200" />

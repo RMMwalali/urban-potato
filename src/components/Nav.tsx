@@ -13,6 +13,7 @@ const items = [
   { href: "/app/me", label: "My earnings" },
   { href: "/app/services", label: "Services", manager: true },
   { href: "/app/staff", label: "Staff", manager: true },
+  { href: "/app/payroll", label: "Payroll", manager: true },
   { href: "/app/reports", label: "Reports", manager: true },
   { href: "/app/settings", label: "Settings", manager: true },
   { href: "/app/billing", label: "Plan & billing", manager: true },

@@ -105,18 +105,18 @@ export function CheckoutForm(props: {
         {depositAmt > 0 && <div className="flex justify-between font-display text-lg font-bold"><span>Due now</span><span>{fmt(due)}</span></div>}
       </div>
 
-      <div>
+      <div data-tour="payment">
         <h2 className="section-title mb-2">Payment</h2>
-        {due > 0 ? (
+        {due > 0 || depositAmt === 0 ? (
           <PaymentRows initialCode={props.initialCode} due={due} methods={props.paymentMethods} requireVerified={props.requireVerified} currency={props.currency} onChange={(rows, ok) => { setPayments(rows); setPayOk(ok); }} />
         ) : (
           <p className="rounded-none bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Nothing more to pay. The deposit covers the bill.</p>
         )}
-        <input type="hidden" name="payments" value={JSON.stringify(due > 0 ? payments.map(({ method, amount, tendered, reference, payerName, smsText }) => ({ method, amount, tendered, reference, payerName, smsText })) : [])} />
+        <input type="hidden" name="payments" value={JSON.stringify(due > 0 || depositAmt === 0 ? payments.map(({ method, amount, tendered, reference, payerName, smsText }) => ({ method, amount, tendered, reference, payerName, smsText })) : [])} />
       </div>
 
       {state?.error && <p className="rounded-none bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
-      <button className="btn-primary w-full sm:w-auto" disabled={pending || items.length === 0 || (due > 0 && !payOk)}>{pending ? "Saving…" : `Record payment · ${fmt(due)}`}</button>
+      <button className="btn-primary w-full sm:w-auto" disabled={pending || items.length === 0 || total <= 0 || (due > 0 && !payOk)}>{pending ? "Saving…" : `Record payment · ${fmt(due)}`}</button>
     </form>
   );
 }

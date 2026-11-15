@@ -65,7 +65,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4" data-tour="finance">
         <Stat tone="brand" label="M-Pesa (sales)" value={money(byMethod.get("MPESA") ?? 0, b.currency)} sub={`${verifiedShare}% verified by Safaricom`} />
         <Stat tone="dark" label="Cash" value={money(byMethod.get("CASH") ?? 0, b.currency)} />
         <Stat tone="plain" label="Card & bank" value={money((byMethod.get("CARD") ?? 0) + (byMethod.get("BANK") ?? 0), b.currency)} sub={`+ ${money(deposits._sum.depositAmount ?? 0, b.currency)} deposits`} />

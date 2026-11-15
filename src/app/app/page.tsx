@@ -52,14 +52,14 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <div className="flex flex-wrap gap-2">
             <Link href="/app/appointments/new?walkin=1" className="btn-secondary">Walk-in</Link>
             <Link href="/app/sales/new" className="btn-secondary">Quick sale</Link>
-            <Link href="/app/appointments/new" className="btn-primary">New appointment</Link>
+            <Link href="/app/appointments/new" className="btn-primary" data-tour="new-appointment">New appointment</Link>
           </div>
         </div>
       </div>
 
       {isManager && doneCount < steps.length && (
         <Reveal>
-          <section>
+          <section data-tour="setup">
             <div className="mb-4 flex items-baseline justify-between">
               <p className="label-caps">Get set up</p>
               <p className="label-caps text-muted">{doneCount} / {steps.length}</p>
@@ -115,7 +115,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           </div>
         </section>
 
-        <section className="bg-ink p-7 text-paper">
+        <section className="bg-ink p-7 text-paper" data-tour="booking-link">
           <p className="label-caps text-paper/60">Your booking link</p>
           <p className="mt-6 text-[clamp(22px,2vw,28px)] leading-tight">Put it in your Instagram, TikTok and WhatsApp bios. Clients book themselves, no app needed.</p>
           <p className="mt-8 break-all border-t border-paper/30 pt-4 font-mono text-[13px]">{bookingUrl}</p>

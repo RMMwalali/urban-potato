@@ -5,6 +5,8 @@ import { accessState, getSettings } from "@/lib/platform";
 import { logout } from "@/app/actions/auth";
 import { db } from "@/lib/db";
 import { Nav } from "@/components/Nav";
+import { Tour, TourButton } from "@/components/tour/Tour";
+import { ownerSteps, staffSteps } from "@/components/tour/steps";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const [user, { general }] = await Promise.all([requireUser(undefined, { allowLocked: true }), getSettings()]);
@@ -12,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const isPlatformAdmin = !!(await db.platformAdmin.findUnique({ where: { email: user.email }, select: { id: true } }));
   return (
     <div className="min-h-screen bg-paper md:flex">
-      <aside className="border-b border-ink md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-r md:border-b-0">
+      <aside className="border-b border-ink print:hidden md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-r md:border-b-0">
         <div className="flex items-start justify-between px-5 pt-6 pb-5">
           <div className="min-w-0">
           <Link href="/app" className="flex items-center gap-3">
@@ -22,8 +24,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
           <form action={logout} className="md:hidden"><button className="label-caps pt-3 hover:opacity-50">Log out</button></form>
         </div>
-        <div className="md:flex-1 md:overflow-y-auto">
+        <div className="md:flex-1 md:overflow-y-auto" data-tour="nav">
           <Nav isManager={MANAGERS.includes(user.role)} />
+          <div className="mx-5 mt-4 hidden border-t border-ink/30 pt-3 md:block"><TourButton /></div>
           {isPlatformAdmin && <Link href="/admin" className="label-caps mx-5 mt-4 mb-4 block border-t border-ink pt-3 hover:opacity-50 md:mb-0">Platform admin ↗</Link>}
         </div>
         {access.reason === "trial" && (
@@ -49,6 +52,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         )}
         {children}
       </main>
+      <Tour steps={MANAGERS.includes(user.role) ? ownerSteps(general.siteName) : staffSteps(general.siteName)} autoStart={!user.tourDoneAt} />
     </div>
   );
 }

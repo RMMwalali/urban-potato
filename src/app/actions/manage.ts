@@ -93,6 +93,11 @@ export async function saveStaff(fd: FormData) {
     role: ["OWNER", "MANAGER", "STAFF"].includes(role) ? role : "STAFF",
     commissionRate: Number(str(fd, "commissionRate") || 0),
     bookable: fd.get("bookable") === "on",
+    payType: (["COMMISSION", "SALARY", "BASE_PLUS_COMMISSION", "CHAIR_RENTAL"].includes(str(fd, "payType")) ? str(fd, "payType") : "COMMISSION") as "COMMISSION",
+    baseSalary: Math.max(0, Number(str(fd, "baseSalary") || 0)),
+    chairRent: Math.max(0, Number(str(fd, "chairRent") || 0)),
+    payoutPhone: opt(fd, "payoutPhone") ? normalizePhone(str(fd, "payoutPhone"), user.business.countryCode) : null,
+    statutory: fd.get("statutory") === "on",
   };
   if (!data.name || !data.email) throw new Error("Name and email are required");
   const pw = str(fd, "password");

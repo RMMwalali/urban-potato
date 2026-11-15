@@ -28,7 +28,7 @@ export default async function ServicesPage() {
         </div>
       )}
 
-      <form action={saveService} className="card grid gap-3 p-4 sm:grid-cols-6">
+      <form data-tour="services" action={saveService} className="card grid gap-3 p-4 sm:grid-cols-6">
         <div className="sm:col-span-2"><label className="label">Service name</label><input name="name" className="input" required placeholder="e.g. Knotless braids" /></div>
         <div><label className="label">Category</label><input name="category" className="input" list="cats" defaultValue="Hair" required /></div>
         <div><label className="label">Minutes</label><input name="durationMin" type="number" min={5} step={5} defaultValue={60} className="input" required /></div>

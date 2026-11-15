@@ -13,7 +13,7 @@ const METHODS = [
 export function PaymentSettings({ b }: { b: Business }) {
   const urls = c2bUrls(b);
   return (
-    <section id="payments" className="card space-y-5 p-5">
+    <section id="payments" data-tour="payments-settings" className="card space-y-5 p-5">
       <div>
         <h2 className="section-title flex items-center gap-2">Payments & M-Pesa verification</h2>
         <p className="mt-1 text-sm text-stone-500">Choose how clients can pay. Connect your till or paybill to Safaricom and, when staff type an M-Pesa code, the payer&apos;s name and amount fill in automatically. Codes can only be used once.</p>
