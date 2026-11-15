@@ -9,6 +9,7 @@ import { accessState } from "./platform";
 import { authSecret } from "./secrets";
 
 const COOKIE = "spadesk_session";
+export const SESSION_COOKIE = COOKIE;
 const secret = () => new TextEncoder().encode(authSecret());
 
 export type Session = { userId: string; businessId: string; role: Role };

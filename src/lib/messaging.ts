@@ -71,7 +71,8 @@ export async function sendMessage(opts: {
   channel?: Channel;
 }) {
   const channel = opts.channel ?? opts.business.messageChannel;
-  const r = await deliver(opts.to, opts.body);
+  // The showcase salon (used to film reels) never contacts anyone; its messages are only logged.
+  const r: SendResult = opts.business.isShowcase ? { ok: true, ref: "showcase" } : await deliver(opts.to, opts.body);
   return db.messageLog.create({
     data: {
       businessId: opts.business.id,
@@ -124,7 +125,7 @@ export async function notifyAppointment(kind: "CONFIRMATION" | "REMINDER" | "CAN
 
 /** Send due reminders for all businesses. Called by /api/cron/reminders. */
 export async function sendDueReminders() {
-  const businesses = (await db.business.findMany({ select: { id: true, reminderHours: true, status: true, trialEndsAt: true, paidUntil: true } })).filter((b) => accessState(b).ok);
+  const businesses = (await db.business.findMany({ where: { isShowcase: false }, select: { id: true, reminderHours: true, status: true, trialEndsAt: true, paidUntil: true } })).filter((b) => accessState(b).ok);
   let sent = 0;
   for (const b of businesses) {
     const due = await db.appointment.findMany({

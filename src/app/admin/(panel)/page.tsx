@@ -9,10 +9,10 @@ export default async function AdminHome() {
   const week = new Date(Date.now() - 7 * 86400_000);
   const soon = new Date(Date.now() + 3 * 86400_000);
   const [businesses, users, appts7, sales7, credCount, settings] = await Promise.all([
-    db.business.findMany({ orderBy: { createdAt: "desc" }, include: { _count: { select: { users: true, appointments: true } } } }),
-    db.user.count(),
-    db.appointment.count({ where: { createdAt: { gte: week } } }),
-    db.sale.count({ where: { createdAt: { gte: week } } }),
+    db.business.findMany({ where: { isShowcase: false }, orderBy: { createdAt: "desc" }, include: { _count: { select: { users: true, appointments: true } } } }),
+    db.user.count({ where: { business: { isShowcase: false } } }),
+    db.appointment.count({ where: { createdAt: { gte: week }, business: { isShowcase: false } } }),
+    db.sale.count({ where: { createdAt: { gte: week }, business: { isShowcase: false } } }),
     db.apiCredential.count(),
     getSettings(),
   ]);

@@ -19,6 +19,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
   const pages = all.filter((p) => !noindex.has(p.url.replace(base, "") || "/"));
   if (noindex.has("/book/*")) return pages;
-  const salons = await db.business.findMany({ where: { bookingEnabled: true }, select: { slug: true, status: true, trialEndsAt: true, paidUntil: true, createdAt: true } }).catch(() => []);
+  const salons = await db.business.findMany({ where: { bookingEnabled: true, isShowcase: false }, select: { slug: true, status: true, trialEndsAt: true, paidUntil: true, createdAt: true } }).catch(() => []);
   return [...pages, ...salons.filter((s) => accessState(s).ok).map((s) => ({ url: `${base}/book/${s.slug}`, lastModified: s.createdAt, priority: 0.4 }))];
 }

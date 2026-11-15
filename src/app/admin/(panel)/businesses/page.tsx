@@ -20,7 +20,7 @@ export default async function BusinessesPage({ searchParams }: { searchParams: P
     ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { slug: { contains: q.toLowerCase() } }, { email: { contains: q, mode: "insensitive" } }, { phone: { contains: q } }] }
     : {};
   const all = await db.business.findMany({
-    where,
+    where: { ...where, isShowcase: false },
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { users: true, clients: true, appointments: true } }, users: { where: { role: "OWNER" }, take: 1, select: { name: true, email: true } } },
   });

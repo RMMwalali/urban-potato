@@ -8,7 +8,7 @@ import { Empty, PageHeader } from "@/components/ui";
 export default async function AdminUsers({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
   const users = await db.user.findMany({
-    where: q ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { email: { contains: q, mode: "insensitive" } }, { business: { name: { contains: q, mode: "insensitive" } } }] } : {},
+    where: { business: { isShowcase: false }, ...(q ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { email: { contains: q, mode: "insensitive" } }, { business: { name: { contains: q, mode: "insensitive" } } }] } : {}) },
     include: { business: { select: { id: true, name: true, timezone: true } } },
     orderBy: { createdAt: "desc" },
     take: 200,

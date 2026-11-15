@@ -11,6 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const slug = (await params).slug;
   const b = await db.business.findUnique({ where: { slug } });
   if (!b) return { title: "Booking" };
+  if (b.isShowcase) return { title: b.name, robots: { index: false, follow: false } };
   return pageMetadata(`/book/${slug}`, { title: b.name, description: `Book your next appointment at ${b.name} online${b.address ? ` · ${b.address}` : ""}.` }, "/book/*");
 }
 
