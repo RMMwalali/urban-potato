@@ -100,11 +100,6 @@ export default async function Home() {
       <section id="complaints" className="px-5 pt-32 sm:px-8 md:pt-56">
         <div className="grid gap-10 md:grid-cols-2">
           <p className="label-caps">Built from complaints</p>
-          <Reveal>
-            <p className="text-[15px] leading-relaxed md:max-w-md md:justify-self-end">
-              What salon owners and stylists say about their booking software in reviews and on Reddit, and how {name} answers it.
-            </p>
-          </Reveal>
         </div>
         <div className="mt-16 overflow-x-auto">
           <table className="w-full min-w-[640px] text-left">
