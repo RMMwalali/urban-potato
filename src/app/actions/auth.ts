@@ -22,31 +22,49 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
 
   const settings = await getSettings();
   if (!settings.general.signupEnabled) return { error: "New sign-ups are paused right now. Please contact us." };
-  if (await db.user.findUnique({ where: { email } })) return { error: "An account with this email already exists" };
 
-  const base = slugify(businessName) || "salon";
-  let slug = base;
-  for (let i = 2; await db.business.findUnique({ where: { slug } }); i++) slug = `${base}-${i}`;
-
-  const user = await db.$transaction(async (tx) => {
+  let user;
+  try {
+    if (await db.user.findUnique({ where: { email } })) return { error: "An account with this email already exists" };
+    const base = slugify(businessName) || "salon";
+    let slug = base;
+    for (let i = 2; await db.business.findUnique({ where: { slug } }); i++) slug = `${base}-${i}`;
     const trialEndsAt = new Date(Date.now() + settings.general.trialDays * 86400_000);
-    const business = await tx.business.create({ data: { name: businessName, slug, email, trialEndsAt } });
-    return tx.user.create({
-      data: { businessId: business.id, name, email, passwordHash: await hashPassword(password), role: "OWNER", title: "Owner" },
+    const passwordHash = await hashPassword(password);
+    user = await db.$transaction(async (tx) => {
+      const business = await tx.business.create({ data: { name: businessName, slug, email, trialEndsAt } });
+      return tx.user.create({ data: { businessId: business.id, name, email, passwordHash, role: "OWNER", title: "Owner" } });
     });
-  });
+  } catch (e) {
+    console.error("signup failed (database):", e);
+    return { error: "We couldn't create your account right now (database unavailable). Please try again shortly." };
+  }
 
-  await createSession({ userId: user.id, businessId: user.businessId, role: user.role });
+  try {
+    await createSession({ userId: user.id, businessId: user.businessId, role: user.role });
+  } catch (e) {
+    console.error("signup failed (session):", e);
+    return { error: "Your account was created, but signing in failed because the server isn't fully configured. Please contact support." };
+  }
   redirect("/app");
 }
 
 export async function login(_: FormState, fd: FormData): Promise<FormState> {
   const email = String(fd.get("email") ?? "").trim().toLowerCase();
   const password = String(fd.get("password") ?? "");
-  const user = await db.user.findUnique({ where: { email } });
+  const user = await db.user.findUnique({ where: { email } }).catch((e) => {
+    console.error("login failed (database):", e);
+    return undefined;
+  });
+  if (user === undefined) return { error: "We can't reach the database right now. Please try again shortly." };
   if (!user || !user.active || !(await verifyPassword(password, user.passwordHash)))
     return { error: "Incorrect email or password" };
-  await createSession({ userId: user.id, businessId: user.businessId, role: user.role });
+  try {
+    await createSession({ userId: user.id, businessId: user.businessId, role: user.role });
+  } catch (e) {
+    console.error("login failed (session):", e);
+    return { error: "Signing in failed because the server isn't fully configured. Please contact support." };
+  }
   redirect("/app");
 }
 
