@@ -14,6 +14,8 @@ Feature choices are based on real complaints about existing salon software; see 
 | **Client self-service** (`/b/<token>`) | Link in every confirmation and reminder: client reschedules or cancels within the salon's cancellation window. |
 | **Client records** | Matched by phone. History, spend, no-show count (warning on repeat no-shows), allergies, preferences, notes. Owned by the salon. |
 | **Checkout** | Multiple items, discount, tip **assigned to a stylist**, deposit deducted automatically, M-Pesa/cash/card/bank, numbered receipts (print or WhatsApp). |
+| **Payments & M-Pesa verification** | Split any bill across cash, M-Pesa, card and bank (cash change calculated). Connect the salon's till/paybill to Safaricom C2B (per-salon Daraja keys, encrypted). Every payment then arrives automatically, and typing a code at checkout **fills in the payer's name and amount**, marked *Verified by Safaricom*. Pochi/personal numbers: paste the M-Pesa SMS and the code, name and amount are read from it (marked unverified). Each code can be used once, so the same payment can't be recorded twice. Settings: accepted methods (untick cash for M-Pesa only) and **"only accept codes confirmed by Safaricom"**. Deposits are verified the same way. |
+| **Finance** | Every M-Pesa payment received, with its source (Safaricom / SMS / typed) and what it matched (receipt or deposit). Unmatched payments can be turned into a sale in one click. Takings by method, % verified, add a payment from SMS. |
 | **Daily summary** | End-of-day sheet: totals per payment method, per-stylist services, commission and tips, and a list of M-Pesa codes to check against the till statement. |
 | **My earnings** | Every staff member sees their own services, commission and tips per month. |
 | **Reminders** | SMS (Africa's Talking) or WhatsApp confirmations, reminders and cancellations, with a delivery log. |
@@ -68,6 +70,6 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain/api/cron/remind
 
 ## Notes and next steps
 - **Subscription payments** are activated manually by an admin. M-Pesa can't charge recurring subscriptions automatically; the next step is an STK-push "Pay now" on the billing page via Daraja, which activates the salon automatically.
-- **Deposits** are checked by staff (the client's M-Pesa code is shown, plus a "mark verified" button). Automatic verification needs each salon's own Daraja credentials.
+- **M-Pesa C2B** needs a public `https://` APP_URL. Each salon registers its callback in Settings → Payments → *Connect to Safaricom*. Callback paths avoid the word "mpesa", which Safaricom rejects.
 - **WhatsApp** reminders outside the 24h window need Meta-approved templates.
 - Planned: staff working hours and leave, Swahili, offline/PWA mode, inventory, Airtel Money, rate limiting and password-reset emails.

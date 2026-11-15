@@ -20,11 +20,11 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
 
   const sales = await db.sale.findMany({
     where: { businessId: b.id, createdAt: { gte: start, lt: end } },
-    include: { client: true, items: true },
+    include: { client: true, items: true, payments: true },
     orderBy: { createdAt: "desc" },
   });
   const byMethod = new Map<string, number>();
-  sales.forEach((s) => byMethod.set(s.method, (byMethod.get(s.method) ?? 0) + num(s.total)));
+  sales.forEach((s) => s.payments.forEach((p) => byMethod.set(p.method, (byMethod.get(p.method) ?? 0) + num(p.amount))));
   const total = sales.reduce((t, s) => t + num(s.total), 0);
   const label = from === to ? DateTime.fromISO(from).toFormat("ccc d LLL yyyy") : `${from} → ${to}`;
 
@@ -65,7 +65,7 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
                 <td className="whitespace-nowrap">{fmtDateTime(s.createdAt, tz)}</td>
                 <td>{s.client?.name ?? <span className="text-stone-400">Walk-in</span>}</td>
                 <td className="text-stone-600">{s.items.map((i) => i.name).join(", ")}</td>
-                <td>{METHOD_LABEL[s.method]}{s.reference && <span className="block text-xs text-stone-500">{s.reference}</span>}</td>
+                <td>{s.payments.length === 0 ? <span className="text-xs text-stone-500">Deposit</span> : s.payments.map((p) => <span key={p.id} className="block text-xs"><b>{METHOD_LABEL[p.method]}</b> {money(p.amount, b.currency)}{p.reference && <span className="text-stone-500"> · {p.reference}{p.method === "MPESA" && (p.verified ? " ✓" : " ?")}</span>}</span>)}</td>
                 <td className="text-right font-medium">{money(s.total, b.currency)}</td>
               </tr>
             ))}

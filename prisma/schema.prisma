@@ -40,6 +40,15 @@ model Business {
   mpesaNumber       String?
   mpesaAccount      String?  // paybill account number
   onboardingDone    Boolean  @default(false)
+  // Payments & M-Pesa verification
+  paymentMethods    String[] @default(["CASH", "MPESA", "CARD"])
+  requireVerifiedMpesa Boolean @default(false) // only accept codes Safaricom has confirmed (C2B)
+  darajaShortcode   String?
+  darajaKeyEnc      String? // encrypted consumer key
+  darajaSecretEnc   String? // encrypted consumer secret
+  darajaEnv         String   @default("production")
+  c2bToken          String   @unique @default(cuid()) // secret part of the callback URL
+  c2bRegisteredAt   DateTime?
   createdAt         DateTime @default(now())
 
   users        User[]
@@ -48,6 +57,7 @@ model Business {
   appointments Appointment[]
   sales        Sale[]
   messages     MessageLog[]
+  mpesaTxns    MpesaTransaction[]
 }
 
 enum BusinessStatus {
@@ -181,6 +191,7 @@ model Appointment {
 }
 
 enum PaymentMethod {
+  SPLIT
   CASH
   MPESA
   CARD
@@ -208,7 +219,8 @@ model Sale {
   createdById   String?
   createdAt     DateTime      @default(now())
 
-  items SaleItem[]
+  items    SaleItem[]
+  payments Payment[]
 
   @@unique([businessId, number])
   @@index([businessId, createdAt])
@@ -311,4 +323,50 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   @@index([createdAt])
+}
+
+// One row per tender on a sale: a sale can be part cash, part M-Pesa.
+model Payment {
+  id         String           @id @default(cuid())
+  saleId     String
+  sale       Sale             @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  method     PaymentMethod
+  amount     Decimal          @db.Decimal(10, 2) // amount applied to the bill
+  tendered   Decimal?         @db.Decimal(10, 2) // cash handed over (change = tendered - amount)
+  reference  String?
+  payerName  String?
+  verified   Boolean          @default(false) // true when matched to a Safaricom-confirmed transaction
+  mpesaTxId  String?          @unique
+  mpesaTx    MpesaTransaction? @relation(fields: [mpesaTxId], references: [id])
+  createdAt  DateTime         @default(now())
+}
+
+enum MpesaSource {
+  C2B // pushed by Safaricom (verified)
+  SMS // parsed from a pasted confirmation SMS (unverified)
+  MANUAL // code typed without verification (unverified)
+}
+
+// Every M-Pesa payment the salon received or recorded. A code can be used once.
+model MpesaTransaction {
+  id            String      @id @default(cuid())
+  businessId    String
+  business      Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  code          String // e.g. SKF3H7XQ2P
+  amount        Decimal     @db.Decimal(10, 2)
+  payerName     String?
+  phone         String? // may be masked/hashed by Safaricom
+  billRef       String?
+  transTime     DateTime?
+  source        MpesaSource
+  raw           Json?
+  usedFor       String? // SALE | DEPOSIT
+  appointmentId String?
+  claimedAt     DateTime?
+  createdAt     DateTime    @default(now())
+
+  payment Payment?
+
+  @@unique([businessId, code])
+  @@index([businessId, createdAt])
 }

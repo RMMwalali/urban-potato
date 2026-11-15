@@ -18,20 +18,20 @@ export default async function DaySummary({ searchParams }: { searchParams: Promi
   const iso = sp.date && DateTime.fromISO(sp.date).isValid ? sp.date : todayIso(tz);
   const { start, end, dt } = dayRange(iso, tz);
   const [sales, staff, deposits] = await Promise.all([
-    db.sale.findMany({ where: { businessId: b.id, createdAt: { gte: start, lt: end } }, include: { items: true, client: true }, orderBy: { createdAt: "asc" } }),
+    db.sale.findMany({ where: { businessId: b.id, createdAt: { gte: start, lt: end } }, include: { items: true, client: true, payments: true }, orderBy: { createdAt: "asc" } }),
     db.user.findMany({ where: { businessId: b.id } }),
     db.appointment.findMany({ where: { businessId: b.id, createdAt: { gte: start, lt: end }, depositAmount: { gt: 0 } }, include: { client: true } }),
   ]);
   const c = b.currency;
-  const paidToday = (s: (typeof sales)[number]) => Math.max(num(s.total) - num(s.depositApplied), 0);
   const byMethod = new Map<string, number>();
-  sales.forEach((s) => byMethod.set(s.method, (byMethod.get(s.method) ?? 0) + paidToday(s)));
+  sales.forEach((s) => s.payments.forEach((p) => byMethod.set(p.method, (byMethod.get(p.method) ?? 0) + num(p.amount))));
   const depositTotal = deposits.reduce((t, a) => t + num(a.depositAmount), 0);
   const perStaff = staff.map((st) => {
     const items = sales.flatMap((s) => s.items).filter((i) => i.staffId === st.id);
     return { st, services: items.reduce((t, i) => t + num(i.unitPrice) * i.quantity, 0), commission: items.reduce((t, i) => t + num(i.commission), 0), tips: sales.filter((s) => s.tipStaffId === st.id).reduce((t, s) => t + num(s.tip), 0), count: items.length };
   }).filter((x) => x.count || x.tips);
-  const mpesa = sales.filter((s) => s.method === "MPESA" && s.reference && s.reference !== "DEPOSIT");
+  const mpesa = sales.flatMap((s) => s.payments.filter((p) => p.method === "MPESA").map((p) => ({ ...p, sale: s })));
+  const unverified = mpesa.filter((p) => !p.verified).length;
 
   return (
     <div className="max-w-5xl">
@@ -60,12 +60,12 @@ export default async function DaySummary({ searchParams }: { searchParams: Promi
           </table>
         </section>
         <section className="card overflow-x-auto">
-          <h2 className="section-title border-b border-stone-100 px-5 py-4">M-Pesa codes to check against the till statement</h2>
+          <h2 className="section-title border-b border-stone-100 px-5 py-4">M-Pesa codes to check against the till statement{unverified > 0 && <span className="badge ml-2 bg-amber-100 text-amber-800">{unverified} unverified</span>}</h2>
           <table className="table">
-            <thead><tr><th>Time</th><th>Code</th><th>Client</th><th className="text-right">Amount</th></tr></thead>
+            <thead><tr><th>Time</th><th>Code</th><th>Payer</th><th className="text-right">Amount</th></tr></thead>
             <tbody>
               {mpesa.length + deposits.filter((d) => d.depositRef).length === 0 && <tr><td colSpan={4} className="text-center text-stone-500">No M-Pesa payments.</td></tr>}
-              {mpesa.map((s) => <tr key={s.id}><td>{fmtTime(s.createdAt, tz)}</td><td className="font-mono">{s.reference}</td><td>{s.client?.name ?? "Walk-in"}</td><td className="text-right">{money(paidToday(s), c)}</td></tr>)}
+              {mpesa.map((p) => <tr key={p.id}><td>{fmtTime(p.createdAt, tz)}</td><td className="font-mono">{p.reference} {p.verified ? <span className="badge bg-emerald-100 text-emerald-800">verified</span> : <span className="badge bg-amber-100 text-amber-800">check</span>}</td><td>{p.payerName ?? p.sale.client?.name ?? "Walk-in"}</td><td className="text-right">{money(p.amount, c)}</td></tr>)}
               {deposits.filter((d) => d.depositRef).map((d) => <tr key={d.id}><td>{fmtTime(d.createdAt, tz)}</td><td className="font-mono">{d.depositRef} <span className="badge bg-lime-glow/50 text-plum-900">deposit</span></td><td>{d.client.name}</td><td className="text-right">{money(d.depositAmount, c)}</td></tr>)}
             </tbody>
           </table>

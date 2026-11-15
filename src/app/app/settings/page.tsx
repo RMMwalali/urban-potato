@@ -2,6 +2,7 @@ import { MANAGERS, requireUser } from "@/lib/auth";
 import { saveSettings } from "@/app/actions/manage";
 import { Settings, Wallet } from "lucide-react";
 import { PageHeader } from "@/components/ui";
+import { PaymentSettings } from "@/components/PaymentSettings";
 
 export const metadata = { title: "Settings" };
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -13,6 +14,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const provider = process.env.MESSAGE_PROVIDER ?? "console";
 
   return (
+    <>
     <form action={saveSettings} className="max-w-3xl space-y-5">
       <PageHeader title="Settings" icon={Settings} />
       {sp.saved && <p className="card bg-emerald-50 p-3 text-sm text-emerald-800">Settings saved.</p>}
@@ -101,5 +103,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
 
       <button className="btn-primary">Save settings</button>
     </form>
+    <div className="mt-6 max-w-3xl"><PaymentSettings b={b} /></div>
+    </>
   );
 }

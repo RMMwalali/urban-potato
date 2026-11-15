@@ -2,6 +2,7 @@
 import { keepValues } from "./useKeepForm";
 import { useActionState, useState } from "react";
 import { createSale, type SaleState } from "@/app/actions/sales";
+import { PaymentRows, type PayRow } from "./PaymentRows";
 
 type Svc = { id: string; name: string; price: number };
 type Staff = { id: string; name: string };
@@ -15,12 +16,16 @@ export function CheckoutForm(props: {
   appointmentId?: string;
   client?: { id: string; name: string } | null;
   deposit?: { amount: number; ref: string | null } | null;
+  paymentMethods: string[];
+  requireVerified: boolean;
+  initialCode?: string;
 }) {
   const [state, action, pending] = useActionState<SaleState, FormData>(createSale, undefined);
   const [items, setItems] = useState<Row[]>(props.initialItems);
   const [discount, setDiscount] = useState(0);
   const [tip, setTip] = useState(0);
-  const [method, setMethod] = useState("MPESA");
+  const [payments, setPayments] = useState<PayRow[]>([]);
+  const [payOk, setPayOk] = useState(false);
 
   const subtotal = items.reduce((t, i) => t + i.unitPrice * i.quantity, 0);
   const total = Math.max(subtotal - discount, 0) + tip;
@@ -89,22 +94,6 @@ export function CheckoutForm(props: {
             </select>
           </div>
         )}
-        <div>
-          <label className="label">Payment method</label>
-          <select name="method" className="input" value={method} onChange={(e) => setMethod(e.target.value)}>
-            <option value="MPESA">M-Pesa</option>
-            <option value="CASH">Cash</option>
-            <option value="CARD">Card</option>
-            <option value="BANK">Bank transfer</option>
-            <option value="OTHER">Other</option>
-          </select>
-        </div>
-        {method !== "CASH" && (due > 0 || method !== "MPESA") && (
-          <div>
-            <label className="label">{method === "MPESA" ? "M-Pesa code" : "Reference"}</label>
-            <input name="reference" className="input uppercase" placeholder={method === "MPESA" ? "e.g. SKF3H7XQ2P" : ""} required={method === "MPESA"} />
-          </div>
-        )}
       </div>
 
       <div className="space-y-1 rounded-lg bg-stone-50 p-4 text-sm">
@@ -116,8 +105,18 @@ export function CheckoutForm(props: {
         {depositAmt > 0 && <div className="flex justify-between font-display text-lg font-bold"><span>Due now</span><span>{fmt(due)}</span></div>}
       </div>
 
+      <div>
+        <h2 className="mb-2 text-sm font-semibold">Payment</h2>
+        {due > 0 ? (
+          <PaymentRows initialCode={props.initialCode} due={due} methods={props.paymentMethods} requireVerified={props.requireVerified} currency={props.currency} onChange={(rows, ok) => { setPayments(rows); setPayOk(ok); }} />
+        ) : (
+          <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Nothing more to pay. The deposit covers the bill.</p>
+        )}
+        <input type="hidden" name="payments" value={JSON.stringify(due > 0 ? payments.map(({ method, amount, tendered, reference, payerName, smsText }) => ({ method, amount, tendered, reference, payerName, smsText })) : [])} />
+      </div>
+
       {state?.error && <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{state.error}</p>}
-      <button className="btn-primary w-full sm:w-auto" disabled={pending || items.length === 0}>{pending ? "Saving…" : `Record payment · ${fmt(due)}`}</button>
+      <button className="btn-primary w-full sm:w-auto" disabled={pending || items.length === 0 || (due > 0 && !payOk)}>{pending ? "Saving…" : `Record payment · ${fmt(due)}`}</button>
     </form>
   );
 }

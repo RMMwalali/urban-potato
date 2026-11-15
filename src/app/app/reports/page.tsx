@@ -35,7 +35,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const range = { gte: dayRange(from, tz).start, lt: dayRange(to, tz).end };
 
   const [sales, items, appts, staff] = await Promise.all([
-    db.sale.findMany({ where: { businessId: b.id, createdAt: range }, include: { client: true } }),
+    db.sale.findMany({ where: { businessId: b.id, createdAt: range }, include: { client: true, payments: true } }),
     db.saleItem.findMany({ where: { sale: { businessId: b.id, createdAt: range } } }),
     db.appointment.findMany({ where: { businessId: b.id, startAt: range }, select: { status: true, source: true } }),
     db.user.findMany({ where: { businessId: b.id } }),
@@ -112,7 +112,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         </section>
         <section className="card p-5">
           <h2 className="mb-4 font-semibold">Payment methods</h2>
-          <Bars currency={b.currency} rows={sum(sales, (s) => s.method, (s) => num(s.total)).map(([k, v]) => ({ label: METHOD_LABEL[k], value: v }))} />
+          <Bars currency={b.currency} rows={sum(sales.flatMap((s) => s.payments), (p) => p.method, (p) => num(p.amount)).map(([k, v]) => ({ label: METHOD_LABEL[k], value: v }))} />
         </section>
         <section className="card p-5 lg:col-span-2">
           <h2 className="mb-4 font-semibold">Top clients</h2>

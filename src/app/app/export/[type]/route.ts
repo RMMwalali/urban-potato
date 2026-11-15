@@ -23,9 +23,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ type: stri
     body = csv([["Start", "Client", "Phone", "Service", "Staff", "Status", "Source", "Price", "Deposit", "Deposit ref", "Notes"],
       ...rows.map((a) => [fmtDateTime(a.startAt, tz), a.client.name, `+${a.client.phone}`, a.service.name, a.staff?.name, a.status, a.source, num(a.price), num(a.depositAmount), a.depositRef, a.notes])]);
   } else if (type === "sales") {
-    const rows = await db.sale.findMany({ where: { businessId: b.id }, orderBy: { createdAt: "desc" }, include: { client: true, items: { include: { staff: true } } } });
-    body = csv([["Receipt", "Date", "Client", "Items", "Subtotal", "Discount", "Tip", "Deposit applied", "Total", "Method", "Reference"],
-      ...rows.map((x) => [x.number, fmtDateTime(x.createdAt, tz), x.client?.name, x.items.map((i) => `${i.name}${i.staff ? ` (${i.staff.name})` : ""}`).join("; "), num(x.subtotal), num(x.discount), num(x.tip), num(x.depositApplied), num(x.total), x.method, x.reference])]);
+    const rows = await db.sale.findMany({ where: { businessId: b.id }, orderBy: { createdAt: "desc" }, include: { client: true, items: { include: { staff: true } }, payments: true } });
+    body = csv([["Receipt", "Date", "Client", "Items", "Subtotal", "Discount", "Tip", "Deposit applied", "Total", "Payments", "M-Pesa verified"],
+      ...rows.map((x) => [x.number, fmtDateTime(x.createdAt, tz), x.client?.name, x.items.map((i) => `${i.name}${i.staff ? ` (${i.staff.name})` : ""}`).join("; "), num(x.subtotal), num(x.discount), num(x.tip), num(x.depositApplied), num(x.total), x.payments.map((p) => `${p.method} ${num(p.amount)}${p.reference ? ` ${p.reference}` : ""}${p.payerName ? ` (${p.payerName})` : ""}`).join("; "), x.payments.filter((p) => p.method === "MPESA").every((p) => p.verified) ? "yes" : "no"])]);
   } else return NextResponse.json({ error: "unknown export" }, { status: 404 });
   return new NextResponse(body, {
     headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${b.slug}-${type}-${new Date().toISOString().slice(0, 10)}.csv"` },

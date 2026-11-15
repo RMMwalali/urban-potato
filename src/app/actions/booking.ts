@@ -36,6 +36,16 @@ export async function publicBook(_: BookState, fd: FormData): Promise<BookState>
   const depositRef = d.depositRef?.toUpperCase().replace(/\s/g, "");
   if (deposit > 0 && !/^[A-Z0-9]{8,12}$/.test(depositRef ?? "")) return { error: "Enter the M-Pesa confirmation code for your deposit (e.g. SKF3H7XQ2P)" };
 
+  // M-Pesa deposit: match against Safaricom-confirmed payments when available.
+  let depositTx: { id: string; source: string } | null = null;
+  if (deposit > 0 && depositRef) {
+    const tx = await db.mpesaTransaction.findUnique({ where: { businessId_code: { businessId: business.id, code: depositRef } } });
+    if (tx?.claimedAt) return { error: "That M-Pesa code has already been used." };
+    if (tx && Number(tx.amount) + 0.5 < deposit) return { error: `That payment was ${business.currency} ${Number(tx.amount).toLocaleString()}, but the deposit is ${business.currency} ${deposit.toLocaleString()}.` };
+    if (!tx && business.requireVerifiedMpesa) return { error: "We haven't received that payment yet. Wait a few seconds after paying, then try again." };
+    if (tx) depositTx = { id: tx.id, source: tx.source };
+  }
+
   const start = new Date(d.start);
   if (isNaN(start.getTime())) return { error: "Choose a time" };
   const isoDate = new Intl.DateTimeFormat("en-CA", { timeZone: business.timezone }).format(start);
@@ -65,9 +75,23 @@ export async function publicBook(_: BookState, fd: FormData): Promise<BookState>
       notes: d.notes || null,
       depositAmount: deposit,
       depositRef: deposit > 0 ? depositRef : null,
+      depositVerified: depositTx?.source === "C2B",
     },
     include: { staff: true },
   });
+  if (deposit > 0 && depositRef) {
+    try {
+      if (depositTx) {
+        await db.mpesaTransaction.update({ where: { id: depositTx.id }, data: { claimedAt: new Date(), usedFor: "DEPOSIT", appointmentId: appt.id } });
+      } else {
+        // Unverified for now; if Safaricom's confirmation arrives later it marks the deposit verified.
+        await db.mpesaTransaction.create({ data: { businessId: business.id, code: depositRef, amount: deposit, payerName: d.name, source: "MANUAL", claimedAt: new Date(), usedFor: "DEPOSIT", appointmentId: appt.id } });
+      }
+    } catch {
+      await db.appointment.delete({ where: { id: appt.id } });
+      return { error: "That M-Pesa code has already been used." };
+    }
+  }
   await notifyAppointment("CONFIRMATION", appt.id);
   return { done: { when: fmtDateTime(start, business.timezone), service: service.name, staff: appt.staff?.name ?? null, manage: `/b/${appt.manageToken}`, deposit } };
 }

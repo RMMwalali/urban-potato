@@ -63,6 +63,7 @@ export const SOURCE_LABEL: Record<string, string> = {
 };
 
 export const METHOD_LABEL: Record<string, string> = {
+  SPLIT: "Split",
   CASH: "Cash",
   MPESA: "M-Pesa",
   CARD: "Card",

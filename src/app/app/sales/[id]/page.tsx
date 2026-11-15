@@ -13,7 +13,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   const b = user.business;
   const s = await db.sale.findFirst({
     where: { id, businessId: b.id },
-    include: { items: { include: { staff: true } }, client: true },
+    include: { items: { include: { staff: true } }, client: true, payments: true },
   });
   if (!s) notFound();
   const c = b.currency;
@@ -23,7 +23,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
     ...s.items.map((i) => `${i.name}: ${money(num(i.unitPrice) * i.quantity, c)}`),
     num(s.discount) ? `Discount: -${money(s.discount, c)}` : "",
     num(s.tip) ? `Tip: ${money(s.tip, c)}` : "",
-    `Total: ${money(s.total, c)} (${METHOD_LABEL[s.method]}${s.reference ? ` ${s.reference}` : ""})`,
+    `Total: ${money(s.total, c)}`,
+    ...s.payments.map((p) => `${METHOD_LABEL[p.method]}${p.reference ? ` ${p.reference}` : ""}: ${money(p.amount, c)}`),
     "Thank you!",
   ].filter(Boolean).join("\n");
 
@@ -59,7 +60,14 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
         <div className="flex justify-between text-base font-semibold"><span>TOTAL</span><span>{money(s.total, c)}</span></div>
         {num(s.depositApplied) > 0 && <div className="flex justify-between"><span>Deposit paid earlier</span><span>−{money(s.depositApplied, c)}</span></div>}
         {num(s.depositApplied) > 0 && <div className="flex justify-between font-semibold"><span>Paid today</span><span>{money(Math.max(num(s.total) - num(s.depositApplied), 0), c)}</span></div>}
-        <p className="mt-2 text-xs">Paid by {METHOD_LABEL[s.method]}{s.reference ? ` · ${s.reference}` : ""}</p>
+        <div className="mt-3 space-y-1 text-xs">
+          {s.payments.map((p) => (
+            <div key={p.id} className="flex justify-between gap-2">
+              <span>{METHOD_LABEL[p.method]}{p.reference ? ` ${p.reference}` : ""}{p.payerName ? ` · ${p.payerName}` : ""}{p.method === "MPESA" ? (p.verified ? " ✓" : " (unverified)") : ""}{p.tendered && num(p.tendered) > num(p.amount) ? ` · received ${money(p.tendered, c)}, change ${money(num(p.tendered) - num(p.amount), c)}` : ""}</span>
+              <span>{money(p.amount, c)}</span>
+            </div>
+          ))}
+        </div>
         <p className="mt-4 text-center text-xs text-stone-500">Thank you for visiting!</p>
       </div>
     </div>

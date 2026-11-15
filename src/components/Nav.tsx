@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wallet, BarChart3, CalendarDays, CreditCard, LayoutDashboard, MessageSquare, Receipt, Scissors, Settings, UserCog, Users } from "lucide-react";
+import { Landmark, Wallet, BarChart3, CalendarDays, CreditCard, LayoutDashboard, MessageSquare, Receipt, Scissors, Settings, UserCog, Users } from "lucide-react";
 
 const items = [
   { href: "/app", label: "Dashboard", icon: LayoutDashboard },
   { href: "/app/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/app/clients", label: "Clients", icon: Users },
   { href: "/app/sales", label: "Sales", icon: Receipt },
+  { href: "/app/finance", label: "Finance", icon: Landmark },
   { href: "/app/messages", label: "Messages", icon: MessageSquare },
   { href: "/app/me", label: "My earnings", icon: Wallet },
   { href: "/app/services", label: "Services", icon: Scissors, manager: true },
