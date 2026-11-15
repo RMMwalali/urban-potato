@@ -18,9 +18,9 @@ export const SETTING_DEFAULTS = {
     currency: "KES",
   },
   seo: {
-    defaultTitle: "Darling: booking and management software for salons and spas",
+    defaultTitle: "Darling: booking engine and client management for salons and spas",
     titleTemplate: "%s · Darling",
-    description: "Online booking, client records, M-Pesa checkout and SMS/WhatsApp reminders for salons, barbershops and spas. Free 14-day trial.",
+    description: "You don't need a website, you need a booking engine. Online booking, client records, M-Pesa checkout and reminders for salons, barbershops and spas. Free 14-day trial.",
     keywords: "salon software, spa booking, salon booking app Kenya, M-Pesa salon POS, beauty parlour management",
     ogImage: "",
     twitterHandle: "",

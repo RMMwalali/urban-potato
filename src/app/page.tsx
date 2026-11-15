@@ -54,7 +54,7 @@ export default async function Home() {
       <section className="px-5 pt-24 sm:px-8 md:pt-32">
         <div className="flex flex-wrap items-end justify-between gap-6 border-b-2 border-ink pb-6">
           <h2 className="text-[clamp(32px,5vw,72px)] leading-[0.95] uppercase">
-            <Lines inView lines={["Salon & spa", "management, minus the paper"]} />
+            <Lines inView lines={["Show your styles on Instagram.", `Run your salon on ${name}.`]} />
           </h2>
           <Reveal><Link href="/signup" className="btn-secondary">Start free trial</Link></Reveal>
         </div>
@@ -72,7 +72,7 @@ export default async function Home() {
           <p className="label-caps">Why we do it better</p>
           <Reveal>
             <p className="text-[clamp(18px,1.6vw,22px)] leading-[1.45]">
-              {name} replaces the paper diary and the scattered DMs with one calm screen: every booking, client and payment in one place, built for how salons in Kenya actually take money.
+              A website shows off your work; it doesn&apos;t fill your chairs. {name} replaces the paper diary and the scattered DMs with a booking engine and client records: every booking, client and payment in one place, built for how salons in Kenya actually take money.
             </p>
           </Reveal>
         </div>

@@ -41,12 +41,12 @@ export function SiteHeader({ name, signedIn }: { name: string; signedIn: boolean
         </button>
 
         <div className="flex items-center gap-6">
-          <nav className={`hidden items-center gap-6 transition-all duration-700 lg:flex ${scrolled && !open ? "pointer-events-none -translate-y-2 opacity-0" : ""}`}>
+          <nav className={`hidden items-center gap-6 transition-all duration-700 xl:flex ${scrolled && !open ? "pointer-events-none -translate-y-2 opacity-0" : ""}`}>
             <a href="#features" className="label-caps hover:opacity-50 transition-opacity duration-500">Features</a>
             <a href="#pricing" className="label-caps hover:opacity-50 transition-opacity duration-500">Pricing</a>
             {signedIn ? <Link href="/app" className="btn-secondary">Dashboard</Link> : <><Link href="/login" className="label-caps hover:opacity-50 transition-opacity duration-500">Log in</Link><Link href="/signup" className="btn-secondary">Start free trial</Link></>}
           </nav>
-          <button onClick={() => setOpen(!open)} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-ink text-[12px] md:hidden" aria-label="Menu">{open ? "×" : "≡"}</button>
+          <button onClick={() => setOpen(!open)} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-ink text-[12px] md:hidden" aria-label="Open menu (mobile)">{open ? "×" : "≡"}</button>
           <Link href={signedIn ? "/app" : "/signup"} className="hidden h-10 w-10 items-center justify-center rounded-full border-2 border-ink text-[11px] font-medium md:flex" title="Kenya · KES">KE</Link>
         </div>
       </header>
