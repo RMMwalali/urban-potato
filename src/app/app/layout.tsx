@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="px-5 pt-6 pb-5">
           <Link href="/app" className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-[18px] font-medium text-paper">{general.siteName[0].toLowerCase()}</span>
-            <span className="text-[22px] font-semibold tracking-[-0.03em] lowercase">{general.siteName}</span>
+            <span className="text-[22px] font-semibold tracking-[-0.03em] lowercase text-pink">{general.siteName}</span>
           </Link>
           <p className="label-caps mt-4 truncate text-muted">{user.business.name}</p>
         </div>

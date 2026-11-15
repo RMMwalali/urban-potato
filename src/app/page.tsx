@@ -163,7 +163,7 @@ export default async function Home() {
             {!general.supportWhatsApp && !general.supportEmail && !general.supportPhone && <li className="text-muted">Nairobi, Kenya</li>}
           </ul>
         </div>
-        <p className="mt-20 text-[clamp(80px,24vw,360px)] leading-[0.78] font-medium tracking-[-0.05em] lowercase">{name}</p>
+        <p className="mt-20 text-[clamp(80px,24vw,360px)] leading-[0.78] font-medium tracking-[-0.05em] lowercase text-pink">{name}</p>
         <p className="mt-6 text-[12px] uppercase tracking-[0.06em] text-muted">© {new Date().getFullYear()} {name}</p>
       </footer>
     </main>

@@ -30,7 +30,7 @@ export function SiteHeader({ name, signedIn }: { name: string; signedIn: boolean
         <Link href="/" className="relative flex items-center" aria-label={name}>
           <span className={`flex h-12 w-12 items-center justify-center rounded-full bg-ink text-[22px] font-medium text-paper transition-all duration-700 ${scrolled || open ? "opacity-100" : "opacity-100"}`}>{name[0].toLowerCase()}</span>
           <span className={`ml-3 flex items-baseline gap-3 transition-all duration-700 ${scrolled && !open ? "pointer-events-none -translate-y-2 opacity-0" : "opacity-100"}`}>
-            <span className="text-[30px] font-semibold leading-none tracking-[-0.03em] lowercase">{name}</span>
+            <span className="text-[30px] font-semibold leading-none tracking-[-0.03em] lowercase text-pink">{name}</span>
             <span className="hidden text-[10px] leading-[1.1] font-medium uppercase sm:block">Salon &amp; spa<br />software</span>
           </span>
         </Link>
