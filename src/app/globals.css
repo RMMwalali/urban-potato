@@ -149,3 +149,16 @@ input[type="checkbox"], input[type="radio"] { width: 1.15rem; height: 1.15rem; a
 .bk-link { display: block; margin-top: 14px; text-align: center; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
 @media print { .bk-card { display: none; } .bk-slot { height: auto !important; overflow: visible; } .bk-wrap { transform: none !important; filter: none; margin: 0; } }
 @media (prefers-reduced-motion: reduce) { .bk-slot, .bk-wrap { transition: none !important; } .bk-dot { animation: none !important; } }
+
+/* Landing marquees: services carousel and logo band */
+.mq { overflow: hidden; }
+.mq-track { display: flex; width: max-content; animation: mq var(--mq-dur, 40s) linear infinite; }
+.mq:hover .mq-track { animation-play-state: paused; }
+@keyframes mq { to { transform: translateX(-50%); } }
+.mq-word { color: transparent; -webkit-text-stroke: 1.2px var(--color-ink, #1c1f24); white-space: nowrap; transition: color 0.6s ease; }
+.mq-word:hover { color: var(--color-ink, #1c1f24); }
+.mq-card { transition: transform 0.9s cubic-bezier(0.19, 1, 0.22, 1); }
+.mq-card:hover { transform: translateY(-8px); }
+.mq-logo img { filter: grayscale(1); opacity: 0.55; transition: filter 0.6s ease, opacity 0.6s ease, transform 0.9s cubic-bezier(0.19, 1, 0.22, 1); }
+.mq-logo:hover img, .mq-logo:focus-visible img { filter: none; opacity: 1; transform: scale(1.08); }
+@media (prefers-reduced-motion: reduce) { .mq { overflow-x: auto; } .mq-track { animation: none; } }

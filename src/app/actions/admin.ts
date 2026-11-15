@@ -264,3 +264,27 @@ export async function createFirstAdmin(_: AdminState, fd: FormData): Promise<Adm
   await audit(email, "admin.setup");
   redirect("/admin");
 }
+
+/* ---------- Homepage: featured salons ---------- */
+
+export async function saveHomepage(fd: FormData) {
+  const a = await requireAdmin();
+  // merge the two switches into the existing general settings (other keys untouched)
+  const row = await db.platformSetting.findUnique({ where: { key: "general" } });
+  const current = (row?.value ?? {}) as Record<string, unknown>;
+  const value = { ...SETTING_DEFAULTS.general, ...current, homeServicesEnabled: fd.get("homeServicesEnabled") === "on", homeLogosEnabled: fd.get("homeLogosEnabled") === "on" };
+  await db.platformSetting.upsert({ where: { key: "general" }, update: { value: value as Prisma.InputJsonValue }, create: { key: "general", value: value as Prisma.InputJsonValue } });
+  // per-salon picks; only salons that agreed to be featured can be switched on
+  const ids = fd.getAll("salon").map(String);
+  const salons = await db.business.findMany({ where: { id: { in: ids } }, select: { id: true, featureConsent: true, logoId: true } });
+  for (const s of salons) {
+    await db.business.update({
+      where: { id: s.id },
+      data: { homeServices: s.featureConsent && fd.get(`svc_${s.id}`) === "on", homeLogo: s.featureConsent && !!s.logoId && fd.get(`logo_${s.id}`) === "on" },
+    });
+  }
+  await audit(a.email, "homepage.save", undefined, { services: value.homeServicesEnabled, logos: value.homeLogosEnabled });
+  revalidatePath("/");
+  revalidatePath("/admin/homepage");
+  redirect("/admin/homepage?saved=1");
+}

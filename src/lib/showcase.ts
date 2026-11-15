@@ -51,6 +51,19 @@ const CLIENTS: { name: string; allergies?: string; preferences?: string; notes?:
 ];
 const SOURCES: BookingSource[] = ["ONLINE", "ONLINE", "INSTAGRAM", "WHATSAPP", "WALK_IN", "TIKTOK", "PHONE"];
 
+// Abstract colour-block artwork for the fictional salon's services (no text, no real people).
+const PALETTE = ["#d9468a", "#1f5277", "#f5d6e4", "#4f9cf0", "#1c1f24", "#ededed", "#f06fae", "#e3edf7"];
+function artwork(seed: number) {
+  let s = seed * 9301 + 49297;
+  const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+  const pick = () => PALETTE[Math.floor(r() * PALETTE.length)];
+  const bg = PALETTE[seed % PALETTE.length];
+  const shapes = Array.from({ length: 7 }, (_, i) => i % 3 === 0
+    ? `<rect x="${Math.round(r() * 700) - 100}" y="${Math.round(r() * 900) - 100}" width="${Math.round(200 + r() * 420)}" height="${Math.round(200 + r() * 520)}" fill="${pick()}" opacity="${(0.55 + r() * 0.45).toFixed(2)}"/>`
+    : `<circle cx="${Math.round(r() * 800)}" cy="${Math.round(r() * 1000)}" r="${Math.round(80 + r() * 300)}" fill="${pick()}" opacity="${(0.5 + r() * 0.5).toFixed(2)}"/>`).join("");
+  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000"><rect width="800" height="1000" fill="${bg}"/>${shapes}</svg>`);
+}
+
 export async function findShowcase() {
   return db.business.findFirst({ where: { isShowcase: true }, include: { users: { where: { role: "OWNER" }, take: 1 } } });
 }
@@ -79,6 +92,15 @@ export async function createShowcase() {
   });
   const services: Service[] = [];
   for (const s of SERVICES) services.push(await db.service.create({ data: { businessId: b.id, ...s } }));
+  for (const [i, s] of services.entries())
+    for (let k = 0; k < 2; k++)
+      await db.media.create({ data: { businessId: b.id, kind: "service", serviceId: s.id, mime: "image/svg+xml", width: 800, height: 1000, data: artwork(i * 7 + k), thumb: artwork(i * 7 + k), alt: `${s.name} at Amani Hair & Beauty, Kilimani`, position: k } });
+  const braids = services.find((s) => s.name === "Box braids");
+  if (braids)
+    for (const [k, st] of [{ name: "Knotless", price: 4500, durationMin: 240 }, { name: "Bohemian", price: 5000, durationMin: 240 }, { name: "Jumbo", price: 3000, durationMin: 150 }].entries()) {
+      const style = await db.serviceStyle.create({ data: { serviceId: braids.id, ...st, position: k } });
+      await db.media.create({ data: { businessId: b.id, kind: "service", serviceId: braids.id, styleId: style.id, mime: "image/svg+xml", width: 800, height: 1000, data: artwork(90 + k), thumb: artwork(90 + k), alt: `Box braids (${st.name}) at Amani Hair & Beauty, Kilimani`, position: 0 } });
+    }
   const staff: User[] = [];
   for (const [i, s] of STAFF.entries()) {
     staff.push(await db.user.create({

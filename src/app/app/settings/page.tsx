@@ -2,6 +2,10 @@ import { MANAGERS, requireUser } from "@/lib/auth";
 import { saveSettings } from "@/app/actions/manage";
 import { PageHeader } from "@/components/ui";
 import { PaymentSettings } from "@/components/PaymentSettings";
+import { ImagePicker } from "@/components/ImagePicker";
+import { saveBrand } from "@/app/actions/services";
+import { mediaUrl } from "@/lib/media";
+import { db } from "@/lib/db";
 import { COUNTRIES, KENYA_COUNTIES } from "@/lib/geo";
 
 export const metadata = { title: "Settings" };
@@ -12,12 +16,22 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const user = await requireUser(MANAGERS);
   const b = user.business;
   const provider = process.env.MESSAGE_PROVIDER ?? "console";
+  const logo = b.logoId ? await db.media.findUnique({ where: { id: b.logoId }, select: { id: true, alt: true, mime: true } }) : null;
 
   return (
     <>
+    <PageHeader title="Settings" />
+    {sp.saved && <p className="card mb-5 max-w-3xl bg-emerald-50 p-3 text-sm text-emerald-800">{sp.saved === "brand" ? "Logo and sharing saved." : "Settings saved."}</p>}
+    {sp.error === "logo" && <p className="card mb-5 max-w-3xl bg-rose-50 p-3 text-sm text-rose-800">That logo couldn&apos;t be used. Try a PNG, JPG or WebP under 1.5 MB.</p>}
+    <form action={saveBrand} className="card mb-6 grid max-w-3xl gap-5 p-5 sm:grid-cols-[200px_1fr]">
+      <ImagePicker name="logo" max={1} transparent label="Logo" existing={logo ? [{ id: logo.id, url: mediaUrl(logo, "thumb") }] : []} />
+      <div className="space-y-4">
+        <p className="text-[14px] text-muted">Your logo appears on your booking page and on the booking slip clients get. A PNG with a transparent background looks best.</p>
+        <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="featureConsent" defaultChecked={b.featureConsent} className="mt-1" /> <span>Darling may feature my salon on its website: my logo, and photos of my services, linking to my booking page. You can untick this at any time.</span></label>
+        <button className="btn-secondary btn-sm">Save logo &amp; sharing</button>
+      </div>
+    </form>
     <form action={saveSettings} className="max-w-3xl space-y-5">
-      <PageHeader title="Settings" />
-      {sp.saved && <p className="card bg-emerald-50 p-3 text-sm text-emerald-800">Settings saved.</p>}
       {sp.error === "slug" && <p className="card bg-rose-50 p-3 text-sm text-rose-800">That booking link is already taken. Choose another.</p>}
 
       <section className="card grid gap-3 p-5 sm:grid-cols-2">

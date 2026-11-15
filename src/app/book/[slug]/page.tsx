@@ -47,6 +47,10 @@ export default async function BookPage({ params, searchParams }: { params: Promi
       {!b.isShowcase && <JsonLd data={salonJsonLd(b, services, appUrl(), logo ? mediaUrl(logo) : null)} />}
       <header className="border-b border-ink px-5 pt-12 pb-10 sm:px-8">
         <div>
+          {logo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={mediaUrl(logo, "thumb")} alt={`${b.name} logo`} className="mb-6 h-14 w-auto max-w-[180px] object-contain" />
+          )}
           <p className="label-caps text-muted">Book online</p>
           <h1 className="mt-4 text-[clamp(40px,7vw,96px)] leading-[0.88] uppercase">{b.name}</h1>
           <div className="label-caps mt-6 flex flex-wrap gap-x-6 gap-y-1 text-muted">

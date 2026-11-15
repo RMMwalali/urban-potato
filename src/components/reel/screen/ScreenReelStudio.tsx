@@ -48,6 +48,7 @@ function nominal(st: Step): number {
     case "waitFor": return 200;
     case "focus": return (st.ms ?? 1500) + 900;
     case "day": return 1700;
+    case "file": return 2200;
   }
 }
 export const reelLength = (r: ReelDef) => ENTER + r.steps.reduce((t, s) => t + nominal(s) / 1000, 0) + HOLD_END + EXIT;
@@ -427,6 +428,29 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
           setValue(lt.el, lt.text);
           await waitFind(fillTarget(st.to, v), 8000);
         }
+        return;
+      }
+      case "file": {
+        // what a person does: click "Add photos", pick files. The files are generated artwork.
+        const el = await waitFind(fillTarget(st.to, v));
+        await moveTo(el, 800);
+        await press();
+        const w = win() as (Window & typeof globalThis) | null;
+        const input = doc()?.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement | null;
+        if (!w || !input) return;
+        const dt = new w.DataTransfer();
+        const pal = ["#d9468a", "#1f5277", "#f5d6e4", "#4f9cf0", "#1c1f24", "#ededed", "#f06fae"];
+        for (let k = 0; k < (st.count ?? 1); k++) {
+          const c = document.createElement("canvas"); c.width = 800; c.height = 1000;
+          const g = c.getContext("2d")!;
+          g.fillStyle = pal[(k * 3) % pal.length]; g.fillRect(0, 0, 800, 1000);
+          for (let n = 0; n < 8; n++) { g.globalAlpha = 0.5 + Math.random() * 0.5; g.fillStyle = pal[Math.floor(Math.random() * pal.length)]; g.beginPath(); g.arc(Math.random() * 800, Math.random() * 1000, 80 + Math.random() * 280, 0, Math.PI * 2); g.fill(); }
+          const blob = await new Promise<Blob>((res) => c.toBlob((x) => res(x!), "image/png"));
+          const bytes = new Uint8Array(await blob.arrayBuffer());
+          dt.items.add(new w.File([bytes], `photo-${k + 1}.png`, { type: "image/png" }));
+        }
+        input.files = dt.files;
+        input.dispatchEvent(new w.Event("change", { bubbles: true }));
         return;
       }
       case "day": {

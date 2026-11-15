@@ -11,6 +11,8 @@ import { JsonLd } from "@/components/JsonLd";
 import { GUIDES } from "@/content/guides";
 import { appUrl } from "@/lib/url";
 import { foundingOffer, plans as getPlans } from "@/lib/offer";
+import { homepageData } from "@/lib/homepage";
+import { LogoMarquee } from "@/components/site/Marquees";
 
 export async function generateMetadata() {
   const { seo } = await getSettings();
@@ -51,7 +53,7 @@ export default async function Home() {
   const [session, { general }] = await Promise.all([getSession(), getSettings()]);
   const name = general.siteName;
   const base = appUrl();
-  const [offer, plans] = await Promise.all([foundingOffer(), getPlans()]);
+  const [offer, plans, home] = await Promise.all([foundingOffer(), getPlans(), homepageData()]);
   const cur = plans.currency;
   const PLANS = [
     { name: "Monthly", price: plans.monthly.price, per: "/ month", note: "Pay as you go. Stop any time.", open: true },
@@ -87,7 +89,8 @@ export default async function Home() {
         ]}
       />
       <SiteHeader name={name} signedIn={!!session} />
-      <Hero />
+      <Hero cards={home.cards} />
+      <LogoMarquee logos={home.logos} />
 
       {/* Statement */}
       <section className="px-5 pt-24 sm:px-8 md:pt-32">

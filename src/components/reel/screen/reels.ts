@@ -18,7 +18,8 @@ export type Step =
   | { do: "focus"; to: Target; ms?: number } // blur the page around the key result and punch in on it
   | { do: "wait"; ms: number }
   | { do: "waitFor"; to: Target; ms?: number }
-  | { do: "day"; from: number }; // click days from this one on until free times show
+  | { do: "day"; from: number } // click days from this one on until free times show
+  | { do: "file"; to: Target; count?: number }; // pick photos in a photo field (generated artwork for the showcase)
 
 export type Entry = "rise" | "drop" | "swing-left" | "swing-right" | "push" | "spin";
 export type Look = { bg: string; light?: boolean; entry: Entry; tilt: number };
@@ -245,13 +246,19 @@ export const REELS: ReelDef[] = [
     look: { bg: "#4f9cf0", entry: "swing-right", tilt: 1.2 },
     steps: [
       { do: "nav", label: "Services" },
+      { do: "move", to: { sel: "main li", nth: 0 } },
+      { do: "click", to: link("+ Add service"), nav: true },
       { do: "type", to: { field: "Service name" }, text: "Knotless braids" },
       { do: "type", to: { field: "Category" }, text: "Braids & locs" },
       { do: "set", to: { field: "Minutes" }, value: "240" },
       { do: "type", to: { field: "Price" }, text: "4500" },
-      { do: "click", to: btn("Add service") },
-      { do: "waitFor", to: { sel: 'input[name="name"][value="Knotless braids"]' }, ms: 6000 },
-      { do: "focus", to: { sel: 'input[name="name"][value="Knotless braids"]' }, ms: 1300 },
+      { do: "file", to: { text: "+ Add photos", sel: "button" }, count: 3 },
+      { do: "waitFor", to: { sel: "figure img" } },
+      { do: "click", to: btn("+ Add style") },
+      { do: "type", to: { field: "Style name" }, text: "Waist length" },
+      { do: "type", to: { field: "Price", nth: 1 }, text: "5500" },
+      { do: "click", to: btn("Save service"), nav: true },
+      { do: "focus", to: { text: "Knotless braids", sel: "main li" }, ms: 1300 },
       { do: "nav", label: "Staff" },
       { do: "click", to: link("+ Add staff member"), nav: true },
       { do: "type", to: { field: "Name" }, text: "Faith Kerubo" },

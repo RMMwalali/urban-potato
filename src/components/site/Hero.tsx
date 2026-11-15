@@ -2,9 +2,9 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Layer, ParallaxScene } from "@/components/motion/Parallax";
 import { Lines } from "@/components/motion/Reveal";
+import { ServiceMarquee, type HomeCard } from "./Marquees";
 
 const EASE = [0.19, 1, 0.22, 1] as const;
-const TYPES = ["Hair", "Barbers", "Nails", "Spa", "Lashes"];
 
 function Lens({ children, className, delay, depth }: { children: React.ReactNode; className: string; delay: number; depth: number }) {
   const reduce = useReducedMotion();
@@ -18,9 +18,9 @@ function Lens({ children, className, delay, depth }: { children: React.ReactNode
   );
 }
 
-export function Hero() {
+export function Hero({ cards = [] }: { cards?: HomeCard[] }) {
   return (
-    <section className="relative flex min-h-[100svh] flex-col justify-between px-5 pt-36 pb-8 sm:px-8 md:pt-44">
+    <section className="relative flex flex-col px-5 pt-36 pb-8 sm:px-8 md:pt-40">
       <ParallaxScene className="relative">
         <h1 className="relative text-[clamp(38px,10.4vw,150px)] leading-[0.82] font-normal tracking-[-0.01em] uppercase">
           <span className="sr-only">You don&apos;t need a website. You need a booking engine.</span>
@@ -34,19 +34,14 @@ export function Hero() {
         <Lens className="top-[112%] right-0 sm:top-[40%] sm:right-auto sm:left-[58%]" delay={0.9} depth={0.07}>Client<br />records</Lens>
       </ParallaxScene>
 
+      {/* moving services sit right under the headline, so the first screen is never still */}
+      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 1.2, ease: EASE }} className="mt-60 sm:mt-6">
+        <ServiceMarquee cards={cards} />
+      </motion.div>
       <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 1, ease: EASE }}
-        className="mt-80 max-w-md text-[clamp(16px,1.4vw,20px)] leading-snug sm:mt-16 sm:ml-auto sm:mr-[3%]">
+        className="mt-10 max-w-md text-[clamp(16px,1.4vw,20px)] leading-snug sm:ml-auto sm:mr-[3%]">
         Your styles already live on Instagram. What your salon needs is bookings, clients and payments in one place.
       </motion.p>
-      <motion.ul initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 1 }} className="mt-12 flex flex-wrap justify-between gap-x-8 gap-y-3">
-        {TYPES.map((t) => (
-          <li key={t}>
-            <a href="/signup" className="group flex items-center gap-4 text-[clamp(16px,1.6vw,22px)] uppercase">
-              {t}<span className="inline-block transition-transform duration-700 group-hover:rotate-90" style={{ transitionTimingFunction: "cubic-bezier(.19,1,.22,1)" }}>↗</span>
-            </a>
-          </li>
-        ))}
-      </motion.ul>
     </section>
   );
 }

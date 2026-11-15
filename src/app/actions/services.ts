@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { MANAGERS, requireUser } from "@/lib/auth";
-import { checkUpload, readKeep, readUploads, syncImages } from "@/lib/media";
+import { checkUpload, readKeep, readUploads, storeUpload, syncImages } from "@/lib/media";
 
 export type ServiceFormState = { error?: string } | undefined;
 
@@ -77,4 +77,27 @@ export async function saveServiceFull(_: ServiceFormState, fd: FormData): Promis
   revalidatePath("/app/services");
   revalidatePath(`/book/${b.slug}`);
   redirect("/app/services?saved=1");
+}
+
+/** Salon logo and permission for Darling to feature the salon on its own website. */
+export async function saveBrand(fd: FormData) {
+  const user = await requireUser(MANAGERS);
+  const b = user.business;
+  const keep = readKeep(fd, "logo");
+  const [upload] = readUploads(fd, "logo");
+  if (upload && checkUpload(upload)) redirect("/app/settings?error=logo");
+  let logoId = b.logoId && keep.includes(b.logoId) ? b.logoId : null;
+  if (upload) {
+    logoId = (await storeUpload(upload, { businessId: b.id, kind: "logo", alt: `${b.name} logo` })).id;
+  }
+  if (b.logoId && b.logoId !== logoId) await db.media.deleteMany({ where: { id: b.logoId, businessId: b.id } });
+  const consent = fd.get("featureConsent") === "on";
+  await db.business.update({
+    where: { id: b.id },
+    // withdrawing permission takes the salon off the homepage straight away
+    data: { logoId, featureConsent: consent, ...(consent ? {} : { homeLogo: false, homeServices: false }), ...(logoId ? {} : { homeLogo: false }) },
+  });
+  revalidatePath("/app/settings");
+  revalidatePath("/");
+  redirect("/app/settings?saved=brand");
 }
