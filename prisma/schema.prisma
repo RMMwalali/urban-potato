@@ -54,6 +54,15 @@ model Business {
   discountPercent   Int      @default(0)
   discountUntil     DateTime?
   payrollConfig     Json? // statutory deduction rules, see src/lib/payroll.ts
+  // Location: typed at sign-up (country/region/city + address), with coordinates for the admin map
+  country           String? // ISO 3166-1 alpha-2, e.g. "KE"
+  region            String? // county / state
+  city              String? // town or neighbourhood
+  latitude          Float?
+  longitude         Float?
+  locationSource    String? // "county" (typed county centre) | "ip" (network location at sign-up)
+  signupGeo         Json? // network location seen at sign-up: { country, region, city, latitude, longitude }
+  isShowcase        Boolean  @default(false) // admin-created salon used only to film reels; excluded from stats and maps
   createdAt         DateTime @default(now())
 
   users        User[]
@@ -463,4 +472,29 @@ model StaffAdvance {
   createdAt  DateTime @default(now())
 
   @@index([businessId, userId])
+}
+
+// Sign-up funnel: visits to /signup, submitted attempts and created accounts, with network location.
+model SignupEvent {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  stage        String // "visit" | "attempt" | "created"
+  visitorId    String // random id in a first-party cookie, to count unique visitors
+  ipHash       String? // HMAC of the IP address; the raw IP is never stored
+  country      String?
+  region       String?
+  city         String?
+  latitude     Float?
+  longitude    Float?
+  timezone     String? // from the browser
+  language     String?
+  referrer     String?
+  email        String? // attempts only: what was typed in the form
+  businessName String?
+  error        String? // why an attempt failed
+  businessId   String?
+
+  @@index([createdAt])
+  @@index([visitorId])
+  @@index([stage, createdAt])
 }

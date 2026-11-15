@@ -6,6 +6,9 @@ import { createSession, destroySession, getSession, hashPassword, verifyPassword
 import { slugify } from "@/lib/format";
 import { getSettings } from "@/lib/platform";
 import { createAdminSession } from "@/lib/admin-auth";
+import { COUNTRIES, KENYA_COUNTIES, placeBusiness } from "@/lib/geo";
+import { recordSignupEvent } from "@/lib/funnel";
+import type { Prisma } from "@prisma/client";
 
 /**
  * The very first account on the platform gets platform-admin rights (same email and password for /admin).
@@ -34,32 +37,47 @@ const SignupSchema = z.object({
   name: z.string().trim().min(2, "Enter your name"),
   email: z.string().trim().toLowerCase().email("Enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-});
+  country: z.string().trim().toUpperCase().refine((c) => COUNTRIES.some((x) => x.code === c), "Choose your country"),
+  region: z.string().trim().min(2, "Enter your county or region").max(80),
+  city: z.string().trim().min(2, "Enter your town or area").max(80),
+  address: z.string().trim().max(160).optional(),
+}).refine((d) => d.country !== "KE" || KENYA_COUNTIES.some((c) => c.name === d.region), { message: "Choose your county", path: ["region"] });
 
 export async function signup(_: FormState, fd: FormData): Promise<FormState> {
-  const parsed = SignupSchema.safeParse(Object.fromEntries(fd));
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
-  const { businessName, name, email, password } = parsed.data;
+  const raw = Object.fromEntries(fd) as Record<string, string>;
+  const tz = String(fd.get("tz") ?? "") || null;
+  const fail = async (error: string) => {
+    await recordSignupEvent({ stage: "attempt", email: raw.email, businessName: raw.businessName, error, timezone: tz });
+    return { error };
+  };
+  const parsed = SignupSchema.safeParse(raw);
+  if (!parsed.success) return fail(parsed.error.issues[0].message);
+  const { businessName, name, email, password, country, region, city, address } = parsed.data;
 
   const settings = await getSettings();
-  if (!settings.general.signupEnabled) return { error: "New sign-ups are paused right now. Please contact us." };
+  if (!settings.general.signupEnabled) return fail("New sign-ups are paused right now. Please contact us.");
 
   let user;
+  let net;
   try {
-    if (await db.user.findUnique({ where: { email } })) return { error: "An account with this email already exists" };
+    if (await db.user.findUnique({ where: { email } })) return fail("An account with this email already exists");
     const base = slugify(businessName) || "salon";
     let slug = base;
     for (let i = 2; await db.business.findUnique({ where: { slug } }); i++) slug = `${base}-${i}`;
     const trialEndsAt = new Date(Date.now() + settings.general.trialDays * 86400_000);
     const passwordHash = await hashPassword(password);
+    net = await recordSignupEvent({ stage: "attempt", email, businessName, timezone: tz });
+    const place = placeBusiness({ country, region }, net);
+    const location = { country, region, city, address: address || null, ...place, signupGeo: net as Prisma.InputJsonValue };
     user = await db.$transaction(async (tx) => {
-      const business = await tx.business.create({ data: { name: businessName, slug, email, trialEndsAt } });
+      const business = await tx.business.create({ data: { name: businessName, slug, email, trialEndsAt, ...location } });
       return tx.user.create({ data: { businessId: business.id, name, email, passwordHash, role: "OWNER", title: "Owner", color: "#ec4899" } });
     });
   } catch (e) {
     console.error("signup failed (database):", e);
     return { error: "We couldn't create your account right now (database unavailable). Please try again shortly." };
   }
+  await recordSignupEvent({ stage: "created", email, businessName, businessId: user.businessId, timezone: tz });
 
   try {
     await createSession({ userId: user.id, businessId: user.businessId, role: user.role });

@@ -2,6 +2,7 @@ import { MANAGERS, requireUser } from "@/lib/auth";
 import { saveSettings } from "@/app/actions/manage";
 import { PageHeader } from "@/components/ui";
 import { PaymentSettings } from "@/components/PaymentSettings";
+import { COUNTRIES, KENYA_COUNTIES } from "@/lib/geo";
 
 export const metadata = { title: "Settings" };
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -24,7 +25,17 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <div><label className="label">Name</label><input name="name" defaultValue={b.name} className="input" required /></div>
         <div><label className="label">Phone</label><input name="phone" defaultValue={b.phone ?? ""} className="input" /></div>
         <div><label className="label">Email</label><input name="email" type="email" defaultValue={b.email ?? ""} className="input" /></div>
-        <div><label className="label">Address / location</label><input name="address" defaultValue={b.address ?? ""} className="input" /></div>
+        <div><label className="label">Street or building</label><input name="address" defaultValue={b.address ?? ""} className="input" /></div>
+        <div><label className="label">Town or area</label><input name="city" defaultValue={b.city ?? ""} className="input" /></div>
+        <div>
+          <label className="label">County / region</label>
+          <input name="region" defaultValue={b.region ?? ""} className="input" list="counties" />
+          <datalist id="counties">{KENYA_COUNTIES.map((c) => <option key={c.name} value={c.name} />)}</datalist>
+        </div>
+        <div>
+          <label className="label">Country</label>
+          <select name="country" defaultValue={b.country ?? "KE"} className="input">{COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}</select>
+        </div>
         <div><label className="label">Currency</label><input name="currency" defaultValue={b.currency} className="input" maxLength={3} /></div>
         <div><label className="label">Timezone</label><input name="timezone" defaultValue={b.timezone} className="input" /></div>
         <div><label className="label">Phone country code</label><input name="countryCode" defaultValue={b.countryCode} className="input" /></div>

@@ -1,4 +1,5 @@
 "use server";
+import { COUNTRIES, placeBusiness, type Geo } from "@/lib/geo";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -136,6 +137,12 @@ export async function saveSettings(fd: FormData) {
   const slug = slugify(str(fd, "slug")) || user.business.slug;
   const taken = await db.business.findFirst({ where: { slug, id: { not: user.businessId } } });
   if (taken) redirect("/app/settings?error=slug");
+  // Location for the platform map: re-place the pin only if the salon changed its country or region.
+  const b = user.business;
+  const country = COUNTRIES.some((c) => c.code === str(fd, "country").toUpperCase()) ? str(fd, "country").toUpperCase() : b.country;
+  const region = opt(fd, "region") ?? b.region;
+  const moved = country !== b.country || region !== b.region || b.latitude == null;
+  const place = moved ? placeBusiness({ country: country ?? undefined, region: region ?? undefined }, (b.signupGeo ?? {}) as Geo) : {};
   await db.business.update({
     where: { id: user.businessId },
     data: {
@@ -144,6 +151,7 @@ export async function saveSettings(fd: FormData) {
       phone: opt(fd, "phone"),
       email: opt(fd, "email"),
       address: opt(fd, "address"),
+      country, region, city: opt(fd, "city") ?? b.city, ...place,
       currency: str(fd, "currency") || "KES",
       timezone: str(fd, "timezone") || "Africa/Nairobi",
       countryCode: str(fd, "countryCode").replace(/\D/g, "") || "254",
