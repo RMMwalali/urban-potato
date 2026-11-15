@@ -53,7 +53,7 @@ export default async function BusinessesPage({ searchParams }: { searchParams: P
                 <tr key={b.id} className="hover:bg-stone-50/60">
                   <td><Link href={`/admin/businesses/${b.id}`} className="font-semibold hover:text-brand-600">{b.name}</Link><span className="block text-xs text-stone-500">/book/{b.slug}</span></td>
                   <td className="text-xs">{b.users[0]?.name}<br /><span className="text-stone-500">{b.users[0]?.email}</span></td>
-                  <td><span className={`badge ${BUSINESS_STATUS_STYLE[b.status]}`}>{b.status.replace("_", " ")}</span>{!s.ok && <span className="badge ml-1 text-pink">locked</span>}{b.foundingMember && <span className="badge ml-1 text-azure-600">founding</span>}</td>
+                  <td><span className={`badge ${BUSINESS_STATUS_STYLE[b.status]}`}>{b.status.replace("_", " ")}</span>{!s.ok && <span className="badge ml-1 text-pink">locked</span>}{b.foundingMember && <span className="badge ml-1 text-azure-600">founding</span>}{b.status === "ACTIVE" && <span className="badge ml-1">{b.plan === "annual" || b.plan === "lifetime" ? b.plan : "monthly"}</span>}</td>
                   <td className="text-xs whitespace-nowrap">
                     {b.status === "TRIAL" ? (s.daysLeft > 0 ? <><b>{s.daysLeft}</b> days left</> : <span className="text-rose-700">Ended {fmtDate(b.trialEndsAt, b.timezone)}</span>) : b.paidUntil ? `Paid until ${fmtDate(b.paidUntil, b.timezone)}` : b.plan}
                   </td>

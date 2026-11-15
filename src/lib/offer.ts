@@ -46,3 +46,33 @@ export async function setFounding(businessId: string, on: boolean) {
     data: on ? { foundingMember: true, discountPercent: general.foundingPercent, discountUntil: addMonths(new Date(), general.foundingMonths) } : { foundingMember: false, discountPercent: 0, discountUntil: null },
   });
 }
+
+/* ---------- Plans: monthly, annual, lifetime (one-time) ---------- */
+
+export type PlanId = "monthly" | "annual" | "lifetime";
+export const PLAN_LABEL: Record<PlanId, string> = { monthly: "Monthly", annual: "Annual", lifetime: "Lifetime" };
+export const planOf = (b: Pick<Business, "plan">): PlanId => (b.plan === "annual" || b.plan === "lifetime" ? b.plan : "monthly");
+
+export async function plans() {
+  const { general } = await getSettings();
+  const sold = await db.business.count({ where: { plan: "lifetime" } }).catch(() => 0);
+  const left = Math.max(0, general.lifetimeLimit - sold);
+  return {
+    currency: general.currency,
+    monthly: { price: general.monthlyPrice },
+    annual: { price: general.annualPrice, perMonth: Math.round(general.annualPrice / 12), saving: Math.max(0, general.monthlyPrice * 12 - general.annualPrice) },
+    lifetime: { price: general.lifetimePrice, enabled: general.lifetimeEnabled && left > 0, limit: general.lifetimeLimit, sold, left },
+  };
+}
+
+/** What this salon pays on its current plan (founding discount applies to monthly and annual). */
+export async function billingFor(b: Pick<Business, "plan" | "discountPercent" | "discountUntil">) {
+  const { general } = await getSettings();
+  const plan = planOf(b);
+  const active = plan !== "lifetime" && b.discountPercent > 0 && !!b.discountUntil && b.discountUntil > new Date();
+  const base = plan === "annual" ? general.annualPrice : plan === "lifetime" ? general.lifetimePrice : general.monthlyPrice;
+  // Annual: the founding discount covers only the discounted months that fall within the year being paid.
+  const monthsLeft = active ? Math.min(12, Math.ceil((b.discountUntil!.getTime() - Date.now()) / (30.44 * 86400_000))) : 0;
+  const price = !active ? base : plan === "annual" ? Math.round(base - (base / 12) * monthsLeft * (b.discountPercent / 100)) : Math.round(base * (1 - b.discountPercent / 100));
+  return { plan, label: PLAN_LABEL[plan], price, base, period: plan === "annual" ? "year" : plan === "lifetime" ? "once" : "month", discounted: active, until: active ? b.discountUntil : null, percent: active ? b.discountPercent : 0 };
+}

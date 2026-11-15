@@ -2,7 +2,7 @@ import { requireUser } from "@/lib/auth";
 import { accessState, getSettings } from "@/lib/platform";
 import { fmtDate } from "@/lib/format";
 import { PageHeader } from "@/components/ui";
-import { foundingOffer, monthlyPriceFor } from "@/lib/offer";
+import { billingFor, foundingOffer, plans as getPlans, type PlanId } from "@/lib/offer";
 
 export const metadata = { title: "Plan & billing" };
 
@@ -21,8 +21,22 @@ export default async function BillingPage() {
   const b = user.business;
   const s = accessState(b);
   const { general } = await getSettings();
-  const [offer, pay] = await Promise.all([foundingOffer(), monthlyPriceFor(b)]);
-  const wa = general.supportWhatsApp ? `https://wa.me/${general.supportWhatsApp}?text=${encodeURIComponent(`Hi, I'd like to subscribe ${b.name} (${b.slug}) to ${general.siteName}${!b.foundingMember && offer.enabled ? " with the founding offer" : ""}.`)}` : null;
+  const [offer, pay, plans] = await Promise.all([foundingOffer(), billingFor(b), getPlans()]);
+  const paying = s.reason === "active";
+  const isLifetime = paying && pay.plan === "lifetime";
+  const waFor = (label: string) =>
+    general.supportWhatsApp ? `https://wa.me/${general.supportWhatsApp}?text=${encodeURIComponent(`Hi, I'd like ${b.name} (${b.slug}) on the ${general.siteName} ${label} plan.`)}` : null;
+  const wa = waFor(paying ? pay.label : "Monthly");
+  const cur = plans.currency;
+  const founding = !b.foundingMember && offer.enabled;
+  const PLANS: { id: PlanId; name: string; price: number; per: string; lines: string[]; open: boolean }[] = [
+    { id: "monthly", name: "Monthly", price: plans.monthly.price, per: "/ month", open: true,
+      lines: [founding ? `Founding offer: ${cur} ${offer.offerPrice.toLocaleString()} a month for your first ${offer.months} months.` : "Pay as you go. Stop any time."] },
+    { id: "annual", name: "Annual", price: plans.annual.price, per: "/ year", open: true,
+      lines: [`Works out at ${cur} ${plans.annual.perMonth.toLocaleString()} a month.`, plans.annual.saving > 0 ? `Save ${cur} ${plans.annual.saving.toLocaleString()} a year.` : "", founding ? `Founding ${offer.percent}% off applies to your first ${offer.months} months.` : ""].filter(Boolean) },
+    { id: "lifetime", name: "Lifetime", price: plans.lifetime.price, per: "once", open: plans.lifetime.enabled && plans.lifetime.left > 0,
+      lines: [`Pay once, use ${general.siteName} for as long as it runs. Includes updates.`, plans.lifetime.enabled ? `${plans.lifetime.left} of ${plans.lifetime.limit} places left.` : "Not available right now.", "Not combined with the founding offer."] },
+  ];
   const headline = {
     trial: `${s.daysLeft} ${s.daysLeft === 1 ? "day" : "days"} left in your free trial`,
     trial_over: "Your free trial has ended",
@@ -44,17 +58,31 @@ export default async function BillingPage() {
       )}
       <div className="grid gap-12 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <p className="label-caps">{general.siteName} standard</p>
-          <p className="mt-6 text-[clamp(56px,8vw,112px)] leading-none tracking-[-0.02em]">{general.currency} {pay.price.toLocaleString()}<span className="text-[18px] tracking-normal text-muted"> / month</span></p>
-          <p className="mt-3 text-[15px] text-muted">
-            {pay.discounted ? <>Founding member: {pay.percent}% off until {fmtDate(pay.until!, b.timezone)}, then {general.currency} {general.monthlyPrice.toLocaleString()} a month.</> : "One flat price. No per-stylist fees, no commission, no surprises."}
-          </p>
-          {!b.foundingMember && offer.enabled && (
-            <p className="mt-6 border-l-2 border-pink bg-panel px-4 py-3 text-[15px]">
-              Founding offer: subscribe now and pay <b className="font-medium">{offer.currency} {offer.offerPrice.toLocaleString()}</b> a month for your first {offer.months} months ({offer.percent}% off). {offer.left} of {offer.slots} places left.
-            </p>
+          <p className="label-caps">{paying ? `Your plan · ${pay.label}` : "Choose a plan"}</p>
+          {paying && (
+            <>
+              <p className="mt-6 text-[clamp(48px,7vw,96px)] leading-none tracking-[-0.02em]">{cur} {pay.price.toLocaleString()}<span className="text-[18px] tracking-normal text-muted"> {pay.period === "once" ? "paid once" : `/ ${pay.period}`}</span></p>
+              {pay.discounted && <p className="mt-3 text-[15px] text-muted">Founding member: {pay.percent}% off until {fmtDate(pay.until!, b.timezone)}, then {cur} {pay.base.toLocaleString()} a {pay.period}.</p>}
+            </>
           )}
-          <ol className="mt-10 border-t-2 border-ink">
+          <div className="mt-8 border-t-2 border-ink">
+            {PLANS.map((p) => {
+              const current = paying && pay.plan === p.id;
+              const link = waFor(p.name);
+              return (
+                <div key={p.id} className={`grid gap-4 border-b border-ink/30 py-6 sm:grid-cols-[1fr_auto] sm:items-end ${!p.open && !current ? "opacity-45" : ""}`}>
+                  <div>
+                    <p className="label-caps">{p.name}{current && <span className="ml-2 text-pink">· Current</span>}{p.id === "annual" && <span className="ml-2 text-azure-600">· 2 months free</span>}</p>
+                    <p className="mt-2 text-[clamp(28px,3vw,40px)] leading-none">{cur} {p.price.toLocaleString()}<span className="text-[14px] text-muted"> {p.per}</span></p>
+                    {p.lines.map((l) => <p key={l} className="mt-2 text-[14px] text-muted">{l}</p>)}
+                  </div>
+                  {!current && !isLifetime && p.open && link && <a href={link} target="_blank" className="btn-secondary btn-sm">{paying ? "Switch" : "Choose"} {p.name.toLowerCase()}</a>}
+                </div>
+              );
+            })}
+          </div>
+          <p className="label-caps mt-12">Every plan includes</p>
+          <ol className="mt-4 border-t-2 border-ink">
             {INCLUDED.map((i, k) => (
               <li key={i} className="flex gap-4 border-b border-ink/30 py-3 text-[16px]"><sup className="pt-2 text-[11px]">{k + 1}</sup>{i}</li>
             ))}
@@ -65,7 +93,7 @@ export default async function BillingPage() {
             <p className="label-caps text-muted">Current status</p>
             <p className="mt-3 text-[22px] leading-tight">{headline}</p>
             {s.reason === "trial" && <p className="mt-1 text-[14px] text-muted">Trial ends {fmtDate(b.trialEndsAt, b.timezone)}</p>}
-            {b.paidUntil && <p className="mt-1 text-[14px] text-muted">Paid until {fmtDate(b.paidUntil, b.timezone)}</p>}
+            {isLifetime ? <p className="mt-1 text-[14px] text-muted">Lifetime plan: nothing more to pay.</p> : b.paidUntil && <p className="mt-1 text-[14px] text-muted">Paid until {fmtDate(b.paidUntil, b.timezone)}</p>}
           </div>
           <div className="border-t-2 border-ink pt-4">
             <p className="label-caps text-muted">Subscribe or get help</p>

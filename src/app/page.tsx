@@ -10,7 +10,7 @@ import { SiteFooter } from "@/components/site/SiteFooter";
 import { JsonLd } from "@/components/JsonLd";
 import { GUIDES } from "@/content/guides";
 import { appUrl } from "@/lib/url";
-import { foundingOffer } from "@/lib/offer";
+import { foundingOffer, plans as getPlans } from "@/lib/offer";
 
 export async function generateMetadata() {
   const { seo } = await getSettings();
@@ -39,7 +39,8 @@ const COMPLAINTS = [
 const FAQ = [
   { q: "Do I need a website for my salon?", a: "Not to take bookings. Darling gives your salon a booking link for Instagram, TikTok and WhatsApp, so clients see your services and free times and book themselves." },
   { q: "Does Darling work with M-Pesa?", a: "Yes. Record M-Pesa, cash, card and split payments. Connect a till or paybill and payments arrive automatically with the payer's name and amount; codes can only be used once. Pochi la Biashara payments can be added from the SMS." },
-  { q: "Do you take commission on my clients?", a: "No. Darling is one flat monthly price with unlimited staff, clients and bookings. Payments go straight to your own M-Pesa." },
+  { q: "Do you take commission on my clients?", a: "No. Darling is a flat price (monthly, annual, or pay once for lifetime access) with unlimited staff, clients and bookings. Payments go straight to your own M-Pesa." },
+  { q: "Is there a one-time payment option?", a: "Yes, while places last. The lifetime plan is a single payment for permanent access, including updates. Monthly and annual plans are also available, and annual works out cheaper than paying monthly." },
   { q: "How does Darling reduce no-shows?", a: "Automatic SMS or WhatsApp confirmations and reminders, optional M-Pesa deposits when clients book online, a link for clients to reschedule or cancel within your policy, and no-show tracking on each client." },
   { q: "Can my staff see their own earnings?", a: "Yes. Each stylist sees their services, commission and tips for the month, and the owner gets a daily summary and reports." },
   { q: "Can I export my data?", a: "Yes. Export clients, bookings and sales to a spreadsheet at any time." },
@@ -48,10 +49,15 @@ const FAQ = [
 
 export default async function Home() {
   const [session, { general }] = await Promise.all([getSession(), getSettings()]);
-  const price = `${general.currency} ${general.monthlyPrice.toLocaleString()}`;
   const name = general.siteName;
   const base = appUrl();
-  const offer = await foundingOffer();
+  const [offer, plans] = await Promise.all([foundingOffer(), getPlans()]);
+  const cur = plans.currency;
+  const PLANS = [
+    { name: "Monthly", price: plans.monthly.price, per: "/ month", note: "Pay as you go. Stop any time.", open: true },
+    { name: "Annual", price: plans.annual.price, per: "/ year", note: `${cur} ${plans.annual.perMonth.toLocaleString()} a month, billed yearly.${plans.annual.saving > 0 ? ` Save ${cur} ${plans.annual.saving.toLocaleString()}.` : ""}`, open: true },
+    { name: "Lifetime", price: plans.lifetime.price, per: "once", note: plans.lifetime.enabled ? `Pay once, own it forever. ${plans.lifetime.left} of ${plans.lifetime.limit} places left.` : "Pay once, own it forever. Currently sold out.", open: plans.lifetime.enabled },
+  ];
   const { seo } = await getSettings();
   const sameAs = (seo.sameAs || "").split(/[\s,]+/).filter((u: string) => u.startsWith("http"));
 
@@ -70,7 +76,11 @@ export default async function Home() {
             applicationSubCategory: "Salon and spa management software",
             operatingSystem: "Web browser (Android, iOS, Windows, macOS)",
             description: seo.description,
-            offers: { "@type": "Offer", price: general.monthlyPrice, priceCurrency: general.currency, description: `Monthly subscription, ${general.trialDays}-day free trial` },
+            offers: [
+              { "@type": "Offer", name: "Monthly", price: plans.monthly.price, priceCurrency: cur, description: `Monthly subscription, ${general.trialDays}-day free trial` },
+              { "@type": "Offer", name: "Annual", price: plans.annual.price, priceCurrency: cur, description: "Annual subscription, two months free" },
+              ...(plans.lifetime.enabled ? [{ "@type": "Offer", name: "Lifetime", price: plans.lifetime.price, priceCurrency: cur, description: "One-time payment, lifetime access", availability: "https://schema.org/LimitedAvailability" }] : []),
+            ],
             featureList: FEATURES.map((f) => f.title).join(", "),
           },
           { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map((f) => ({ "@type": "Question", name: f.q.replace(/Darling/g, name), acceptedAnswer: { "@type": "Answer", text: f.a.replace(/Darling/g, name) } })) },
@@ -150,19 +160,28 @@ export default async function Home() {
             <div className="border-t-2 border-ink pt-10 md:pt-16">
               <div className="flex flex-wrap items-center justify-between gap-10">
                 <h2 className="text-[clamp(30px,3.6vw,52px)] leading-[1.02] uppercase">
-                  <Lines inView lines={["One price.", "No commission."]} />
+                  <Lines inView lines={["Three ways to pay.", "No commission."]} />
                 </h2>
                 <Reveal><Link href="/signup" className="btn-circle">Try it free</Link></Reveal>
               </div>
               <Reveal>
-                <p className="mt-14 text-[clamp(56px,9vw,128px)] leading-none tracking-[-0.02em]">{price}<span className="text-[clamp(16px,1.6vw,22px)] tracking-normal text-muted"> / month</span></p>
-                <p className="mt-4 text-[15px] text-muted">{general.trialDays} days free. No card needed. Unlimited staff, clients and bookings.</p>
+                <div className="mt-14 grid border-t border-ink md:grid-cols-3">
+                  {PLANS.map((p, i) => (
+                    <div key={p.name} className={`border-b border-ink/40 py-8 md:border-b-0 ${i > 0 ? "md:border-l md:pl-8" : ""} md:pr-8 ${p.open ? "" : "opacity-45"}`}>
+                      <p className="label-caps">{p.name}{p.name === "Annual" && <span className="text-azure-600"> · 2 months free</span>}</p>
+                      <p className="mt-6 whitespace-nowrap text-[clamp(34px,3.2vw,52px)] leading-none tracking-[-0.02em]">{cur} {p.price.toLocaleString()}</p>
+                      <p className="mt-2 text-[14px] text-muted">{p.per}</p>
+                      <p className="mt-5 text-[15px] leading-snug">{p.note}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-8 text-[15px] text-muted">Every plan: {general.trialDays} days free first, no card needed. Unlimited staff, clients and bookings.</p>
                 {offer.enabled && (
                   <div className="mt-10 flex flex-wrap items-end justify-between gap-6 border-t border-ink pt-6">
                     <div>
                       <p className="label-caps text-pink">Founding offer · {offer.left} of {offer.slots} places left</p>
                       <p className="mt-3 text-[clamp(22px,2.4vw,32px)] leading-tight">{offer.percent}% off for your first {offer.months} months: {offer.currency} {offer.offerPrice.toLocaleString()} a month.</p>
-                      <p className="mt-2 text-[14px] text-muted">For the first {offer.slots} salons that subscribe. Places count when you subscribe, not when you start the trial.</p>
+                      <p className="mt-2 text-[14px] text-muted">For the first {offer.slots} salons that subscribe monthly or annually. Places count when you subscribe, not when you start the trial. Not combined with lifetime.</p>
                     </div>
                   </div>
                 )}

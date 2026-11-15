@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { accessState, getSettings } from "@/lib/platform";
 import { displayPhone, fmtDate, fmtDateTime, money, num } from "@/lib/format";
 import { adminSetRole, adminSetUserPassword, adminToggleUser, deleteBusiness, extendTrial, impersonate, resetTrial, saveBusinessNotes, setBusinessStatus, toggleFounding } from "@/app/actions/admin";
-import { foundingOffer, monthlyPriceFor } from "@/lib/offer";
+import { billingFor, foundingOffer, plans as getPlans } from "@/lib/offer";
 import { ActionForm, ConfirmButton } from "@/components/ActionForm";
 import { Alert, BUSINESS_STATUS_STYLE, PageHeader, Stat } from "@/components/ui";
 
@@ -20,7 +20,7 @@ export default async function BusinessDetail({ params, searchParams }: { params:
   ]);
   const s = accessState(b);
   const tz = b.timezone;
-  const [offer, pay] = await Promise.all([foundingOffer(), monthlyPriceFor(b)]);
+  const [offer, pay, plans] = await Promise.all([foundingOffer(), billingFor(b), getPlans()]);
 
   return (
     <div className="max-w-6xl">
@@ -62,17 +62,21 @@ export default async function BusinessDetail({ params, searchParams }: { params:
           <form action={setBusinessStatus} className="space-y-3">
             <input type="hidden" name="businessId" value={b.id} />
             <input type="hidden" name="status" value="ACTIVE" />
-            <div className="flex gap-2">
-              <select name="months" className="input" defaultValue="1">
-                <option value="1">1 month</option><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option><option value="0">No end date</option>
+            <div className="grid grid-cols-[1fr_88px] gap-2">
+              <select name="plan" className="input" defaultValue={pay.plan}>
+                <option value="monthly">Monthly · {plans.currency} {plans.monthly.price.toLocaleString()}</option>
+                <option value="annual">Annual · {plans.currency} {plans.annual.price.toLocaleString()}</option>
+                <option value="lifetime" disabled={!plans.lifetime.enabled && pay.plan !== "lifetime"}>Lifetime · {plans.currency} {plans.lifetime.price.toLocaleString()} ({plans.lifetime.left} left)</option>
               </select>
-              <button className="btn-primary">Activate</button>
+              <input name="qty" type="number" min={1} max={36} defaultValue={1} className="input" title="Months for monthly, years for annual" aria-label="How many months or years" />
             </div>
-            {b.paidUntil && <p className="text-[13px] text-muted">Paid until {fmtDate(b.paidUntil, tz)}</p>}
+            <p className="text-[12px] text-muted">Number = months paid (monthly) or years paid (annual). Ignored for lifetime. Extends from the current paid-until date.</p>
+            <button className="btn-primary">Activate / renew</button>
+            {b.status === "ACTIVE" && <p className="text-[13px] text-muted">{pay.plan === "lifetime" ? "Lifetime: paid forever." : b.paidUntil ? `Paid until ${fmtDate(b.paidUntil, tz)}` : "No end date"}</p>}
           </form>
           <div className="border-t border-ink/30 pt-4 text-[14px]">
-            <p className="label-caps text-muted">Monthly price</p>
-            <p className="mt-1 text-[20px]">{b.currency} {pay.price.toLocaleString()}{pay.discounted && <span className="text-[13px] text-muted"> · {pay.percent}% off until {fmtDate(pay.until!, tz)}</span>}</p>
+            <p className="label-caps text-muted">{pay.label} plan</p>
+            <p className="mt-1 text-[20px]">{b.currency} {pay.price.toLocaleString()}<span className="text-[13px] text-muted"> / {pay.period}</span>{pay.discounted && <span className="text-[13px] text-muted"> · {pay.percent}% off until {fmtDate(pay.until!, tz)}</span>}</p>
             <p className="mt-2 text-[13px] text-muted">{b.foundingMember ? "Founding member." : offer.enabled ? `Not a founding member. ${offer.left} of ${offer.slots} places left; granted automatically on activation.` : "Founding offer closed or full."}</p>
             <form action={toggleFounding.bind(null, b.id, !b.foundingMember)} className="mt-3"><button className="btn-secondary btn-sm">{b.foundingMember ? "Remove founding offer" : "Grant founding offer"}</button></form>
           </div>
@@ -90,7 +94,6 @@ export default async function BusinessDetail({ params, searchParams }: { params:
           <h2 className="section-title mb-3">Internal notes</h2>
           <form action={saveBusinessNotes} className="space-y-3">
             <input type="hidden" name="businessId" value={b.id} />
-            <div><label className="label">Plan</label><input name="plan" defaultValue={b.plan} className="input" /></div>
             <textarea name="adminNotes" defaultValue={b.adminNotes ?? ""} rows={4} className="input" placeholder="Onboarding call notes, payment arrangements…" />
             <button className="btn-secondary btn-sm">Save notes</button>
           </form>

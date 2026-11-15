@@ -61,12 +61,21 @@ export async function setBusinessStatus(fd: FormData) {
   const id = str(fd, "businessId");
   const status = str(fd, "status") as BusinessStatus;
   if (!["TRIAL", "ACTIVE", "PAST_DUE", "SUSPENDED", "CANCELLED"].includes(status)) return;
-  const months = Number(str(fd, "months")) || 0;
+  const plan = ["monthly", "annual", "lifetime"].includes(str(fd, "plan")) ? str(fd, "plan") : "monthly";
+  const qty = Math.max(1, Number(str(fd, "qty")) || 1); // months (monthly) or years (annual)
   const data: Prisma.BusinessUpdateInput = { status };
-  if (status === "ACTIVE") data.paidUntil = months ? new Date(Date.now() + months * 30 * 86400_000) : null;
+  if (status === "ACTIVE") {
+    data.plan = plan;
+    const b = await db.business.findUniqueOrThrow({ where: { id } });
+    // extend from the later of today or the current paid-until date, so renewals stack
+    const from = b.paidUntil && b.paidUntil > new Date() ? new Date(b.paidUntil) : new Date();
+    if (plan === "lifetime") data.paidUntil = null;
+    else { from.setMonth(from.getMonth() + (plan === "annual" ? 12 * qty : qty)); data.paidUntil = from; }
+  }
+  const months = plan === "annual" ? 12 * qty : plan === "lifetime" ? 0 : qty;
   await db.business.update({ where: { id }, data });
-  const founding = status === "ACTIVE" ? await grantFoundingIfEligible(id) : false;
-  await audit(a.email, "business.status", { type: "business", id }, { status, months, ...(founding ? { foundingOffer: "granted" } : {}) });
+  const founding = status === "ACTIVE" && plan !== "lifetime" ? await grantFoundingIfEligible(id) : false;
+  await audit(a.email, "business.status", { type: "business", id }, { status, ...(status === "ACTIVE" ? { plan, months } : {}), ...(founding ? { foundingOffer: "granted" } : {}) });
   revalidatePath("/admin", "layout");
 }
 
@@ -80,7 +89,7 @@ export async function toggleFounding(businessId: string, on: boolean) {
 export async function saveBusinessNotes(fd: FormData) {
   const a = await requireAdmin();
   const id = str(fd, "businessId");
-  await db.business.update({ where: { id }, data: { adminNotes: str(fd, "adminNotes") || null, plan: str(fd, "plan") || "standard" } });
+  await db.business.update({ where: { id }, data: { adminNotes: str(fd, "adminNotes") || null } });
   await audit(a.email, "business.notes", { type: "business", id });
   revalidatePath(`/admin/businesses/${id}`);
 }
@@ -176,7 +185,7 @@ export async function saveSettingsGroup(fd: FormData) {
   if (group === "general") {
     value.trialDays = Math.max(1, Math.min(90, Number(value.trialDays)));
     // allow 0 places / 0% explicitly (the generic number parser treats 0 as "use default")
-    for (const k of ["foundingSlots", "foundingPercent", "foundingMonths"]) if (str(fd, k) === "0") value[k] = 0;
+    for (const k of ["foundingSlots", "foundingPercent", "foundingMonths", "lifetimeLimit"]) if (str(fd, k) === "0") value[k] = 0;
     value.foundingPercent = Math.max(0, Math.min(100, Number(value.foundingPercent)));
   }
   await db.platformSetting.upsert({ where: { key: group }, update: { value: value as Prisma.InputJsonValue }, create: { key: group, value: value as Prisma.InputJsonValue } });

@@ -15,6 +15,10 @@ export const SETTING_DEFAULTS = {
     trialDays: 14,
     signupEnabled: true,
     monthlyPrice: 2500,
+    annualPrice: 25000, // two months free
+    lifetimePrice: 75000, // one-time, own it forever
+    lifetimeEnabled: true,
+    lifetimeLimit: 25, // lifetime places available
     currency: "KES",
     // Founding offer: the first N salons that actually pay get X% off for M months
     foundingOfferEnabled: true,

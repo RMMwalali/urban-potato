@@ -12,7 +12,7 @@ export async function GET() {
   const lines = [
     `# ${n}`,
     "",
-    `> ${n} is salon, barbershop and spa management software built for Kenya: an online booking engine, client records, M-Pesa checkout with Safaricom-verified codes, SMS/WhatsApp reminders, deposits, staff commission and reports. One flat price of ${general.currency} ${general.monthlyPrice.toLocaleString()} a month, no commission on clients, ${general.trialDays}-day free trial.`,
+    `> ${n} is salon, barbershop and spa management software built for Kenya: an online booking engine, client records, M-Pesa checkout with Safaricom-verified codes, SMS/WhatsApp reminders, deposits, staff commission and reports. Flat pricing: ${general.currency} ${general.monthlyPrice.toLocaleString()} a month, ${general.currency} ${general.annualPrice.toLocaleString()} a year${general.lifetimeEnabled ? `, or ${general.currency} ${general.lifetimePrice.toLocaleString()} once for lifetime access (limited places)` : ""}; no commission on clients, ${general.trialDays}-day free trial.`,
     "",
     seo.description,
     "",

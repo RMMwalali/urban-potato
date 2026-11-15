@@ -21,6 +21,10 @@ export default async function PlatformSettings({ searchParams }: { searchParams:
           <div><label className="label">Platform name</label><input name="siteName" defaultValue={general.siteName} className="input" /></div>
           <div><label className="label">Free trial length (days)</label><input name="trialDays" type="number" min={1} max={90} defaultValue={general.trialDays} className="input" /></div>
           <div><label className="label">Monthly price</label><input name="monthlyPrice" type="number" min={0} defaultValue={general.monthlyPrice} className="input" /></div>
+          <div><label className="label">Annual price</label><input name="annualPrice" type="number" min={0} defaultValue={general.annualPrice} className="input" /></div>
+          <div><label className="label">Lifetime price (one-time)</label><input name="lifetimePrice" type="number" min={0} defaultValue={general.lifetimePrice} className="input" /></div>
+          <div><label className="label">Lifetime places</label><input name="lifetimeLimit" type="number" min={0} defaultValue={general.lifetimeLimit} className="input" /></div>
+          <label className="flex items-center gap-2 self-end pb-3 text-sm"><input type="checkbox" name="lifetimeEnabled" defaultChecked={general.lifetimeEnabled} /> Offer the lifetime plan</label>
           <div><label className="label">Currency</label><input name="currency" defaultValue={general.currency} className="input" /></div>
           <div><label className="label">Support email</label><input name="supportEmail" type="email" defaultValue={general.supportEmail} className="input" /></div>
           <div><label className="label">Support phone</label><input name="supportPhone" defaultValue={general.supportPhone} className="input" /></div>

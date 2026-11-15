@@ -28,11 +28,11 @@ Feature choices are based on real complaints about existing salon software; see 
 
 ### For you, the platform admin (`/admin`)
 - **Overview**: salon count, trials, trials ending soon, paying salons, usage.
-- **Salons & trials**: search and filter; **reset trial** (fresh N days), extend by N days, activate for 1/3/6/12 months, mark past-due/suspended/cancelled, internal notes, "open as owner" for support, delete with typed confirmation.
+- **Salons & trials**: search and filter; **reset trial** (fresh N days), extend by N days, activate or renew on a plan (monthly × N months, annual × N years, or lifetime with no end date; renewals stack on the current paid-until date), mark past-due/suspended/cancelled, internal notes, "open as owner" for support, delete with typed confirmation.
 - **Users**: every salon user; reset passwords, enable/disable, change roles.
 - **API keys**: Africa's Talking, WhatsApp, M-Pesa Daraja, messaging provider. Encrypted at rest (AES-256-GCM), shown masked, environment variables used as fallback.
 - **SEO & meta**: default title, title template, description, keywords, share image, X handle, Google verification, canonical URL; **per-page overrides** (including `/book/*` with a `{name}` placeholder) with a Google preview, noindex switch, and a sitemap and robots.txt generated from these settings.
-- **Platform settings**: name, trial length, price, support contacts (shown to locked salons), sign-up switch, admin accounts, password change.
+- **Platform settings**: name, trial length, monthly / annual / lifetime prices, lifetime places and on/off switch, founding offer, support contacts (shown to locked salons), sign-up switch, admin accounts, password change.
 - **Audit log**: every admin action.
 
 ### Growth & marketing
@@ -40,6 +40,7 @@ Feature choices are based on real complaints about existing salon software; see 
 - **SEO & AI discovery:** sitemap with all guides, robots.txt that explicitly allows search and AI crawlers, `/llms.txt` + `/llms-full.txt`, Organization/WebSite/SoftwareApplication/FAQ schema on the home page, a text-only social card, Google + Bing verification and social `sameAs` links in Admin → SEO, and an IndexNow script (`npm run indexnow -- https://yourdomain.com`).
 - **Launch checklist:** step-by-step submissions for Cloudflare, Vercel, Google Search Console, Bing, IndexNow, Business Profile, directories and AI assistants. See [`docs/LAUNCH-CHECKLIST.md`](docs/LAUNCH-CHECKLIST.md).
 - **Founding offer:** the first N salons that actually subscribe get X% off for M months (default 50 places, 50%, 6 months; editable in Admin → Settings). Applied automatically when an admin activates a salon; places-left counter on the pricing section and billing page.
+- **Plans:** Monthly (KES 2,500), Annual (KES 25,000, two months free) and Lifetime (KES 75,000 once, limited to 25 salons), all editable in Admin → Settings. Shown on the pricing section (with Offer schema), billing page and llms.txt. The founding discount applies to monthly and annual (pro-rated over the discounted months of the year) but not to lifetime.
 - **Reel studio** (Admin → Reel studio): generates an HD (1080×1920, 1:1 or 16:9) video of the platform feature by feature, opening on SAY NO MORE (big → bigger → biggest), with an original opera-style score synthesised in the browser (based on the public-domain *Dies irae* chant) or your own licensed track. Records H.264 MP4 in desktop Chrome/Edge.
 
 ## Design
