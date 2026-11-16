@@ -11,7 +11,8 @@ export async function generateMetadata() {
   return pageMetadata("/signup", { title: "Start your free trial", description: `Create your salon account and try everything free for ${general.trialDays} days. No card needed.` });
 }
 
-export default async function SignupPage() {
+export default async function SignupPage({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
+  const { ref } = await searchParams;
   const [{ general }, h] = await Promise.all([getSettings(), headers()]);
   const net = geoFromHeaders(h);
   const country = COUNTRIES.some((c) => c.code === net.country) ? net.country! : "KE";
@@ -27,6 +28,7 @@ export default async function SignupPage() {
           countries={COUNTRIES.map(({ code, name }) => ({ code, name }))}
           counties={KENYA_COUNTIES.map((c) => c.name)}
           defaultCountry={country}
+          refCode={ref && /^lead_[\w-]{5,40}$/.test(ref) ? ref : undefined}
           defaultRegion={county}
           defaultCity={county ? undefined : country === net.country ? net.city : undefined}
         />

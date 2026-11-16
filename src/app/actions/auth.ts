@@ -78,6 +78,16 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
     return { error: "We couldn't create your account right now (database unavailable). Please try again shortly." };
   }
   await recordSignupEvent({ stage: "created", email, businessName, businessId: user.businessId, timezone: tz });
+  // came from an outreach message: move that lead to "on trial" (or match by email)
+  try {
+    const { linkLeadToSignup } = await import("@/lib/leads");
+    const ref = String(fd.get("ref") ?? "");
+    if (ref) await linkLeadToSignup(ref, user.businessId);
+    else {
+      const byEmail = await db.lead.findFirst({ where: { email, businessId: null } });
+      if (byEmail) await linkLeadToSignup(`lead_${byEmail.id}`, user.businessId);
+    }
+  } catch (e) { console.error("lead link failed:", (e as Error).message); }
 
   try {
     await createSession({ userId: user.id, businessId: user.businessId, role: user.role });

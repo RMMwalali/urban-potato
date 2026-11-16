@@ -588,3 +588,46 @@ model PushSubscription {
 
   @@index([userId])
 }
+
+// Sales leads: salons Darling's team reaches out to. Public business contact details only.
+model Lead {
+  id            String   @id @default(cuid())
+  name          String
+  type          String? // hair | barber | nails | spa | lashes | braids | mixed
+  city          String?
+  area          String?
+  phone         String?
+  whatsapp      String?
+  instagram     String?
+  tiktok        String?
+  facebook      String?
+  website       String?
+  email         String?
+  bookingMethod String?
+  fitNote       String?
+  sources       String[] @default([])
+  confidence    String?
+  status        String   @default("NEW") // NEW | CONTACTED | REPLIED | DEMO | TRIAL | PAYING | NOT_INTERESTED | DO_NOT_CONTACT
+  notes         String?
+  followUpAt    DateTime?
+  lastContactAt DateTime?
+  businessId    String? // set when the lead signs up
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  activity      LeadActivity[]
+
+  @@index([status])
+  @@index([city])
+}
+
+model LeadActivity {
+  id     String   @id @default(cuid())
+  leadId String
+  lead   Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  kind   String // whatsapp | instagram | email | call | note | status
+  text   String
+  actor  String
+  at     DateTime @default(now())
+
+  @@index([leadId, at])
+}

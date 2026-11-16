@@ -77,6 +77,7 @@ export async function setBusinessStatus(fd: FormData) {
   const founding = status === "ACTIVE" && plan !== "lifetime" ? await grantFoundingIfEligible(id) : false;
   await audit(a.email, "business.status", { type: "business", id }, { status, ...(status === "ACTIVE" ? { plan, months } : {}), ...(founding ? { foundingOffer: "granted" } : {}) });
   revalidatePath("/admin", "layout");
+  if (status === "ACTIVE") await db.lead.updateMany({ where: { businessId: id, status: { not: "PAYING" } }, data: { status: "PAYING" } }).catch(() => {});
 }
 
 export async function toggleFounding(businessId: string, on: boolean) {
