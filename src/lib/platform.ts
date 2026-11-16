@@ -22,6 +22,8 @@ export const SETTING_DEFAULTS = {
     currency: "KES",
     homeServicesEnabled: true, // landing page: carousel of service photos from salons the admin features
     homeLogosEnabled: false, // landing page: "Who we work with" logo marquee
+    homeReviewsEnabled: true, // landing page: approved reviews from salons (hidden until there is one)
+    googleReviewUrl: "", // your Google Business Profile "write a review" link, offered to every reviewer
     // Founding offer: the first N salons that actually pay get X% off for M months
     foundingOfferEnabled: true,
     foundingSlots: 50,

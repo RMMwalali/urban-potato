@@ -7,6 +7,7 @@ import { Empty, Stat } from "@/components/ui";
 import { Reveal } from "@/components/motion/Reveal";
 import { CopyButton } from "@/components/CopyButton";
 import { bookingBlockers } from "@/lib/booking-status";
+import { reviewEligible } from "@/lib/reviews";
 
 export const metadata = { title: "Dashboard" };
 
@@ -30,6 +31,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
   const active = appts.filter((a) => a.status !== "CANCELLED");
   const blockers = await bookingBlockers(b);
+  const askReview = ["OWNER", "MANAGER"].includes(user.role) && (await reviewEligible(b));
   const bookingUrl = `${appUrl()}/book/${b.slug}`;
   const isManager = ["OWNER", "MANAGER"].includes(user.role);
   const steps = [
@@ -79,6 +81,13 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             </ol>
           </section>
         </Reveal>
+      )}
+
+      {askReview && (
+        <Link href="/app/review" className="group flex flex-wrap items-center justify-between gap-4 border-y border-ink py-4 transition-colors hover:bg-panel">
+          <span><span className="label-caps block text-muted">Two minutes</span><span className="text-[clamp(18px,1.8vw,24px)]">How is Darling working for you?</span></span>
+          <span className="btn-secondary btn-sm">Rate Darling</span>
+        </Link>
       )}
 
       <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">

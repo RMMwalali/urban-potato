@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 export const GROUPS = [
   { label: "Overview", items: [{ href: "/admin", label: "Overview" }] },
   { label: "Salons", items: [{ href: "/admin/businesses", label: "Salons & trials" }, { href: "/admin/leads", label: "Leads" }, { href: "/admin/users", label: "Users" }, { href: "/admin/map", label: "Map" }] },
-  { label: "Marketing", items: [{ href: "/admin/homepage", label: "Homepage" }, { href: "/admin/seo", label: "SEO & meta" }, { href: "/admin/reel", label: "Reel studio" }, { href: "/admin/brand", label: "Brand" }] },
+  { label: "Marketing", items: [{ href: "/admin/homepage", label: "Homepage" }, { href: "/admin/reviews", label: "Reviews" }, { href: "/admin/seo", label: "SEO & meta" }, { href: "/admin/reel", label: "Reel studio" }, { href: "/admin/brand", label: "Brand" }] },
   { label: "Platform", items: [{ href: "/admin/settings", label: "Settings" }, { href: "/admin/api-keys", label: "Connections" }, { href: "/admin/audit", label: "Audit log" }] },
 ];
 

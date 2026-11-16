@@ -12,6 +12,7 @@ export const KINDS = {
   payment: { label: "M-Pesa payments received", tone: "payment" },
   deposit: { label: "Deposits paid", tone: "payment" },
   alert: { label: "Problems (e.g. a reminder failed to send)", tone: "alert" },
+  news: { label: "Messages from the Darling team", tone: "booking" },
 } as const;
 export type Kind = keyof typeof KINDS | "test";
 

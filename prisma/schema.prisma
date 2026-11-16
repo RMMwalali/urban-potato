@@ -631,3 +631,22 @@ model LeadActivity {
 
   @@index([leadId, at])
 }
+
+// Reviews of Darling from salons that use it. Only published with the salon's explicit consent
+// and the admin's approval; the average shown publicly counts every review.
+model Review {
+  id          String    @id @default(cuid())
+  businessId  String    @unique // one review per salon (they can update it)
+  userId      String
+  rating      Int // 1-5
+  body        String
+  authorName  String
+  authorRole  String?
+  salonName   String
+  city        String?
+  consent     Boolean   @default(false) // may show name, salon and words on Darling's website
+  status      String    @default("PENDING") // PENDING | APPROVED | HIDDEN
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  approvedAt  DateTime?
+}

@@ -13,6 +13,8 @@ import { appUrl } from "@/lib/url";
 import { foundingOffer, plans as getPlans } from "@/lib/offer";
 import { homepageData } from "@/lib/homepage";
 import { LogoMarquee } from "@/components/site/Marquees";
+import { Reviews } from "@/components/site/Reviews";
+import { reviewStats } from "@/lib/reviews";
 
 export async function generateMetadata() {
   const { seo } = await getSettings();
@@ -53,7 +55,8 @@ export default async function Home() {
   const [session, { general }] = await Promise.all([getSession(), getSettings()]);
   const name = general.siteName;
   const base = appUrl();
-  const [offer, plans, home] = await Promise.all([foundingOffer(), getPlans(), homepageData()]);
+  const [offer, plans, home, rv] = await Promise.all([foundingOffer(), getPlans(), homepageData(), reviewStats().catch(() => ({ count: 0, average: null, shown: [] }))]);
+  const reviews = general.homeReviewsEnabled ? rv.shown : [];
   const cur = plans.currency;
   const PLANS = [
     { name: "Monthly", price: plans.monthly.price, per: "/ month", note: "Pay as you go. Stop any time.", open: true },
@@ -84,6 +87,9 @@ export default async function Home() {
               ...(plans.lifetime.enabled ? [{ "@type": "Offer", name: "Lifetime", price: plans.lifetime.price, priceCurrency: cur, description: "One-time payment, lifetime access", availability: "https://schema.org/LimitedAvailability" }] : []),
             ],
             featureList: FEATURES.map((f) => f.title).join(", "),
+            // genuine reviews from salons using Darling; the rating counts every review, published or not
+            ...(rv.count >= 5 && rv.average ? { aggregateRating: { "@type": "AggregateRating", ratingValue: rv.average, reviewCount: rv.count, bestRating: 5, worstRating: 1 } } : {}),
+            ...(reviews.length ? { review: reviews.slice(0, 5).map((r) => ({ "@type": "Review", reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5 }, author: { "@type": "Person", name: r.authorName }, reviewBody: r.body })) } : {}),
           },
           { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map((f) => ({ "@type": "Question", name: f.q.replace(/Darling/g, name), acceptedAnswer: { "@type": "Answer", text: f.a.replace(/Darling/g, name) } })) },
         ]}
@@ -154,6 +160,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <Reviews reviews={reviews} average={rv.average} count={rv.count} />
 
       {/* Pricing */}
       <section id="pricing" className="px-5 pt-32 sm:px-8 md:pt-56">
