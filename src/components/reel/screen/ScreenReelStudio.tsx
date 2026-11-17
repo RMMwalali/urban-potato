@@ -5,6 +5,8 @@
 // screens, with recorded interface sounds. Recorded with tab capture, cropped to the stage, one MP4 each.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { scheduleScore } from "../score";
+import { INTRO_HANDOFF, playIntro } from "./intro";
+import { cardLength, playCard } from "./cards";
 import { fill, fillTarget, REELS, type Dev, type Entry, type ReelDef, type ReelVars, type Step, type Target } from "./reels";
 import { makeSfx, silentSfx, type Sfx, type TypingStyle } from "./sfx";
 import { startFilming, stopFilming } from "@/app/actions/showcase";
@@ -57,7 +59,13 @@ function nominal(st: Step): number {
     case "file": return 2200;
   }
 }
-export const reelLength = (r: ReelDef) => ENTER + r.steps.reduce((t, s) => t + nominal(s) / 1000, 0) + HOLD_END + EXIT;
+// Opening: 3D logo -> hook card (title + hook) -> what this video shows -> the demo. Closing: the address card.
+const HOOK_HOLD = 2.9, ABOUT_HOLD = 3.4, URL_HOLD = 3.4;
+const CARDS_AT = INTRO_HANDOFF + 0.1;
+const ABOUT_AT = CARDS_AT + cardLength(2, HOOK_HOLD) - 0.25;
+export const OPEN = ABOUT_AT + cardLength(1, ABOUT_HOLD) + 0.05; // the screens come in once the text has gone
+const OUTRO = cardLength(3, URL_HOLD) + 0.3;
+export const reelLength = (r: ReelDef) => OPEN + ENTER + OUTRO + r.steps.reduce((t, s) => t + nominal(s) / 1000, 0) + HOLD_END + EXIT;
 
 function pickMime() {
   const avc = ["avc1.640028", "avc1.4D0028", "avc1.42E028", "avc1.42E01E"];
@@ -85,6 +93,11 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
   const fxLayer = useRef<HTMLDivElement>(null);
   const urlRef = useRef<HTMLSpanElement>(null);
   const curtainRef = useRef<HTMLDivElement>(null);
+  const introRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  // How far the captured picture trails real time (seconds). Sounds go straight into the file, so they're
+  // delayed by this much to land exactly on the click, keystroke or toast they belong to.
+  const captureLag = useRef(0);
   const stopRef = useRef(false);
 
   const reel = REELS.find((r) => r.id === reelId) ?? REELS[0];
@@ -271,7 +284,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
 
   const moveTo = async (el: Element, ms = 950) => {
     const d = active.current;
-    if (shot.current !== d) { frameShot(d); sfx.current.whoosh(0.5); blur.current = 2; await sleep(500); }
+    if (shot.current !== d) { sfx.current.swap(d === "phone" ? "in" : "out"); frameShot(d); blur.current = 2; await sleep(500); }
     await reveal(el);
     const b = box(el);
     goal.current.s = DEV[d].base * DEV[d].zoom;
@@ -321,7 +334,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     syncUrl(); tame();
   };
 
-  // page change: pull back a little, scale-punch with a touch of motion blur and a whoosh
+  // page change: pull back a little, scale-punch with a touch of motion blur and a soft page sound
   const pullBack = () => {
     const o = DEV[active.current];
     follow.current = false;
@@ -329,7 +342,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     goal.current = { s: o.base * (1 + (o.zoom - 1) * 0.3), fx: o.x + o.w / 2, fy: o.y + o.h * 0.42 };
     cam.current.s *= 1.06;
     blur.current = 2.2;
-    sfx.current.whoosh(0.5);
+    sfx.current.page();
   };
 
   // wait until an element stops moving or growing (a slip still printing, a panel still opening)
@@ -359,7 +372,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
    */
   const readOn = async (el: Element, ms: number) => {
     const d = active.current, o = DEV[d], w = win(d);
-    if (shot.current !== d) { frameShot(d); sfx.current.whoosh(0.5); blur.current = 2; await sleep(500); }
+    if (shot.current !== d) { sfx.current.swap(d === "phone" ? "in" : "out"); frameShot(d); blur.current = 2; await sleep(500); }
     await still(el);
     // bring it into the page's viewport: the top of it when it's tall, the middle otherwise
     if (w) {
@@ -445,9 +458,9 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     useDevice(st.on ?? (st.do === "shot" ? active.current : "desktop"));
     switch (st.do) {
       case "shot": {
+        if (shot.current !== st.view) { sfx.current.swap(st.view === "desktop" ? "out" : "in"); blur.current = 2.4; }
         frameShot(st.view);
         if (st.view !== "both") useDevice(st.view);
-        sfx.current.whoosh(0.7); blur.current = 2.4;
         return;
       }
       case "url": {
@@ -634,19 +647,37 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     await sleep(300);
 
     const plan: number[] = [];
-    let acc = ENTER;
+    let acc = OPEN + ENTER;
     for (const st of r.steps) { acc += nominal(st) / 1000; plan.push(acc); }
-    const length = acc + HOLD_END + EXIT;
+    const length = acc + HOLD_END + EXIT + OUTRO;
     const start = performance.now();
     const at = (s: number) => sleep(Math.max(0, start + s * 1000 - performance.now()));
     onStart(length);
 
+    // 1. the 3D wordmark
     pose.current = { ...ENTRIES[r.look.entry] };
+    const light = !!r.look.light;
+    const base = Math.min(W * 0.092, H * 0.11);
+    const intro = introRef.current ? playIntro(introRef.current, { name, light, W, H, spin: r.look.entry === "swing-left" || r.look.entry === "spin" ? -1 : 1, sfx: sfx.current }) : Promise.resolve();
+    // 2. the hook: the problem, in the owner's words, under the video's title
+    await at(CARDS_AT);
+    const card = cardRef.current;
+    if (card) void playCard(card, [
+      { text: r.title, size: Math.round(base * 0.34), caps: true, tone: "pink", track: 0.06 },
+      { text: r.hook, size: Math.round(base * 1.02), weight: 500, gap: Math.round(base * 0.35) },
+    ], { light, W, H, hold: HOOK_HOLD, sfx: sfx.current });
+    // 3. what Laazizi does about it, which is what the demo shows
+    await at(ABOUT_AT);
+    if (card) void playCard(card, [
+      { text: fill(r.about, { ...v }).replace(/\{name\}/g, name), size: Math.round(base * 0.74), tone: "ink" },
+    ], { light, W, H, hold: ABOUT_HOLD });
+    // 4. the screens come through
+    await at(OPEN);
     poseTw.current = { from: { ...pose.current }, to: { ...REST }, t0: performance.now(), ms: ENTER * 1000, ease: outExpo };
     curtain.style.transition = `opacity ${FADE}s ease`; curtain.style.opacity = "0";
-    sfx.current.whoosh(0.8);
     setTimeout(() => sfx.current.hit(), ENTER * 450);
-    await at(ENTER * 0.7);
+    await intro;
+    await at(OPEN + ENTER * 0.7);
     let late = 0; // seconds the steps have run over; holds that follow are never shortened to make up for it
     for (let i = 0; i < r.steps.length && !stopRef.current; i++) {
       const t1 = performance.now();
@@ -664,6 +695,14 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     follow.current = false;
     cur.current.show = 0;
     curtain.style.transition = `opacity ${EXIT * 0.8}s ease ${EXIT * 0.2}s`; curtain.style.opacity = "1";
+    // 5. where to find it
+    await at(acc + late + HOLD_END + EXIT);
+    const site = host.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+    if (cardRef.current) await playCard(cardRef.current, [
+      { text: name, brand: true, size: Math.round(base * 0.9), caps: true, weight: 600, track: -0.02 },
+      { text: site, size: Math.round(Math.min(base * 1.1, (W * 0.84) / Math.max(8, site.length) * 1.75)), weight: 500, gap: Math.round(base * 0.45) },
+      { text: "Try it free for 14 days", size: Math.round(base * 0.46), tone: "muted", gap: Math.round(base * 0.3) },
+    ], { light, W, H, hold: URL_HOLD, align: "center", sfx: sfx.current });
     await at(length + late);
     pose.current = { ...REST };
   }
@@ -679,7 +718,9 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     await actx.resume();
     const dest = actx.createMediaStreamDestination();
     const out = actx.createGain();
-    out.connect(actx.destination); out.connect(dest);
+    const lag = actx.createDelay(1);
+    lag.delayTime.value = Math.min(0.5, Math.max(0, captureLag.current));
+    out.connect(actx.destination); out.connect(lag).connect(dest);
     const musicBus = actx.createGain();
     musicBus.gain.value = 0.22; // music sits well under the interface sounds
     musicBus.connect(out);
@@ -693,6 +734,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
   }
 
   async function preview() {
+    captureLag.current = 0; // nothing is captured in a preview
     setMsg(""); stopRef.current = false; setStatus("playing"); setPanel(false);
     try {
       const v = await freshVars();
@@ -749,9 +791,18 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       }
       canvasTrack.requestFrame();
     };
-    const v2 = video as HTMLVideoElement & { requestVideoFrameCallback?: (cb: () => void) => number };
+    type FrameMeta = { captureTime?: number; expectedDisplayTime?: number };
+    const v2 = video as HTMLVideoElement & { requestVideoFrameCallback?: (cb: (now: number, m: FrameMeta) => void) => number };
+    const lags: number[] = [];
+    captureLag.current = 0.1; // typical for tab capture, until measured
     if (v2.requestVideoFrameCallback) {
-      const onFrame = () => { if (!drawing) return; paint(); v2.requestVideoFrameCallback!(onFrame); };
+      const onFrame = (_: number, m: FrameMeta) => {
+        if (!drawing) return;
+        // the frame shows the page as it was at captureTime (plus one display frame before that)
+        if (m.captureTime) { lags.push((performance.now() - m.captureTime) / 1000 + 1 / 60); if (lags.length > 90) lags.shift(); }
+        paint();
+        v2.requestVideoFrameCallback!(onFrame);
+      };
       v2.requestVideoFrameCallback(onFrame);
     } else {
       const tick = () => { if (!drawing) return; paint(); setTimeout(tick, 1000 / FPS); };
@@ -764,6 +815,8 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
         await sleep(500);
         const v = await freshVars();
         if (!v) break;
+        if (lags.length >= 10) { const xs = [...lags].sort((a, b) => a - b); captureLag.current = xs[Math.floor(xs.length / 2)]; }
+        console.info(`capture lag ${(captureLag.current * 1000).toFixed(0)} ms (${lags.length} frames measured)`);
         await withAudio(async (begin, dest) => {
           const chunks: Blob[] = [];
           const withSound = music || sound;
@@ -831,6 +884,8 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
           </div>
         </div>
         <div ref={curtainRef} className="absolute inset-0" style={{ opacity: 1, backgroundColor: reel.look.bg }} />
+        <div ref={introRef} className="pointer-events-none absolute inset-0" />
+        <div ref={cardRef} className="pointer-events-none absolute inset-0" />
       </div>
 
       {/* controls (outside the recorded stage) */}

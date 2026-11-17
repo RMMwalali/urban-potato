@@ -12,13 +12,16 @@ export type Sfx = {
   pop(): void;
   hit(): void;
   notify(kind?: "booking" | "payment"): void;
+  swap(to: "in" | "out"): void; // the camera moves between the laptop and the phone
+  page(): void; // a new page appears
 };
-export const silentSfx: Sfx = { key() {}, enter() {}, click() {}, whoosh() {}, pop() {}, hit() {}, notify() {} };
+export const silentSfx: Sfx = { key() {}, enter() {}, click() {}, whoosh() {}, pop() {}, hit() {}, notify() {}, swap() {}, page() {} };
 
 const FILES = [
   "key-1", "key-2", "key-3", "key-4", "key-5", "key-6", "key-7", "key-8", "key-space", "key-enter",
   "typewriter-1", "typewriter-2", "typewriter-3", "typewriter-4", "typewriter-bell",
   "click-1", "click-2", "trackpad", "tap-1", "tap-2", "whoosh-1", "whoosh-2", "whoosh-3", "notify", "cash",
+  "swap-in", "swap-out", "page", "select",
 ];
 
 export async function makeSfx(ctx: AudioContext, out: AudioNode, style: TypingStyle): Promise<Sfx> {
@@ -69,7 +72,9 @@ export async function makeSfx(ctx: AudioContext, out: AudioNode, style: TypingSt
       else play(pick("click"), 0.85) || noise(0.03, 4000, 2500, 0.3, "highpass");
     },
     whoosh(strength = 0.6) { play(pick("whoosh"), 0.35 + strength * 0.4, 0.06) || noise(0.5, 400, 2600, 0.15); },
-    pop() { play("trackpad", 0.5) || noise(0.05, 1200, 2400, 0.1); },
+    pop() { play("select", 0.35, 0.02); },
+    swap(to) { play(to === "in" ? "swap-in" : "swap-out", 0.3, 0.02) || noise(0.25, 600, 1800, 0.06); },
+    page() { play("page", 0.16, 0.03); },
     hit() { play("whoosh-3", 0.5, 0.02); },
     notify(kind) { play(kind === "payment" && buf.has("cash") ? "cash" : "notify", 0.85, 0.005) || noise(0.3, 1500, 3000, 0.2); },
   };

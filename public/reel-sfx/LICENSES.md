@@ -93,3 +93,15 @@ These are recordings of a bamboo stick waved in front of the microphone. I picke
 - `File:WWS Cashregister.ogg` and `File:WWS Electroniccashregister.ogg` (Commons, Work With Sounds / Werstas): CC BY 4.0. These are modern POS or electronic registers with scanner beeps, not a "cha-ching".
 - `Android Keypress *.ogg`, `Japanese rin…`, `Sonido de campana miniatura…`, Cherry MX recordings (Commons): CC BY-SA.
 - archive.org items `SSE_Library_SWOOSHES` and `Red_Library_*` are marked CC0 by the uploader. They appear to be commercial libraries, so the CC0 claim is doubtful and they were not used.
+
+## Screen-change sounds (Kenney "Interface Sounds", CC0 1.0)
+
+From Kenney's *Interface Sounds* pack (kenney.nl, released into the public domain under CC0 1.0), taken from the copy
+shipped in github.com/ShadowBlip/OpenGamepadUI (`assets/audio/interface/`) and converted to mono MP3.
+
+| File | Original | Used for |
+|---|---|---|
+| `swap-in.mp3` | `maximize_004.ogg` | camera moves from the laptop to the phone (or to both) |
+| `swap-out.mp3` | `minimize_004.ogg` | camera moves back to the laptop |
+| `page.mp3` | `switch_003.ogg` | a page changes after a click |
+| `select.mp3` | `select_001.ogg` | something on screen is highlighted |

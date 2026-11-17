@@ -28,7 +28,8 @@ export type Step = S & { on?: Dev };
 
 export type Entry = "rise" | "drop" | "swing-left" | "swing-right" | "push" | "spin";
 export type Look = { bg: string; light?: boolean; entry: Entry; tilt: number };
-export type ReelDef = { id: string; title: string; problem: string; start: string; phone?: string; look: Look; steps: Step[] };
+// hook: the line that makes an owner feel the problem. about: how {name} solves it (what the video then shows).
+export type ReelDef = { id: string; title: string; problem: string; hook: string; about: string; start: string; phone?: string; look: Look; steps: Step[] };
 export type ReelVars = { slug: string; manage: string; mpesaCode: string; depositCode: string; finCode: string; smsCode: string; checkoutAppt: string; freeDate: string; smsDate: string; stamp: string };
 
 const btn = (text: string): Target => ({ text, sel: "button" });
@@ -42,7 +43,7 @@ const VIEW = (v: string): Target => ({ text: v, sel: 'nav[aria-label="Calendar v
 
 export const REELS: ReelDef[] = [
   {
-    id: "landing", title: "Why Laazizi", problem: "The website: what Laazizi does for a salon, how it compares, the prices, and starting a free trial.", start: "/",
+    id: "landing", title: "Why Laazizi", problem: "The website: what Laazizi does for a salon, how it compares, the prices, and starting a free trial.", hook: "Your salon deserves better than a notebook and a full DM inbox.", about: "{name} is the booking engine for salons, barbershops and spas. Here's the tour.", start: "/",
     look: { bg: "#ededed", light: true, entry: "rise", tilt: 0.8 },
     steps: [
       { do: "wait", ms: 2200 },
@@ -74,7 +75,7 @@ export const REELS: ReelDef[] = [
     ],
   },
   {
-    id: "booking", title: "A client books, you're notified", problem: "No more DMs: a client books from the link in your bio, gets a booking slip and a confirmation, and the salon hears it straight away.", start: "/app", phone: "/book/{slug}",
+    id: "booking", title: "A client books, you're notified", problem: "No more DMs: a client books from the link in your bio, gets a booking slip and a confirmation, and the salon hears it straight away.", hook: "Stop answering “are you free on Saturday?” at midnight.", about: "{name} lets clients book themselves from your Instagram link, and tells you the moment they do.", start: "/app", phone: "/book/{slug}",
     look: { bg: "#f5d6e4", light: true, entry: "push", tilt: 1 },
     steps: [
       { do: "shot", view: "both", ms: 2000 },
@@ -111,7 +112,7 @@ export const REELS: ReelDef[] = [
     ],
   },
   {
-    id: "deposits", title: "Deposits stop no-shows", problem: "Clients pay a small M-Pesa deposit to hold the slot, and move the booking themselves if plans change.", start: "/app", phone: "/book/{slug}",
+    id: "deposits", title: "Deposits stop no-shows", problem: "Clients pay a small M-Pesa deposit to hold the slot, and move the booking themselves if plans change.", hook: "Every no-show is money walking out of your salon.", about: "{name} takes an M-Pesa deposit to hold the slot, and lets clients move the booking themselves.", start: "/app", phone: "/book/{slug}",
     look: { bg: "#1f5277", entry: "swing-left", tilt: 1.1 },
     steps: [
       { do: "nav", label: "Settings" },
@@ -153,7 +154,7 @@ export const REELS: ReelDef[] = [
     ],
   },
   {
-    id: "checkout", title: "Checkout: M-Pesa, verified", problem: "Type the M-Pesa code and Safaricom confirms who paid and how much. Then a receipt, printed or on WhatsApp.", start: "/app",
+    id: "checkout", title: "Checkout: M-Pesa, verified", problem: "Type the M-Pesa code and Safaricom confirms who paid and how much. Then a receipt, printed or on WhatsApp.", hook: "Stop recording payments on paper.", about: "{name} confirms every M-Pesa payment with Safaricom and prints the receipt.", start: "/app",
     look: { bg: "#14171c", entry: "push", tilt: 1 },
     steps: [
       { do: "read", to: { text: "Today's schedule", sel: ".label-caps" }, ms: 300 },
@@ -180,7 +181,7 @@ export const REELS: ReelDef[] = [
     ],
   },
   {
-    id: "clients", title: "Returning clients, remembered", problem: "Type a number and Laazizi knows the client: allergies, preferences, what she spends and how often she comes.", start: "/app",
+    id: "clients", title: "Returning clients, remembered", problem: "Type a number and Laazizi knows the client: allergies, preferences, what she spends and how often she comes.", hook: "Remember every client like she's your only one.", about: "{name} recalls her allergies, favourite stylist and what she spends, from just her phone number.", start: "/app",
     look: { bg: "#d9468a", entry: "spin", tilt: 1.2 },
     steps: [
       { do: "nav", label: "Calendar" },
@@ -212,7 +213,7 @@ export const REELS: ReelDef[] = [
     ],
   },
   {
-    id: "dayend", title: "Closing the day", problem: "The till sheet, every M-Pesa payment matched, the numbers, and everyone's pay worked out.", start: "/app",
+    id: "dayend", title: "Closing the day", problem: "The till sheet, every M-Pesa payment matched, the numbers, and everyone's pay worked out.", hook: "Close the day in minutes, not hours with a calculator.", about: "{name} adds up the till, matches every M-Pesa payment and works out everyone's pay.", start: "/app",
     look: { bg: "#0f2233", entry: "swing-right", tilt: 1 },
     steps: [
       { do: "nav", label: "Sales" },
@@ -248,7 +249,7 @@ export const REELS: ReelDef[] = [
     ],
   },
   {
-    id: "calendar", title: "Your whole week, month, year", problem: "Day, week, month and year views, any date range, one stylist or everyone.", start: "/app",
+    id: "calendar", title: "Your whole week, month, year", problem: "Day, week, month and year views, any date range, one stylist or everyone.", hook: "Know exactly how busy you are, today or all year.", about: "{name} shows your bookings by day, week, month or year, for the whole team or one stylist.", start: "/app",
     look: { bg: "#e3edf7", light: true, entry: "drop", tilt: 0.9 },
     steps: [
       { do: "nav", label: "Calendar" },
@@ -273,7 +274,7 @@ export const REELS: ReelDef[] = [
     ],
   },
   {
-    id: "setup", title: "Set up in minutes", problem: "Add a service with photos and styles, and it's on your booking link straight away.", start: "/app", phone: "/book/{slug}",
+    id: "setup", title: "Set up in minutes", problem: "Add a service with photos and styles, and it's on your booking link straight away.", hook: "Your salon online today. No website needed.", about: "{name} puts your services, photos and prices on a booking link in minutes.", start: "/app", phone: "/book/{slug}",
     look: { bg: "#4f9cf0", entry: "swing-right", tilt: 1.2 },
     steps: [
       { do: "nav", label: "Services" },
