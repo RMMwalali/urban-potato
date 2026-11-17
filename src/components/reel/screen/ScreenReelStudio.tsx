@@ -18,6 +18,7 @@ const BAR = 46; // laptop browser chrome
 const PV = { vw: 390, vh: 844, bezel: 16 }; // phone viewport and bezel
 const GAP = 240; // space between the two devices on the stage
 const FADE = 0.5, ENTER = 1.1, HOLD_END = 0.5, EXIT = 0.8;
+const FPS = 30; // recording frame rate
 
 type Pose = { x: number; y: number; z: number; rx: number; ry: number; rz: number };
 const REST: Pose = { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0 };
@@ -707,7 +708,9 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     let screen: MediaStream;
     try {
       screen = await navigator.mediaDevices.getDisplayMedia({
-        video: { displaySurface: "browser", frameRate: 60, width: { ideal: 3840 }, height: { ideal: 3840 } },
+        // A steady 30 fps at about the size we keep. Asking for 4K at 60 fps makes the encoder fall behind
+        // on most laptops, and the backlog shows up as stutter and freezes later in a long take.
+        video: { displaySurface: "browser", frameRate: { ideal: FPS, max: FPS }, width: { ideal: Math.max(window.screen.width, W) * (window.devicePixelRatio || 1) }, height: { ideal: Math.max(window.screen.height, H) * (window.devicePixelRatio || 1) } },
         audio: false, preferCurrentTab: true, selfBrowserSurface: "include", surfaceSwitching: "exclude",
       } as DisplayMediaStreamOptions);
     } catch { setMsg("Recording was cancelled. Choose “This tab” when the browser asks."); return; }
@@ -718,27 +721,42 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       const CT = (window as unknown as { CropTarget?: { fromElement(e: Element): Promise<unknown> } }).CropTarget;
       if (CT && "cropTo" in track) { await (track as unknown as { cropTo(t: unknown): Promise<void> }).cropTo(await CT.fromElement(stageRef.current!)); cropped = true; }
     } catch { cropped = false; }
+    // The captured tab plays in a (hidden but attached) video; a detached one can be paused by the browser.
     const video = document.createElement("video");
     video.muted = true; video.playsInline = true; video.srcObject = screen;
+    video.style.cssText = "position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none";
+    document.body.appendChild(video);
     await video.play();
     await sleep(600);
     const out = document.createElement("canvas");
     out.width = W; out.height = H;
-    const oc = out.getContext("2d")!;
-    let drawing = true;
-    const draw = () => {
-      if (!drawing) return;
-      if (video.videoWidth) {
-        if (cropped) oc.drawImage(video, 0, 0, W, H);
-        else {
-          const r = stageRef.current!.getBoundingClientRect();
-          const sx = video.videoWidth / window.innerWidth, sy = video.videoHeight / window.innerHeight;
-          oc.drawImage(video, r.left * sx, r.top * sy, r.width * sx, r.height * sy, 0, 0, W, H);
-        }
+    const oc = out.getContext("2d", { alpha: false, desynchronized: true })!;
+    oc.imageSmoothingQuality = "high";
+    // One output frame per captured frame, pushed by hand, so frames are never doubled or skipped.
+    const canvasTrack = out.captureStream(0).getVideoTracks()[0] as CanvasCaptureMediaStreamTrack;
+    let drawing = true, lastFrame = 0;
+    const paint = () => {
+      // after a busy moment the browser can hand over captured frames in a burst; frames closer together than
+      // this get the same timestamp in the file, and players stutter on them
+      const now = performance.now();
+      if (!video.videoWidth || now - lastFrame < 1000 / FPS * 0.6) return;
+      lastFrame = now;
+      if (cropped) oc.drawImage(video, 0, 0, W, H);
+      else {
+        const r = stageRef.current!.getBoundingClientRect();
+        const sx = video.videoWidth / window.innerWidth, sy = video.videoHeight / window.innerHeight;
+        oc.drawImage(video, r.left * sx, r.top * sy, r.width * sx, r.height * sy, 0, 0, W, H);
       }
-      requestAnimationFrame(draw);
+      canvasTrack.requestFrame();
     };
-    draw();
+    const v2 = video as HTMLVideoElement & { requestVideoFrameCallback?: (cb: () => void) => number };
+    if (v2.requestVideoFrameCallback) {
+      const onFrame = () => { if (!drawing) return; paint(); v2.requestVideoFrameCallback!(onFrame); };
+      v2.requestVideoFrameCallback(onFrame);
+    } else {
+      const tick = () => { if (!drawing) return; paint(); setTimeout(tick, 1000 / FPS); };
+      tick();
+    }
     try {
       for (const r of list) {
         if (stopRef.current) break;
@@ -749,11 +767,12 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
         await withAudio(async (begin, dest) => {
           const chunks: Blob[] = [];
           const withSound = music || sound;
-          const tracks = [...out.captureStream(60).getVideoTracks(), ...(withSound ? dest.stream.getAudioTracks() : [])];
-          const rec = new MediaRecorder(new MediaStream(tracks), { mimeType: withSound ? mime : mime.replace(/,(mp4a\.40\.2|opus)/, ""), videoBitsPerSecond: 18_000_000, audioBitsPerSecond: 192_000 });
+          const tracks = [canvasTrack, ...(withSound ? dest.stream.getAudioTracks() : [])];
+          // 10 Mbit/s is plenty for 1080p at 30 fps and keeps the encoder comfortably ahead
+          const rec = new MediaRecorder(new MediaStream(tracks), { mimeType: withSound ? mime : mime.replace(/,(mp4a\.40\.2|opus)/, ""), videoBitsPerSecond: 10_000_000, audioBitsPerSecond: 192_000 });
           rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
           let started = false;
-          await play(r, v, (len) => { if (!started) { rec.start(250); started = true; } begin(len); });
+          await play(r, v, (len) => { if (!started) { rec.start(1000); started = true; } begin(len); });
           await sleep(200);
           const stopped = new Promise<void>((res) => (rec.onstop = () => res()));
           rec.stop(); await stopped;
@@ -763,11 +782,15 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
             a.href = URL.createObjectURL(new Blob(chunks, { type }));
             a.download = `${name.toLowerCase()}-${r.id}-${format}.${type.includes("mp4") ? "mp4" : "webm"}`;
             a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
           }
+          chunks.length = 0;
         });
       }
     } catch (e) { setMsg((e as Error).message); }
     drawing = false;
+    canvasTrack.stop();
+    video.srcObject = null; video.remove();
     screen.getTracks().forEach((t) => t.stop());
     setStatus("idle"); setPanel(true);
   }

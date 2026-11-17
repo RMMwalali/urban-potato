@@ -52,6 +52,14 @@ export function scheduleScore(ctx: AudioContext, out: AudioNode, t0: number, hit
 
   const noise = noiseBuffer(ctx);
 
+  // Build each part of the score a couple of seconds before it plays, rather than thousands of nodes up front
+  // (a huge graph from the start makes the audio crackle later in a long take).
+  const soon = (time: number, fn: () => void) => {
+    const ms = (time - ctx.currentTime - 2) * 1000;
+    const run = () => { if (ctx.state !== "closed") fn(); };
+    if (ms <= 0) run(); else setTimeout(run, ms);
+  };
+
   const voice = (freq: number, start: number, dur: number, opts: { type?: OscillatorType; gain?: number; attack?: number; release?: number; cutoff?: number; detune?: number; vibrato?: number; dest?: AudioNode }) => {
     const o = ctx.createOscillator();
     o.type = opts.type ?? "sawtooth";
@@ -114,7 +122,7 @@ export function scheduleScore(ctx: AudioContext, out: AudioNode, t0: number, hit
     cymbal(start, big ? 0.3 : 0.15);
   };
 
-  for (const h of hits) stab(t0 + h.t, h.big);
+  for (const h of hits) soon(t0 + h.t, () => stab(t0 + h.t, h.big));
 
   // Driving section from the first scene after the intro
   const startDrive = (hits[3]?.t ?? 3.6);
@@ -127,7 +135,7 @@ export function scheduleScore(ctx: AudioContext, out: AudioNode, t0: number, hit
     { root: "D", chord: ["D3", "F#3", "A3"] },
   ];
   const endDrive = finalAt - 0.1;
-  for (let t = startDrive, i = 0; t < endDrive; t += 4, i++) {
+  for (let t = startDrive, i = 0; t < endDrive; t += 4, i++) soon(t0 + t, () => {
     const c = prog[i % prog.length];
     choir(c.chord, t0 + t, 3.9, 0.03);
     // string ostinato: eighth notes on root/fifth, octave bounce
@@ -138,7 +146,7 @@ export function scheduleScore(ctx: AudioContext, out: AudioNode, t0: number, hit
     }
     timpani(t0 + t, 0.55, c.root === "D" ? 110 : c.root === "Eb" ? 78 : c.root === "C" ? 65 : 98);
     timpani(t0 + t + 2, 0.4, c.root === "D" ? 110 : 98);
-  }
+  });
 
   // Soprano: Dies irae chant (public domain), transposed to G minor, two phrases
   const dies = ["Bb4", "A4", "Bb4", "G4", "A4", "F4", "G4", "G4", "Bb4", "C5", "Bb4", "A4", "G4", "F4", "G4", "G4"];
@@ -146,17 +154,21 @@ export function scheduleScore(ctx: AudioContext, out: AudioNode, t0: number, hit
   let st = startDrive + 4; // enter after one cycle
   for (let rep = 0; rep < 3 && st < endDrive - 2; rep++) {
     for (let i = 0; i < dies.length && st < endDrive; i++) {
-      const d = durs[i] * beat;
-      voice(hz(dies[i]), t0 + st, d * 0.95, { type: "triangle", gain: 0.07, attack: 0.06, release: 0.25, cutoff: 5000, vibrato: 0.012 });
-      voice(hz(dies[i]) * 2, t0 + st, d * 0.95, { type: "sine", gain: 0.012, attack: 0.06, release: 0.25, cutoff: 8000, vibrato: 0.012 });
+      const d = durs[i] * beat, at = st, n = dies[i];
+      soon(t0 + at, () => {
+        voice(hz(n), t0 + at, d * 0.95, { type: "triangle", gain: 0.07, attack: 0.06, release: 0.25, cutoff: 5000, vibrato: 0.012 });
+        voice(hz(n) * 2, t0 + at, d * 0.95, { type: "sine", gain: 0.012, attack: 0.06, release: 0.25, cutoff: 8000, vibrato: 0.012 });
+      });
       st += d;
     }
   }
 
   // Final chord: everything, long tail
   const fin = finalAt;
-  stab(t0 + fin, true);
-  choir(["G2", "D3", "G3", "Bb3", "D4", "G4"], t0 + fin, 3.6, 0.045);
-  voice(hz("G4"), t0 + fin + 0.3, 3, { type: "triangle", gain: 0.06, attack: 0.2, release: 1, cutoff: 5000, vibrato: 0.014 });
+  soon(t0 + fin, () => {
+    stab(t0 + fin, true);
+    choir(["G2", "D3", "G3", "Bb3", "D4", "G4"], t0 + fin, 3.6, 0.045);
+    voice(hz("G4"), t0 + fin + 0.3, 3, { type: "triangle", gain: 0.06, attack: 0.2, release: 1, cutoff: 5000, vibrato: 0.014 });
+  });
   return master;
 }
