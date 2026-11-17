@@ -19,7 +19,7 @@ export function SlotPicker({ days, query, timezone, value, onChange, refreshKey 
   if (!days.length) return <p className="text-sm text-stone-500">No open days in the next few weeks.</p>;
   return (
     <div>
-      <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-2">
+      <div data-days className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-2">
         {days.map((d) => {
           const dt = new Date(`${d}T12:00:00`);
           const on = date === d;

@@ -117,7 +117,7 @@ input[type="checkbox"], input[type="radio"] { width: 1.15rem; height: 1.15rem; a
 
 /* ---------- How-to demo stage (admin studio) ---------- */
 .reel-stage { background: #14171c; transform-style: preserve-3d; }
-.reel-device { position: relative; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 80px 160px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08); }
+.reel-device { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 80px 160px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08); }
 .reel-chrome { display: flex; align-items: center; gap: 9px; padding: 0 18px; background: #e6e6e6; border-bottom: 1px solid #cdcdcd; }
 .reel-chrome i { width: 12px; height: 12px; border-radius: 99px; background: #bdbdbd; }
 .reel-url { margin-left: 18px; flex: 1; max-width: 640px; padding: 6px 16px; border-radius: 99px; background: #fff; color: #444; font: 15px/1.2 var(--font-sans, "Geist Variable", sans-serif); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background 0.2s; }
@@ -193,3 +193,12 @@ input[type="checkbox"], input[type="radio"] { width: 1.15rem; height: 1.15rem; a
 .toast-in { animation: toast-in 0.7s cubic-bezier(0.19, 1, 0.22, 1) both; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(-14px) scale(0.97); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .toast-in { animation: none; } }
+
+/* demo stage: the client's phone, fingertip pointer, touch ripples */
+.reel-phone { background: #0b0d10; border-radius: 54px; box-shadow: 0 70px 140px rgba(0, 0, 0, 0.5), 0 0 0 2px #2a2f37, inset 0 0 0 2px #3a404a; }
+.reel-stage.light .reel-phone { box-shadow: 0 50px 110px rgba(28, 31, 36, 0.3), 0 0 0 2px #2a2f37, inset 0 0 0 2px #3a404a; }
+.reel-island { position: absolute; left: 50%; top: 24px; width: 108px; height: 30px; transform: translateX(-50%); border-radius: 99px; background: #000; }
+.reel-cursor .reel-touch { display: none; position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 99px; background: rgba(255, 255, 255, 0.55); border: 2px solid rgba(28, 31, 36, 0.35); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); }
+.reel-cursor[data-touch="1"] .reel-touch { display: block; }
+.reel-cursor[data-touch="1"] .reel-arrow { display: none; }
+.reel-ripple.touch { border-color: rgba(255, 255, 255, 0.9); width: 30px; height: 30px; margin: -15px 0 0 -15px; }

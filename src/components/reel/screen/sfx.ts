@@ -1,56 +1,76 @@
-// Interface sound design for the demos, synthesised with Web Audio (no samples, nothing licensed):
-// mouse clicks, key taps, whooshes on page changes and camera moves, a soft pop for focus moments.
+// Sound design for the demos, from real recordings in /public/reel-sfx (see LICENSES.md there):
+// typewriter or keyboard keys, mouse clicks, phone taps, whooshes, a notification chime and a till.
+// Each play varies pitch and level slightly so repeated sounds feel natural. If a file is missing,
+// a synthesised stand-in plays instead so a demo never goes silent.
 
-export type Sfx = { click(): void; key(): void; whoosh(dur?: number): void; pop(): void; hit(): void };
-export const silentSfx: Sfx = { click() {}, key() {}, whoosh() {}, pop() {}, hit() {} };
+export type TypingStyle = "typewriter" | "keyboard";
+export type Sfx = {
+  key(ch: string, on: "desktop" | "phone"): void;
+  enter(on: "desktop" | "phone"): void;
+  click(on: "desktop" | "phone"): void;
+  whoosh(strength?: number): void;
+  pop(): void;
+  hit(): void;
+  notify(kind?: "booking" | "payment"): void;
+};
+export const silentSfx: Sfx = { key() {}, enter() {}, click() {}, whoosh() {}, pop() {}, hit() {}, notify() {} };
 
-export function makeSfx(ctx: AudioContext, out: AudioNode): Sfx {
-  const len = ctx.sampleRate * 2;
-  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-  const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+const FILES = [
+  "key-1", "key-2", "key-3", "key-4", "key-5", "key-6", "key-7", "key-8", "key-space", "key-enter",
+  "typewriter-1", "typewriter-2", "typewriter-3", "typewriter-4", "typewriter-bell",
+  "click-1", "click-2", "trackpad", "tap-1", "tap-2", "whoosh-1", "whoosh-2", "whoosh-3", "notify", "cash",
+];
+
+export async function makeSfx(ctx: AudioContext, out: AudioNode, style: TypingStyle): Promise<Sfx> {
   const bus = ctx.createGain();
   bus.gain.value = 0.9;
   bus.connect(out);
-
-  const noise = (t: number, dur: number, filter: BiquadFilterType, f0: number, f1: number, q: number, peak: number, attack = 0.002) => {
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.playbackRate.value = 0.9 + Math.random() * 0.2;
-    const f = ctx.createBiquadFilter();
-    f.type = filter; f.Q.value = q;
-    f.frequency.setValueAtTime(f0, t);
-    f.frequency.exponentialRampToValueAtTime(f1, t + dur);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(peak, t + attack);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    src.connect(f).connect(g).connect(bus);
-    src.start(t, Math.random() * 1.5); src.stop(t + dur + 0.05);
+  const buf = new Map<string, AudioBuffer>();
+  await Promise.all(FILES.map(async (f) => {
+    try {
+      const r = await fetch(`/reel-sfx/${f}.mp3`);
+      if (r.ok) buf.set(f, await ctx.decodeAudioData(await r.arrayBuffer()));
+    } catch {}
+  }));
+  const pick = (prefix: string) => { const xs = [...buf.keys()].filter((k) => k.startsWith(prefix) && /\d$/.test(k)); return xs[Math.floor(Math.random() * xs.length)]; };
+  const play = (name: string | undefined, gain = 1, rateJitter = 0.04) => {
+    const b = name ? buf.get(name) : undefined;
+    if (!b) return false;
+    const s = ctx.createBufferSource(); s.buffer = b;
+    s.playbackRate.value = 1 + (Math.random() * 2 - 1) * rateJitter;
+    const g = ctx.createGain(); g.gain.value = gain * (0.85 + Math.random() * 0.25);
+    s.connect(g).connect(bus); s.start();
+    return true;
   };
-  const tone = (t: number, dur: number, f0: number, f1: number, peak: number, type: OscillatorType = "sine") => {
-    const o = ctx.createOscillator();
-    o.type = type;
-    o.frequency.setValueAtTime(f0, t);
-    o.frequency.exponentialRampToValueAtTime(f1, t + dur);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(peak, t + 0.005);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g).connect(bus);
-    o.start(t); o.stop(t + dur + 0.02);
+
+  // synthesised stand-ins, only used when a recording is missing
+  const noise = (dur: number, f0: number, f1: number, peak: number, type: BiquadFilterType = "bandpass") => {
+    const len = Math.floor(ctx.sampleRate * dur), b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const s = ctx.createBufferSource(); s.buffer = b;
+    const f = ctx.createBiquadFilter(); f.type = type; f.frequency.setValueAtTime(f0, ctx.currentTime); f.frequency.exponentialRampToValueAtTime(f1, ctx.currentTime + dur);
+    const g = ctx.createGain(); g.gain.setValueAtTime(peak, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+    s.connect(f).connect(g).connect(bus); s.start();
   };
 
   return {
-    // a mouse button: a short bright tick plus a low body
-    click() { const t = ctx.currentTime; noise(t, 0.035, "highpass", 3800, 2500, 0.7, 0.35); tone(t, 0.05, 900, 300, 0.12, "triangle"); },
-    // a laptop key: softer, slightly random pitch
-    key() { const t = ctx.currentTime; noise(t, 0.028, "bandpass", 2200 + Math.random() * 900, 1500, 1.2, 0.16); },
-    // an air whoosh, rising then falling
-    whoosh(dur = 0.55) { const t = ctx.currentTime; noise(t, dur, "bandpass", 400, 2600, 0.8, 0.22, dur * 0.45); },
-    // a soft UI pop for focus moments
-    pop() { const t = ctx.currentTime; tone(t, 0.16, 520, 1040, 0.2); tone(t + 0.04, 0.14, 780, 1560, 0.1); },
-    // a low hit when the device lands
-    hit() { const t = ctx.currentTime; tone(t, 0.45, 120, 42, 0.45); noise(t, 0.25, "lowpass", 900, 120, 0.5, 0.25); },
+    key(ch, on) {
+      if (on === "phone") { play(pick("tap"), 0.45) || noise(0.02, 2500, 1800, 0.1); return; }
+      if (style === "typewriter") play(pick("typewriter"), ch === " " ? 0.6 : 0.85) || noise(0.04, 1800, 900, 0.3);
+      else play(ch === " " && buf.has("key-space") ? "key-space" : pick("key"), 0.8) || noise(0.03, 2600, 1500, 0.18);
+    },
+    enter(on) {
+      if (on === "phone") return;
+      if (style === "typewriter") play("typewriter-bell", 0.55, 0.01);
+      else play("key-enter", 0.8);
+    },
+    click(on) {
+      if (on === "phone") play(pick("tap"), 0.7) || noise(0.025, 3000, 2000, 0.15);
+      else play(pick("click"), 0.85) || noise(0.03, 4000, 2500, 0.3, "highpass");
+    },
+    whoosh(strength = 0.6) { play(pick("whoosh"), 0.35 + strength * 0.4, 0.06) || noise(0.5, 400, 2600, 0.15); },
+    pop() { play("trackpad", 0.5) || noise(0.05, 1200, 2400, 0.1); },
+    hit() { play("whoosh-3", 0.5, 0.02); },
+    notify(kind) { play(kind === "payment" && buf.has("cash") ? "cash" : "notify", 0.85, 0.005) || noise(0.3, 1500, 3000, 0.2); },
   };
 }

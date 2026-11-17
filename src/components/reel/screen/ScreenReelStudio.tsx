@@ -1,23 +1,24 @@
 "use client";
-// How-to demos: the real app runs in an iframe inside a browser frame on a 3D stage. An animated cursor
-// works through the pages (sidebar, links, forms, the address bar) while the camera follows it the same
-// way in every demo. No added text: only the app's own screens. Recorded with tab capture, cropped to
-// the stage, one MP4 per demo.
+// Owner-centred demos on real screens. A laptop (the salon) and a phone (the client) sit side by side on a
+// 3D stage, each running the real app in an iframe. The camera cuts between them and follows a mouse
+// pointer (laptop) or a fingertip (phone) through complete workflows. No added text: only the app's own
+// screens, with recorded interface sounds. Recorded with tab capture, cropped to the stage, one MP4 each.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { scheduleScore } from "../score";
-import { fill, fillTarget, REELS, type Entry, type ReelDef, type ReelVars, type Step, type Target } from "./reels";
-import { makeSfx, silentSfx, type Sfx } from "./sfx";
+import { fill, fillTarget, REELS, type Dev, type Entry, type ReelDef, type ReelVars, type Step, type Target } from "./reels";
+import { makeSfx, silentSfx, type Sfx, type TypingStyle } from "./sfx";
 import { startFilming, stopFilming } from "@/app/actions/showcase";
 
 const FORMATS = {
-  portrait: { W: 1080, H: 1920, label: "9:16 vertical (TikTok, Reels, Shorts)", vw: 1100, vh: 1880, s0: 0.85, zoom: 1.6 },
-  landscape: { W: 1920, H: 1080, label: "16:9 (YouTube, website)", vw: 1440, vh: 880, s0: 0.98, zoom: 1.45 },
+  portrait: { W: 1080, H: 1920, label: "9:16 vertical (TikTok, Reels, Shorts)", vw: 1100, vh: 1880, s0: 0.85, zoom: 1.6, phoneFit: 0.8 },
+  landscape: { W: 1920, H: 1080, label: "16:9 (YouTube, website)", vw: 1440, vh: 880, s0: 0.98, zoom: 1.45, phoneFit: 0.86 },
 } as const;
 type Format = keyof typeof FORMATS;
-const BAR = 46; // browser chrome height, device px
+const BAR = 46; // laptop browser chrome
+const PV = { vw: 390, vh: 844, bezel: 16 }; // phone viewport and bezel
+const GAP = 240; // space between the two devices on the stage
 const FADE = 0.5, ENTER = 1.1, HOLD_END = 0.5, EXIT = 0.8;
 
-// Each demo lands differently (the hook in the first second); offsets are applied to the camera rig.
 type Pose = { x: number; y: number; z: number; rx: number; ry: number; rz: number };
 const REST: Pose = { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0 };
 const ENTRIES: Record<Entry, Pose> = {
@@ -29,24 +30,27 @@ const ENTRIES: Record<Entry, Pose> = {
   spin: { x: 0, y: 200, z: -1400, rx: 10, ry: 0, rz: -14 },
 };
 const outExpo = (x: number) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function nominal(st: Step): number {
   switch (st.do) {
     case "url": return 900 + 700 + (st.path.length + 20) * 55 + 1400;
-    case "nav": return 1000 + 1400;
+    case "go": return 1500;
+    case "nav": return 2400;
     case "move": return st.ms ?? 1000;
     case "click": return (st.ms ?? 950) + (st.nav ? 1500 : 450);
     case "type": return 850 + (st.text.length * 1000) / (st.cps ?? 13) + 250;
     case "set": return 1250;
     case "select": return 1350;
     case "submit": return 1500;
-    case "scroll": return 1100;
+    case "scroll": return st.ms ?? 1100;
+    case "swipe": return 1300;
+    case "focus": return (st.ms ?? 1500) + 900;
+    case "shot": return st.ms ?? 1000;
+    case "notify": return 2600;
     case "wait": return st.ms;
     case "waitFor": return 200;
-    case "focus": return (st.ms ?? 1500) + 900;
     case "day": return 1700;
     case "file": return 2200;
   }
@@ -64,6 +68,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
   const [reelId, setReelId] = useState(initialReel);
   const [music, setMusic] = useState(false);
   const [sound, setSound] = useState(true);
+  const [typing, setTyping] = useState<TypingStyle>("typewriter");
   const [status, setStatus] = useState<"idle" | "playing" | "recording">("idle");
   const [msg, setMsg] = useState("");
   const [fit, setFit] = useState({ k: 0.5, dpr: 1 });
@@ -72,7 +77,8 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
   const stageRef = useRef<HTMLDivElement>(null);
   const camRef = useRef<HTMLDivElement>(null);
   const rigRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef<HTMLIFrameElement>(null);
+  const deskRef = useRef<HTMLIFrameElement>(null);
+  const phoneRef = useRef<HTMLIFrameElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const fxLayer = useRef<HTMLDivElement>(null);
   const urlRef = useRef<HTMLSpanElement>(null);
@@ -80,23 +86,35 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
   const stopRef = useRef(false);
 
   const reel = REELS.find((r) => r.id === reelId) ?? REELS[0];
+  const usesPhone = !!reel.phone || reel.steps.some((s) => s.on === "phone");
   const tiltRef = useRef(reel.look.tilt);
   tiltRef.current = reel.look.tilt;
   const F = FORMATS[format];
   const { W, H, vw, vh, s0 } = F;
-  const DW = vw, DH = vh + BAR;
 
-  // Camera: eases toward a goal every frame (same feel in every demo). Cursor: curved, eased moves.
-  const goal = useRef<{ s: number; fx: number; fy: number }>({ s: s0, fx: DW / 2, fy: DH / 2 });
-  const cam = useRef<{ s: number; fx: number; fy: number }>({ s: s0, fx: DW / 2, fy: DH / 2 });
-  const cur = useRef({ x: DW * 0.62, y: DH * 0.55, press: 0, show: 0 });
+  // world layout: laptop at the origin, phone to its right, vertically centred
+  const DW = vw, DH = vh + BAR;
+  const PW = PV.vw + PV.bezel * 2, PH = PV.vh + PV.bezel * 2;
+  const DEV = {
+    desktop: { x: 0, y: 0, w: DW, h: DH, top: BAR, side: 0, vh, base: s0, zoom: F.zoom },
+    phone: { x: DW + GAP, y: (DH - PH) / 2, w: PW, h: PH, top: PV.bezel, side: PV.bezel, vh: PV.vh, base: (H * F.phoneFit) / PH, zoom: 1.12 },
+  };
+  const worldW = usesPhone ? DW + GAP + PW : DW;
+  const bothScale = Math.min((W * 0.92) / worldW, (H * 0.86) / Math.max(DH, PH));
+
+  const active = useRef<Dev>("desktop");
+  const shot = useRef<Dev | "both">("desktop");
+  type CamState = { s: number; fx: number; fy: number };
+  const goal = useRef<CamState>({ s: s0, fx: DW / 2, fy: DH / 2 });
+  const cam = useRef<CamState>({ s: s0, fx: DW / 2, fy: DH / 2 });
+  const cur = useRef({ x: DW * 0.62, y: DH * 0.55, press: 0, show: 0, touch: false });
   const curTw = useRef<{ from: { x: number; y: number }; to: { x: number; y: number }; t0: number; ms: number; bend: number } | null>(null);
   const follow = useRef(true);
   const pose = useRef<Pose>({ ...REST });
   const poseTw = useRef<{ from: Pose; to: Pose; t0: number; ms: number; ease: (x: number) => number } | null>(null);
   const blur = useRef(0);
   const sfx = useRef<Sfx>(silentSfx);
-  const lastTyped = useRef<{ el: Element; text: string } | null>(null);
+  const lastTyped = useRef<{ el: Element; text: string; dev: Dev } | null>(null);
 
   useEffect(() => {
     const onResize = () => setFit({ k: Math.min(window.innerWidth / W, window.innerHeight / H), dpr: window.devicePixelRatio || 1 });
@@ -133,50 +151,59 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       }
       blur.current = Math.max(0, blur.current - dt * 6);
       const g = goal.current;
-      if (follow.current) { g.fx = cur.current.x; g.fy = cur.current.y; }
-      const c = cam.current, k = 1 - Math.exp(-dt * 2.6); // critically damped-ish follow
+      if (follow.current && shot.current !== "both") { g.fx = cur.current.x; g.fy = cur.current.y; }
+      const c = cam.current, k = 1 - Math.exp(-dt * 2.6);
       c.s += (g.s - c.s) * k; c.fx += (g.fx - c.fx) * k; c.fy += (g.fy - c.fy) * k;
-      // keep the frame on the device: never show more than a sliver of the background
-      const halfW = W / 2 / c.s, halfH = H / 2 / c.s;
-      const fx = DW <= halfW * 2 ? DW / 2 : Math.max(halfW - 30, Math.min(DW - halfW + 30, c.fx));
-      const fy = DH <= halfH * 2 ? DH / 2 : Math.max(halfH - 30, Math.min(DH - halfH + 30, c.fy));
-      // gentle, consistent 3D: the screen turns slightly toward where the cursor is working
+      // keep the frame on the device being shown
+      let fx = c.fx, fy = c.fy;
+      if (shot.current !== "both") {
+        const d = DEV[shot.current];
+        const halfW = W / 2 / c.s, halfH = H / 2 / c.s;
+        fx = d.w <= halfW * 2 ? d.x + d.w / 2 : Math.max(d.x + halfW - 30, Math.min(d.x + d.w - halfW + 30, c.fx));
+        fy = d.h <= halfH * 2 ? d.y + d.h / 2 : Math.max(d.y + halfH - 30, Math.min(d.y + d.h - halfH + 30, c.fy));
+      }
       const t = (now - t0) / 1000;
       const tilt = tiltRef.current;
-      const ry = (-((fx / DW) - 0.5) * 10 + Math.sin(t * 0.35) * 1.2) * tilt;
-      const rx = (4 + ((fy / DH) - 0.5) * 5 + Math.cos(t * 0.3) * 0.8) * tilt;
+      const ref = shot.current === "both" ? { x: 0, w: worldW } : { x: DEV[shot.current].x, w: DEV[shot.current].w };
+      const ry = (-(((fx - ref.x) / ref.w) - 0.5) * 10 + Math.sin(t * 0.35) * 1.2) * tilt;
+      const rx = (4 + Math.cos(t * 0.3) * 0.8) * tilt;
       const P = pose.current;
       if (camRef.current) camRef.current.style.transform = `translate3d(${P.x}px, ${P.y}px, ${P.z}px) rotateX(${rx + P.rx}deg) rotateY(${ry + P.ry}deg) rotateZ(${P.rz}deg)`;
       if (rigRef.current) {
         rigRef.current.style.transform = `translate3d(${W / 2 - c.s * fx}px, ${H / 2 - c.s * fy}px, 0) scale(${c.s})`;
         rigRef.current.style.filter = blur.current > 0.05 ? `blur(${blur.current.toFixed(2)}px)` : "none";
       }
-      if (cursorRef.current) {
-        cursorRef.current.style.transform = `translate3d(${cur.current.x}px, ${cur.current.y}px, 24px) scale(${(1 - cur.current.press * 0.2) * (s0 * 1.25 / c.s)})`;
-        cursorRef.current.style.opacity = String(cur.current.show);
+      const el = cursorRef.current;
+      if (el) {
+        const base = cur.current.touch ? DEV.phone.base * 1.1 : s0 * 1.25;
+        el.style.transform = `translate3d(${cur.current.x}px, ${cur.current.y}px, 24px) scale(${(1 - cur.current.press * 0.2) * (base / c.s)})`;
+        el.style.opacity = String(cur.current.show);
+        el.dataset.touch = cur.current.touch ? "1" : "0";
       }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [W, H, DW, DH, s0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [W, H, DW, DH, s0, worldW]);
 
-  /* ---------- the page inside the browser frame ---------- */
-  const win = () => frameRef.current?.contentWindow ?? null;
-  const doc = () => frameRef.current?.contentDocument ?? null;
+  /* ---------- the pages inside the devices ---------- */
+  const frame = (d: Dev) => (d === "phone" ? phoneRef.current : deskRef.current);
+  const win = (d: Dev = active.current) => frame(d)?.contentWindow ?? null;
+  const doc = (d: Dev = active.current) => frame(d)?.contentDocument ?? null;
   const norm = (s: string) => s.replace(/[‘’]/g, "'").replace(/\s+/g, " ").trim().toLowerCase();
   const visible = (el: Element) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
 
-  const find = useCallback((t: Target): Element | null => {
-    const d = doc();
-    if (!d) return null;
-    const root: ParentNode = (t.within && d.querySelector(t.within)) || d;
+  const find = useCallback((t: Target, d: Dev = active.current): Element | null => {
+    const dc = doc(d);
+    if (!dc) return null;
+    const root: ParentNode = (t.within && dc.querySelector(t.within)) || dc;
     let list: Element[] = [];
     if (t.field) {
       const want = norm(t.field);
       for (const l of root.querySelectorAll("label")) {
         if (!norm(l.textContent ?? "").startsWith(want)) continue;
-        const ctl = (l.htmlFor && d.getElementById(l.htmlFor)) || l.parentElement?.querySelector("input:not([type=hidden]),select,textarea");
+        const ctl = (l.htmlFor && dc.getElementById(l.htmlFor)) || l.parentElement?.querySelector("input:not([type=hidden]),select,textarea");
         if (ctl && visible(ctl)) list.push(ctl);
       }
     } else if (t.text) {
@@ -187,21 +214,25 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       list = [...root.querySelectorAll(t.sel)].filter(visible);
     }
     return list[t.nth ?? 0] ?? null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const waitFind = useCallback(async (t: Target, ms = 8000) => {
+  const waitFind = useCallback(async (t: Target, ms = 8000, d: Dev = active.current) => {
     const end = performance.now() + ms;
     for (;;) {
-      const el = find(t);
+      const el = find(t, d);
       if (el) return el;
-      if (performance.now() > end || stopRef.current) throw new Error(`Couldn't find ${JSON.stringify(t)} on ${win()?.location.pathname}`);
+      if (performance.now() > end || stopRef.current) throw new Error(`Couldn't find ${JSON.stringify(t)} on the ${d} at ${win(d)?.location.pathname}`);
       await sleep(120);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [find]);
 
-  const box = (el: Element) => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left, y: r.top + BAR, w: r.width, h: r.height, cx: r.left + r.width / 2, cy: r.top + BAR + r.height / 2 };
+  // element position in world coordinates
+  const box = (el: Element, d: Dev = active.current) => {
+    const r = el.getBoundingClientRect(), o = DEV[d];
+    const x = o.x + o.side + r.left, y = o.y + o.top + r.top;
+    return { x, y, w: r.width, h: r.height, cx: x + r.width / 2, cy: y + r.height / 2 };
   };
 
   const glide = async (to: { x: number; y: number }, ms: number) => {
@@ -212,31 +243,47 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     await sleep(dur + 60);
   };
 
-  // scroll like a person: the page moves while the cursor rests, then the cursor goes to the target
-  const reveal = async (el: Element) => {
-    const w = win();
+  const reveal = async (el: Element, d: Dev = active.current, ms = 850) => {
+    const w = win(d);
     if (!w) return;
-    const r = el.getBoundingClientRect();
-    if (r.top > 90 && r.bottom < vh - 90) return;
-    w.scrollTo({ top: w.scrollY + r.top - vh * 0.35, behavior: "smooth" });
-    await sleep(850);
+    const r = el.getBoundingClientRect(), v = DEV[d].vh;
+    if (r.top > 90 && r.bottom < v - 90) return;
+    w.scrollTo({ top: w.scrollY + r.top - v * 0.32, behavior: "smooth" });
+    await sleep(ms);
+  };
+
+  // switch which device the pointer works on (a fingertip on the phone, a mouse on the laptop)
+  const useDevice = (d: Dev) => {
+    if (active.current === d) return;
+    active.current = d;
+    const o = DEV[d];
+    cur.current = { ...cur.current, x: o.x + o.w * 0.6, y: o.y + o.h * 0.62, touch: d === "phone", show: 0 };
+  };
+
+  const frameShot = (view: Dev | "both", zoomed = false) => {
+    shot.current = view;
+    if (view === "both") { follow.current = false; goal.current = { s: bothScale, fx: worldW / 2, fy: DH / 2 }; return; }
+    const o = DEV[view];
+    goal.current = { s: o.base * (zoomed ? o.zoom : 1), fx: o.x + o.w / 2, fy: o.y + o.h * 0.45 };
   };
 
   const moveTo = async (el: Element, ms = 950) => {
+    const d = active.current;
+    if (shot.current !== d) { frameShot(d); sfx.current.whoosh(0.5); blur.current = 2; await sleep(500); }
     await reveal(el);
     const b = box(el);
-    goal.current.s = s0 * F.zoom;
+    goal.current.s = DEV[d].base * DEV[d].zoom;
     follow.current = true;
     await glide({ x: Math.min(b.cx, b.x + Math.min(b.w * 0.5, 150)), y: b.cy }, ms);
   };
 
   const press = async () => {
     cur.current.press = 1;
-    sfx.current.click();
+    sfx.current.click(active.current);
     const layer = fxLayer.current;
     if (layer) {
       const ring = document.createElement("div");
-      ring.className = "reel-ripple";
+      ring.className = cur.current.touch ? "reel-ripple touch" : "reel-ripple";
       ring.style.left = `${cur.current.x}px`; ring.style.top = `${cur.current.y}px`;
       layer.appendChild(ring);
       setTimeout(() => ring.remove(), 900);
@@ -252,14 +299,14 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     el.dispatchEvent(new Event("change", { bubbles: true }));
   };
 
-  // The app asks "Are you sure?" before some actions; in a demo the answer is yes.
-  const autoConfirm = () => {
+  // Inside the demo: "Are you sure?" is always yes, and printing doesn't open a dialog.
+  const tame = (d: Dev = active.current) => {
     try {
-      const w = win() as (Window & { __reel?: boolean }) | null;
-      if (w && !w.__reel) { w.confirm = () => true; w.alert = () => {}; w.__reel = true; }
+      const w = win(d) as (Window & { __reel?: boolean }) | null;
+      if (w && !w.__reel) { w.confirm = () => true; w.alert = () => {}; w.print = () => {}; w.__reel = true; }
     } catch {}
   };
-  const syncUrl = () => { try { if (urlRef.current) urlRef.current.textContent = `${host}${win()?.location.pathname ?? ""}${win()?.location.search ?? ""}`; } catch {} };
+  const syncUrl = () => { try { if (urlRef.current) urlRef.current.textContent = `${host}${win("desktop")?.location.pathname ?? ""}${win("desktop")?.location.search ?? ""}`; } catch {} };
 
   const settle = async (before: string) => {
     const end = performance.now() + 9000;
@@ -269,47 +316,46 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       await sleep(100);
     }
     await sleep(300);
-    syncUrl(); autoConfirm();
+    syncUrl(); tame();
   };
 
-  // page change: the camera pulls back a little so the new page reads as a whole, then follows again
+  // page change: pull back a little, scale-punch with a touch of motion blur and a whoosh
   const pullBack = () => {
+    const o = DEV[active.current];
     follow.current = false;
-    goal.current = { s: s0 * (1 + (F.zoom - 1) * 0.3), fx: DW / 2, fy: DH * 0.42 };
-    // scale-punch with a touch of motion blur, and a whoosh, on every page change
+    shot.current = active.current;
+    goal.current = { s: o.base * (1 + (o.zoom - 1) * 0.3), fx: o.x + o.w / 2, fy: o.y + o.h * 0.42 };
     cam.current.s *= 1.06;
     blur.current = 2.2;
     sfx.current.whoosh(0.5);
   };
 
-  // Focus beat: blur and dim the page around the key element, lift it, punch the camera in.
   const focusOn = async (el: Element, ms: number) => {
+    const d = active.current, dc = doc();
     await reveal(el);
-    const d = doc();
-    // lift a whole block (a card, a row, a notice), not a single line of text
-    const vwPx = d?.defaultView?.innerWidth ?? vw;
+    const vwPx = dc?.defaultView?.innerWidth ?? DEV[d].w;
     let target = el as HTMLElement;
-    for (let n: HTMLElement | null = target; n && n !== d?.body; n = n.parentElement) {
+    for (let n: HTMLElement | null = target; n && n !== dc?.body; n = n.parentElement) {
       const r = n.getBoundingClientRect();
-      if (r.width > vwPx * 0.8 || r.height > vh * 0.6) break;
+      if (r.width > vwPx * 0.86 || r.height > DEV[d].vh * 0.6) break;
       target = n;
       if (r.height >= 56 && /^(DIV|SECTION|TR|LI|FORM|ARTICLE)$/.test(n.tagName)) break;
     }
     const b = box(target);
     follow.current = false;
-    goal.current = { s: s0 * F.zoom * 1.12, fx: b.cx, fy: b.cy };
+    goal.current = { s: DEV[d].base * DEV[d].zoom * 1.12, fx: b.cx, fy: b.cy };
     await glide({ x: Math.min(b.cx + 40, b.x + b.w - 10), y: b.cy + Math.min(30, b.h / 2) }, 600);
-    if (!d) return;
-    const veil = d.createElement("div");
+    if (!dc) return;
+    const veil = dc.createElement("div");
     veil.style.cssText = "position:fixed;inset:0;z-index:2147483000;backdrop-filter:blur(5px) brightness(0.82);-webkit-backdrop-filter:blur(5px) brightness(0.82);opacity:0;transition:opacity .45s ease;pointer-events:none";
-    d.body.appendChild(veil);
+    dc.body.appendChild(veil);
     const prev = { pos: target.style.position, z: target.style.zIndex, tr: target.style.transform, sh: target.style.boxShadow, tn: target.style.transition, bg: target.style.backgroundColor };
-    const bgc = d.defaultView?.getComputedStyle(target).backgroundColor;
+    const bgc = dc.defaultView?.getComputedStyle(target).backgroundColor;
     target.style.transition = "transform .6s cubic-bezier(0.19,1,0.22,1), box-shadow .6s ease";
-    if (d.defaultView?.getComputedStyle(target).position === "static") target.style.position = "relative";
+    if (dc.defaultView?.getComputedStyle(target).position === "static") target.style.position = "relative";
     target.style.zIndex = "2147483001";
     if (!bgc || bgc === "rgba(0, 0, 0, 0)" || bgc === "transparent") target.style.backgroundColor = "#ffffff";
-    requestAnimationFrame(() => { veil.style.opacity = "1"; target.style.transform = "scale(1.06)"; target.style.boxShadow = "0 24px 60px rgba(0,0,0,0.28)"; });
+    requestAnimationFrame(() => { veil.style.opacity = "1"; target.style.transform = "scale(1.05)"; target.style.boxShadow = "0 24px 60px rgba(0,0,0,0.28)"; });
     sfx.current.pop();
     await sleep(ms);
     veil.style.opacity = "0";
@@ -320,8 +366,8 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     follow.current = true;
   };
 
-  const load = useCallback(async (path: string) => {
-    const f = frameRef.current;
+  const load = useCallback(async (d: Dev, path: string) => {
+    const f = frame(d);
     if (!f) return;
     await new Promise<void>((res) => {
       const done = () => { f.removeEventListener("load", done); res(); };
@@ -329,31 +375,52 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       f.src = path;
       setTimeout(done, 9000);
     });
-    syncUrl(); autoConfirm();
+    if (d === "desktop") syncUrl();
+    tame(d);
     await sleep(200);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  async function typeInto(el: Element, text: string, cps: number) {
+    (el as HTMLElement).focus();
+    lastTyped.current = { el, text, dev: active.current };
+    for (let i = 1; i <= text.length && !stopRef.current; i++) {
+      setValue(el, text.slice(0, i));
+      sfx.current.key(text[i - 1], active.current);
+      await sleep((1000 / cps) * (0.65 + Math.random() * 0.7));
+    }
+  }
+
   async function runStep(st: Step, v: ReelVars) {
+    useDevice(st.on ?? (st.do === "shot" ? active.current : "desktop"));
     switch (st.do) {
+      case "shot": {
+        frameShot(st.view);
+        if (st.view !== "both") useDevice(st.view);
+        sfx.current.whoosh(0.7); blur.current = 2.4;
+        return;
+      }
       case "url": {
         const bar = urlRef.current!;
+        frameShot("desktop");
         await glide({ x: 140 + Math.min(bar.offsetWidth, 520) * 0.5, y: BAR / 2 }, 900);
         goal.current = { s: s0 * (1 + (F.zoom - 1) * 0.5), fx: DW * 0.3, fy: BAR + 120 }; follow.current = false;
         await press();
         bar.classList.add("selected"); await sleep(450); bar.classList.remove("selected");
         const full = `${host}${fill(st.path, v)}`;
-        for (let i = 1; i <= full.length && !stopRef.current; i++) { bar.textContent = full.slice(0, i); if (i > host.length) sfx.current.key(); await sleep(i <= host.length ? 18 : 55); }
+        for (let i = 1; i <= full.length && !stopRef.current; i++) { bar.textContent = full.slice(0, i); if (i > host.length) sfx.current.key(full[i - 1], "desktop"); await sleep(i <= host.length ? 18 : 55); }
+        sfx.current.enter("desktop");
         await sleep(250);
         pullBack();
-        await load(fill(st.path, v));
+        await load("desktop", fill(st.path, v));
         return;
       }
+      case "go": { pullBack(); await load(active.current, fill(st.path, v)); return; }
       case "nav": {
         const el = await waitFind({ text: st.label, sel: '[data-tour="nav"] a' });
         await moveTo(el, 900);
         const before = win()?.location.href ?? "";
-        await press(); autoConfirm(); (el as HTMLElement).click();
+        await press(); tame(); (el as HTMLElement).click();
         pullBack();
         await settle(before);
         return;
@@ -363,7 +430,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
         const el = await waitFind(fillTarget(st.to, v));
         await moveTo(el, st.ms ?? 950);
         const before = win()?.location.href ?? "";
-        await press(); autoConfirm(); (el as HTMLElement).click();
+        await press(); tame(); (el as HTMLElement).click();
         if (st.nav) { pullBack(); await settle(before); }
         return;
       }
@@ -371,10 +438,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
         const el = await waitFind(fillTarget(st.to, v));
         await moveTo(el, 800);
         await press();
-        (el as HTMLElement).focus();
-        const text = fill(st.text, v);
-        lastTyped.current = { el, text };
-        for (let i = 1; i <= text.length && !stopRef.current; i++) { setValue(el, text.slice(0, i)); if (text[i - 1] !== " ") sfx.current.key(); await sleep(1000 / (st.cps ?? 13) * (0.7 + Math.random() * 0.6)); }
+        await typeInto(el, fill(st.text, v), st.cps ?? (active.current === "phone" ? 9 : 13));
         return;
       }
       case "set": {
@@ -398,7 +462,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       case "submit": {
         const el = await waitFind(fillTarget(st.to, v));
         const before = win()?.location.href ?? "";
-        await press();
+        sfx.current.enter(active.current);
         (el as HTMLInputElement).form?.requestSubmit();
         pullBack();
         await settle(before);
@@ -407,31 +471,60 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       case "scroll": {
         const el = await waitFind(fillTarget(st.to, v));
         follow.current = false;
-        goal.current.fy = DH * 0.5;
-        await reveal(el);
+        frameShot(active.current);
+        await reveal(el, active.current, st.ms ?? 850);
         follow.current = true;
+        return;
+      }
+      case "swipe": {
+        // a fingertip drags the carousel sideways
+        const rail = (await waitFind(fillTarget(st.to, v))) as HTMLElement;
+        await moveTo(rail, 600);
+        const b = box(rail);
+        const from = { x: st.dx > 0 ? b.x + b.w * 0.75 : b.x + b.w * 0.25, y: b.cy };
+        await glide(from, 400);
+        cur.current.press = 1;
+        sfx.current.click(active.current);
+        rail.scrollBy({ left: st.dx, behavior: "smooth" });
+        await glide({ x: from.x - Math.sign(st.dx) * b.w * 0.45, y: b.cy - 6 }, 520);
+        cur.current.press = 0;
+        await sleep(350);
+        return;
+      }
+      case "notify": {
+        // the salon's laptop checks for news right away (normally every few seconds)
+        frameShot("desktop");
+        const d = "desktop" as Dev;
+        let toast: Element | null = null;
+        for (let i = 0; i < 8 && !toast && !stopRef.current; i++) {
+          win(d)?.dispatchEvent(new Event("darling:read"));
+          await sleep(700);
+          toast = find({ sel: ".toast-in" }, d);
+        }
+        if (!toast) throw new Error("The notification didn't arrive on the laptop.");
+        sfx.current.notify(st.kind);
+        const b = box(toast, d);
+        follow.current = false;
+        goal.current = { s: DEV.desktop.base * DEV.desktop.zoom * 1.1, fx: b.cx - 120, fy: b.cy + 60 };
+        await sleep(900);
         return;
       }
       case "wait": return;
       case "waitFor": {
         try { await waitFind(fillTarget(st.to, v), st.ms ?? 9000); }
         catch (err) {
-          // nothing happened after typing? retype the last field once, like a person would
           let lt = lastTyped.current;
           if (!lt || !lt.el.isConnected) {
             const code = find({ sel: 'input[aria-label="M-Pesa code"]' }) as HTMLInputElement | null;
-            lt = code?.value ? { el: code, text: code.value } : null;
+            lt = code?.value ? { el: code, text: code.value, dev: active.current } : null;
           }
           if (!lt) throw err;
-          setValue(lt.el, "");
-          await sleep(150);
-          setValue(lt.el, lt.text);
+          setValue(lt.el, ""); await sleep(150); setValue(lt.el, lt.text);
           await waitFind(fillTarget(st.to, v), 8000);
         }
         return;
       }
       case "file": {
-        // what a person does: click "Add photos", pick files. The files are generated artwork.
         const el = await waitFind(fillTarget(st.to, v));
         await moveTo(el, 800);
         await press();
@@ -446,8 +539,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
           g.fillStyle = pal[(k * 3) % pal.length]; g.fillRect(0, 0, 800, 1000);
           for (let n = 0; n < 8; n++) { g.globalAlpha = 0.5 + Math.random() * 0.5; g.fillStyle = pal[Math.floor(Math.random() * pal.length)]; g.beginPath(); g.arc(Math.random() * 800, Math.random() * 1000, 80 + Math.random() * 280, 0, Math.PI * 2); g.fill(); }
           const blob = await new Promise<Blob>((res) => c.toBlob((x) => res(x!), "image/png"));
-          const bytes = new Uint8Array(await blob.arrayBuffer());
-          dt.items.add(new w.File([bytes], `photo-${k + 1}.png`, { type: "image/png" }));
+          dt.items.add(new w.File([new Uint8Array(await blob.arrayBuffer())], `photo-${k + 1}.png`, { type: "image/png" }));
         }
         input.files = dt.files;
         input.dispatchEvent(new w.Event("change", { bubbles: true }));
@@ -455,7 +547,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       }
       case "day": {
         for (let i = st.from; i < st.from + 10 && !stopRef.current; i++) {
-          const day = find({ sel: ".overflow-x-auto button", nth: i });
+          const day = find({ sel: "[data-days] button", nth: i });
           if (!day) break;
           await moveTo(day, 650);
           await press(); (day as HTMLElement).click();
@@ -479,11 +571,15 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     curtain.style.transition = "none"; curtain.style.opacity = "1";
     curtain.style.backgroundColor = r.look.bg;
     if (fxLayer.current) fxLayer.current.innerHTML = "";
-    // open on the starting page, wide, cursor resting
-    await load(fill(r.start, v));
-    goal.current = { s: s0, fx: DW / 2, fy: DH / 2 }; cam.current = { ...goal.current };
+    // the app's own notification sounds stay off while filming (the demo plays recorded ones)
+    try { localStorage.setItem("darling.sound", JSON.stringify({ sound: false, volume: 0.8 })); } catch {}
+    await Promise.all([load("desktop", fill(r.start, v)), r.phone ? load("phone", fill(r.phone, v)) : Promise.resolve()]);
+    active.current = "desktop"; shot.current = "desktop";
+    const first = r.steps.find((s) => s.do === "shot") as { view: Dev | "both" } | undefined;
+    frameShot(first && r.steps.indexOf(first as Step) === 0 ? first.view : "desktop");
+    cam.current = { ...goal.current };
     follow.current = false;
-    cur.current = { x: DW * 0.62, y: DH * 0.55, press: 0, show: 1 };
+    cur.current = { x: DW * 0.62, y: DH * 0.55, press: 0, show: 1, touch: false };
     await sleep(300);
 
     const plan: number[] = [];
@@ -494,19 +590,17 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     const at = (s: number) => sleep(Math.max(0, start + s * 1000 - performance.now()));
     onStart(length);
 
-    // the hook: the screen lands with a whoosh and a low hit, already mid-action
     pose.current = { ...ENTRIES[r.look.entry] };
     poseTw.current = { from: { ...pose.current }, to: { ...REST }, t0: performance.now(), ms: ENTER * 1000, ease: outExpo };
     curtain.style.transition = `opacity ${FADE}s ease`; curtain.style.opacity = "0";
-    sfx.current.whoosh(0.7);
+    sfx.current.whoosh(0.8);
     setTimeout(() => sfx.current.hit(), ENTER * 450);
     await at(ENTER * 0.7);
     for (let i = 0; i < r.steps.length && !stopRef.current; i++) {
       await runStep(r.steps[i], v);
-      await at(plan[i]); // stay on the planned timeline so music and pacing match
+      await at(plan[i]);
     }
     await at(acc + HOLD_END);
-    // leave the way it came in, mirrored
     const out = ENTRIES[r.look.entry];
     poseTw.current = { from: { ...pose.current }, to: { x: -out.x * 0.6, y: -out.y * 0.6, z: out.z * 0.8, rx: -out.rx * 0.6, ry: -out.ry * 0.6, rz: -out.rz }, t0: performance.now(), ms: EXIT * 1000, ease: (x) => x * x * x };
     sfx.current.whoosh(0.6);
@@ -530,9 +624,9 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     const out = actx.createGain();
     out.connect(actx.destination); out.connect(dest);
     const musicBus = actx.createGain();
-    musicBus.gain.value = 0.28; // music sits under the interface sounds
+    musicBus.gain.value = 0.22; // music sits well under the interface sounds
     musicBus.connect(out);
-    sfx.current = sound ? makeSfx(actx, out) : silentSfx;
+    sfx.current = sound ? await makeSfx(actx, out, typing) : silentSfx;
     try {
       await fn((len) => { if (music) scheduleScore(actx, musicBus, actx.currentTime + 0.02, [], len, len - 2.4); }, dest);
     } finally {
@@ -593,7 +687,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       for (const r of list) {
         if (stopRef.current) break;
         setReelId(r.id);
-        await sleep(400);
+        await sleep(500);
         const v = await freshVars();
         if (!v) break;
         await withAudio(async (begin, dest) => {
@@ -611,7 +705,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
             const type = mime.split(";")[0];
             const a = document.createElement("a");
             a.href = URL.createObjectURL(new Blob(chunks, { type }));
-            a.download = `${name.toLowerCase()}-how-to-${r.id}-${format}.${type.includes("mp4") ? "mp4" : "webm"}`;
+            a.download = `${name.toLowerCase()}-${r.id}-${format}.${type.includes("mp4") ? "mp4" : "webm"}`;
             a.click();
           }
         });
@@ -624,6 +718,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
 
   async function done() {
     stopRef.current = true;
+    try { localStorage.removeItem("darling.sound"); } catch {}
     await stopFilming();
     window.location.href = "/admin/reel";
   }
@@ -634,17 +729,25 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
   return (
     <div className="fixed inset-0 overflow-hidden bg-black">
       <div ref={stageRef} className={`reel-stage absolute left-1/2 top-1/2 overflow-hidden ${reel.look.light ? "light" : ""}`} style={{ width: W, height: H, background: reel.look.bg, transform: `translate(-50%, -50%) scale(${fit.k})`, perspective: format === "portrait" ? 3200 : 3600 }}>
-        {/* fine grain so flat colour doesn't band in compression */}
         <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.07] mix-blend-overlay" aria-hidden><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" /></filter><rect width="100%" height="100%" filter="url(#grain)" /></svg>
         <div ref={camRef} className="absolute inset-0" style={{ transformStyle: "preserve-3d", transformOrigin: "50% 50%" }}>
-          <div ref={rigRef} className="absolute left-0 top-0" style={{ width: DW, height: DH, transformOrigin: "0 0", transformStyle: "preserve-3d" }}>
-            <div className="reel-device" style={{ width: DW, height: DH }}>
+          <div ref={rigRef} className="absolute left-0 top-0" style={{ width: worldW, height: DH, transformOrigin: "0 0", transformStyle: "preserve-3d" }}>
+            {/* the salon's laptop */}
+            <div className="reel-device absolute" style={{ left: DEV.desktop.x, top: DEV.desktop.y, width: DW, height: DH }}>
               <div className="reel-chrome" style={{ height: BAR }}><i /><i /><i /><span ref={urlRef} className="reel-url">{host}</span></div>
-              <iframe ref={frameRef} title={name} className="absolute bg-paper" style={{ left: 0, top: BAR, width: vw, height: vh, border: 0 }} />
+              <iframe ref={deskRef} title={`${name} on a laptop`} className="absolute bg-paper" style={{ left: 0, top: BAR, width: vw, height: vh, border: 0 }} />
             </div>
+            {/* the client's phone */}
+            {usesPhone && (
+              <div className="reel-phone absolute" style={{ left: DEV.phone.x, top: DEV.phone.y, width: PW, height: PH }}>
+                <iframe ref={phoneRef} title={`${name} on a phone`} className="absolute bg-paper" style={{ left: PV.bezel, top: PV.bezel, width: PV.vw, height: PV.vh, border: 0, borderRadius: 38 }} />
+                <span className="reel-island" />
+              </div>
+            )}
             <div ref={fxLayer} className="absolute inset-0" style={{ transformStyle: "preserve-3d", pointerEvents: "none" }} />
             <div ref={cursorRef} className="reel-cursor" style={{ opacity: 0 }}>
-              <svg width="30" height="40" viewBox="0 0 34 46" aria-hidden><path d="M2 2 L2 36 L11 28 L17 43 L23 40 L17 26 L30 26 Z" fill="#fff" stroke="#1c1f24" strokeWidth="2.6" strokeLinejoin="round" /></svg>
+              <svg className="reel-arrow" width="30" height="40" viewBox="0 0 34 46" aria-hidden><path d="M2 2 L2 36 L11 28 L17 43 L23 40 L17 26 L30 26 Z" fill="#fff" stroke="#1c1f24" strokeWidth="2.6" strokeLinejoin="round" /></svg>
+              <span className="reel-touch" />
             </div>
           </div>
         </div>
@@ -653,7 +756,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
 
       {/* controls (outside the recorded stage) */}
       <div className={`fixed left-4 top-4 z-50 w-[340px] max-w-[calc(100vw-2rem)] border border-white/20 bg-black/80 p-5 text-[13px] text-white backdrop-blur transition-opacity duration-500 ${panel ? "opacity-100" : "pointer-events-none opacity-0"}`}>
-        <p className="label-caps text-white/60">How-to demos · {name}</p>
+        <p className="label-caps text-white/60">Demos · {name}</p>
         <div className="mt-4 space-y-3">
           <select value={reelId} onChange={(e) => setReelId(e.target.value)} disabled={busy} className="w-full border border-white/30 bg-black px-3 py-2">
             {REELS.map((r, i) => <option key={r.id} value={r.id}>{String(i + 1).padStart(2, "0")} · {r.title} (~{Math.round(reelLength(r))}s)</option>)}
@@ -661,7 +764,13 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
           <select value={format} onChange={(e) => setFormat(e.target.value as Format)} disabled={busy} className="w-full border border-white/30 bg-black px-3 py-2">
             {Object.entries(FORMATS).map(([k, f]) => <option key={k} value={k}>{f.label}</option>)}
           </select>
-          <label className="flex items-center gap-2 text-white/80"><input type="checkbox" checked={sound} onChange={(e) => setSound(e.target.checked)} disabled={busy} /> Interface sounds (clicks, typing, whooshes)</label>
+          <label className="flex items-center gap-2 text-white/80"><input type="checkbox" checked={sound} onChange={(e) => setSound(e.target.checked)} disabled={busy} /> Sounds (recorded typing, clicks, taps, whooshes)</label>
+          {sound && (
+            <select value={typing} onChange={(e) => setTyping(e.target.value as TypingStyle)} disabled={busy} className="w-full border border-white/30 bg-black px-3 py-2">
+              <option value="typewriter">Typing sound: typewriter</option>
+              <option value="keyboard">Typing sound: laptop keyboard</option>
+            </select>
+          )}
           <label className="flex items-center gap-2 text-white/80"><input type="checkbox" checked={music} onChange={(e) => setMusic(e.target.checked)} disabled={busy} /> Background music (built-in score, low)</label>
           <div className="grid grid-cols-2 gap-2">
             <button onClick={preview} disabled={busy} className="border border-white px-3 py-2 uppercase tracking-[0.06em] hover:bg-white hover:text-black disabled:opacity-40">Preview</button>
@@ -675,7 +784,6 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
           <button onClick={done} disabled={busy} className="label-caps text-white/70 underline underline-offset-4 hover:text-white">Done: back to the reel studio</button>
         </div>
       </div>
-      {/* invisible until hovered, so it never shows up in a recording */}
       {!panel && busy && <button onClick={() => setPanel(true)} className="fixed left-0 top-0 z-50 h-16 w-16 opacity-0" aria-label="Show controls" />}
     </div>
   );
