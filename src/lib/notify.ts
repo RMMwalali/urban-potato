@@ -57,7 +57,7 @@ export async function rotateVapidKeys() {
 
 export async function pushSubject() {
   const { getCredential } = await import("./platform");
-  return (await getCredential("VAPID_SUBJECT")) || (appUrl().startsWith("https://") ? appUrl() : "https://laazizi.app");
+  return (await getCredential("VAPID_SUBJECT")) || (appUrl().startsWith("https://") ? appUrl() : "https://laazizihq.com");
 }
 
 /** Who should see a notification: owners and managers, plus (optionally) one specific person. */
