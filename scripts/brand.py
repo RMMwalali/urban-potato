@@ -1,5 +1,5 @@
 """Builds the LAAZIZI logo set from the Geist font: the one-line wordmark exactly as in the site header
-(Geist SemiBold, capitals, -0.02em tracking, LA blue / AZIZI pink), as vector outlines.
+(Geist SemiBold, capitals, -0.02em tracking, LAA blue / ZIZI pink), as vector outlines.
 
 Run:  python3 scripts/brand.py      (needs: pip install fonttools brotli uharfbuzz)
 Then: node scripts/brand-png.mjs    (renders the PNG sizes with the bundled Chromium)
@@ -15,7 +15,7 @@ import uharfbuzz as hb
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WOFF2 = os.path.join(ROOT, "node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2")
 OUT = os.path.join(ROOT, "public/brand")
-NAME, SPLIT = "LAAZIZI", 2
+NAME, SPLIT = "LAAZIZI", 3
 BLUE, PINK = "#1f5277", "#d9468a"           # header colours (on light)
 BLUE_DARK, PINK_DARK = "#4f9cf0", "#f06fae"  # same hues lifted for dark backgrounds
 INK, PAPER, WHITE = "#1c1f24", "#ededed", "#ffffff"
