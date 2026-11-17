@@ -30,14 +30,16 @@ const FEATURES: Feature[] = [
   { title: "Reports & payroll", body: "Daily takings by method, staff commission and tips, and a till sheet for the end of the day.", detail: "Each stylist can see their own services, commission and tips for the month." },
 ];
 
-// Paraphrased from public reviews (Trustpilot, ProductReview, Capterra) and Reddit threads; see docs/RESEARCH.md.
-const COMPLAINTS = [
-  { said: "“New client” fees on clients who found the salon on its own Instagram", where: "Reviews", answer: "No commission. Every client is yours." },
-  { said: "Payouts held for weeks while the account is “reviewed”", where: "Reviews", answer: "Payments land in your own M-Pesa till." },
-  { said: "No-show fees fail because the client's card expired", where: "Reddit", answer: "M-Pesa deposits at booking, no card needed." },
-  { said: "Reminders silently stop sending", where: "Reddit", answer: "A delivery log for every message." },
-  { said: "Clients forced to create an account just to book", where: "Reddit", answer: "Name and phone number. That's it." },
-  { said: "Leaving means losing years of client history", where: "Reviews", answer: "CSV export, any time." },
+// The usual way of running a salon's bookings (DMs, a notebook, marketplace apps) next to Laazizi.
+const COMPARE = [
+  { topic: "Taking bookings", usual: "Back-and-forth in DMs and calls, often late at night", ours: "Clients pick a service and a free time from your link" },
+  { topic: "Client details", usual: "A notebook, or names saved in your phone", ours: "History, allergies, preferences and spend, found by phone number" },
+  { topic: "No-shows", usual: "An empty chair and nothing to show for it", ours: "An M-Pesa deposit to book, and reminders by SMS or WhatsApp" },
+  { topic: "Changes of plan", usual: "Calls and messages to move a booking", ours: "Clients move or cancel it themselves, within your policy" },
+  { topic: "Getting paid", usual: "Scrolling M-Pesa messages to check who paid", ours: "Type the code and Safaricom confirms the name and amount" },
+  { topic: "Closing the day", usual: "Adding up the till and working out commission by hand", ours: "Daily summary, commission and payslips worked out for you" },
+  { topic: "Cost", usual: "Marketplace apps take a commission and hold your payouts", ours: "A flat price, no commission; money goes to your own till" },
+  { topic: "Your data", usual: "Hard to take with you if you leave", ours: "Export everything to a spreadsheet, any time" },
 ];
 
 const FAQ = [
@@ -115,30 +117,25 @@ export default async function Home() {
       </section>
 
 
-      {/* Complaints table */}
-      <section id="complaints" className="px-5 pt-32 sm:px-8 md:pt-56">
-        <div className="grid gap-10 md:grid-cols-2">
-          <p className="label-caps">Built from complaints</p>
+      {/* Comparison */}
+      <section id="compare" className="px-5 pt-32 sm:px-8 md:pt-56">
+        <div className="grid gap-10 md:grid-cols-[1fr_2fr]">
+          <p className="label-caps">The usual way, and with {name}</p>
+          <h2 className="text-[clamp(30px,3.6vw,52px)] leading-[1.02] uppercase">Less admin.<br />More time in the chair.</h2>
         </div>
-        <div className="mt-16 overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left">
-            <thead>
-              <tr className="text-[12px] uppercase tracking-[0.06em] text-muted">
-                <th className="w-1/2 pb-4 font-normal">What owners said</th>
-                <th className="pb-4 font-normal">Where</th>
-                <th className="pb-4 text-right font-normal">With {name}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {COMPLAINTS.map((c) => (
-                <tr key={c.said} className="group border-t border-ink/40 transition-colors duration-500 hover:bg-panel">
-                  <td className="py-5 pr-6 text-[clamp(16px,1.4vw,20px)]">{c.said}</td>
-                  <td className="py-5 pr-6 text-[13px] uppercase text-muted">{c.where}</td>
-                  <td className="py-5 text-right text-[15px]">{c.answer}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="mt-16 border-b border-ink/40">
+          <div className="hidden grid-cols-[1fr_2fr_2fr] gap-6 pb-4 text-[12px] uppercase tracking-[0.06em] text-muted md:grid">
+            <span />
+            <span>The usual way</span>
+            <span className="text-ink">With {name}</span>
+          </div>
+          {COMPARE.map((c) => (
+            <div key={c.topic} className="grid gap-2 border-t border-ink/40 py-5 transition-colors duration-500 hover:bg-panel md:grid-cols-[1fr_2fr_2fr] md:gap-6">
+              <p className="label-caps md:pt-1">{c.topic}</p>
+              <p className="text-[15px] text-muted"><span className="mr-2 text-[11px] uppercase tracking-[0.06em] md:hidden">Usually:</span>{c.usual}</p>
+              <p className="flex gap-3 text-[clamp(16px,1.4vw,20px)] leading-snug"><span aria-hidden className="mt-[0.45em] h-2 w-2 shrink-0 rounded-full bg-pink" />{c.ours}</p>
+            </div>
+          ))}
         </div>
       </section>
 

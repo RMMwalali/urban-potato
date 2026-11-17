@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from "framer-motion";
 const EASE = [0.19, 1, 0.22, 1] as const;
 const MENU = [
   { href: "/#features", label: "What it does" },
-  { href: "/#complaints", label: "Built from complaints" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/guides", label: "Guides" },
   { href: "/login", label: "Log in" },

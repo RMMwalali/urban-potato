@@ -42,7 +42,7 @@ const VIEW = (v: string): Target => ({ text: v, sel: 'nav[aria-label="Calendar v
 
 export const REELS: ReelDef[] = [
   {
-    id: "landing", title: "Why Laazizi", problem: "The website: what Laazizi does for a salon, the problems it fixes, the prices, and starting a free trial.", start: "/",
+    id: "landing", title: "Why Laazizi", problem: "The website: what Laazizi does for a salon, how it compares, the prices, and starting a free trial.", start: "/",
     look: { bg: "#ededed", light: true, entry: "rise", tilt: 0.8 },
     steps: [
       { do: "wait", ms: 2200 },
@@ -57,8 +57,8 @@ export const REELS: ReelDef[] = [
       { do: "read", to: { sel: "#features .bg-panel" }, ms: 3600 },
       { do: "click", to: { sel: "#features li button", nth: 5 } },
       { do: "read", to: { sel: "#features .bg-panel" }, ms: 3600 },
-      { do: "scroll", to: { sel: "#complaints" }, ms: 1300 },
-      { do: "read", to: { sel: "#complaints table" }, ms: 6000 },
+      { do: "scroll", to: { sel: "#compare" }, ms: 1300 },
+      { do: "read", to: { sel: "#compare .mt-16" }, ms: 7000 },
       { do: "scroll", to: { sel: "#pricing" }, ms: 1300 },
       { do: "read", to: { sel: "#pricing .mt-14.grid" }, ms: 4500 },
       { do: "focus", to: { text: "Founding offer", sel: "#pricing p" }, ms: 2800 },
