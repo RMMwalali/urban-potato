@@ -44,7 +44,10 @@ export type FilmVars = { slug: string; manage: string; mpesaCode: string; deposi
 export async function startFilming(): Promise<FilmVars | { error: string }> {
   await requireAdmin();
   let s = await findShowcase();
-  if (!s) {
+  // A showcase made by an older version lacks what today's demos use (service styles, photos): rebuild it.
+  const outdated = s && !(await db.serviceStyle.findFirst({ where: { name: "Knotless", service: { businessId: s.id, name: "Box braids" } }, select: { id: true } }))
+    || s && !!(await db.service.findFirst({ where: { businessId: s.id, active: true, media: { none: {} } }, select: { id: true } }));
+  if (!s || outdated) {
     await createShowcase();
     s = await findShowcase();
   }
