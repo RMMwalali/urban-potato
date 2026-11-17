@@ -305,7 +305,7 @@ export async function sendPushTestToAll() {
   const a = await requireAdmin();
   const { push } = await import("@/lib/notify");
   const subs = await db.pushSubscription.findMany({ select: { userId: true } });
-  const r = await push([...new Set(subs.map((s) => s.userId))], { kind: "test", title: "Test from Darling", body: "Push notifications are working on this device.", url: "/app/notifications", id: `admin-test-${Date.now()}` });
+  const r = await push([...new Set(subs.map((s) => s.userId))], { kind: "test", title: "Test from Laazizi", body: "Push notifications are working on this device.", url: "/app/notifications", id: `admin-test-${Date.now()}` });
   await audit(a.email, "push.test_all", undefined, r);
   redirect(`/admin/api-keys?pushed=${r.sent}&failed=${r.failed}`);
 }

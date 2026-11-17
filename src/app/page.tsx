@@ -41,11 +41,11 @@ const COMPLAINTS = [
 ];
 
 const FAQ = [
-  { q: "Do I need a website for my salon?", a: "Not to take bookings. Darling gives your salon a booking link for Instagram, TikTok and WhatsApp, so clients see your services and free times and book themselves." },
-  { q: "Does Darling work with M-Pesa?", a: "Yes. Record M-Pesa, cash, card and split payments. Connect a till or paybill and payments arrive automatically with the payer's name and amount; codes can only be used once. Pochi la Biashara payments can be added from the SMS." },
-  { q: "Do you take commission on my clients?", a: "No. Darling is a flat price (monthly, annual, or pay once for lifetime access) with unlimited staff, clients and bookings. Payments go straight to your own M-Pesa." },
+  { q: "Do I need a website for my salon?", a: "Not to take bookings. Laazizi gives your salon a booking link for Instagram, TikTok and WhatsApp, so clients see your services and free times and book themselves." },
+  { q: "Does Laazizi work with M-Pesa?", a: "Yes. Record M-Pesa, cash, card and split payments. Connect a till or paybill and payments arrive automatically with the payer's name and amount; codes can only be used once. Pochi la Biashara payments can be added from the SMS." },
+  { q: "Do you take commission on my clients?", a: "No. Laazizi is a flat price (monthly, annual, or pay once for lifetime access) with unlimited staff, clients and bookings. Payments go straight to your own M-Pesa." },
   { q: "Is there a one-time payment option?", a: "Yes, while places last. The lifetime plan is a single payment for permanent access, including updates. Monthly and annual plans are also available, and annual works out cheaper than paying monthly." },
-  { q: "How does Darling reduce no-shows?", a: "Automatic SMS or WhatsApp confirmations and reminders, optional M-Pesa deposits when clients book online, a link for clients to reschedule or cancel within your policy, and no-show tracking on each client." },
+  { q: "How does Laazizi reduce no-shows?", a: "Automatic SMS or WhatsApp confirmations and reminders, optional M-Pesa deposits when clients book online, a link for clients to reschedule or cancel within your policy, and no-show tracking on each client." },
   { q: "Can my staff see their own earnings?", a: "Yes. Each stylist sees their services, commission and tips for the month, and the owner gets a daily summary and reports." },
   { q: "Can I export my data?", a: "Yes. Export clients, bookings and sales to a spreadsheet at any time." },
   { q: "Is there a launch discount?", a: "Yes, while places last: the first salons that subscribe get a founding discount on their first months. The pricing section shows the current offer and how many places are left." },
@@ -87,11 +87,11 @@ export default async function Home() {
               ...(plans.lifetime.enabled ? [{ "@type": "Offer", name: "Lifetime", price: plans.lifetime.price, priceCurrency: cur, description: "One-time payment, lifetime access", availability: "https://schema.org/LimitedAvailability" }] : []),
             ],
             featureList: FEATURES.map((f) => f.title).join(", "),
-            // genuine reviews from salons using Darling; the rating counts every review, published or not
+            // genuine reviews from salons using Laazizi; the rating counts every review, published or not
             ...(rv.count >= 5 && rv.average ? { aggregateRating: { "@type": "AggregateRating", ratingValue: rv.average, reviewCount: rv.count, bestRating: 5, worstRating: 1 } } : {}),
             ...(reviews.length ? { review: reviews.slice(0, 5).map((r) => ({ "@type": "Review", reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5 }, author: { "@type": "Person", name: r.authorName }, reviewBody: r.body })) } : {}),
           },
-          { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map((f) => ({ "@type": "Question", name: f.q.replace(/Darling/g, name), acceptedAnswer: { "@type": "Answer", text: f.a.replace(/Darling/g, name) } })) },
+          { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map((f) => ({ "@type": "Question", name: f.q.replace(/Laazizi/g, name), acceptedAnswer: { "@type": "Answer", text: f.a.replace(/Laazizi/g, name) } })) },
         ]}
       />
       <SiteHeader name={name} signedIn={!!session} />
@@ -209,8 +209,8 @@ export default async function Home() {
           <dl className="border-t-2 border-ink">
             {FAQ.map((f) => (
               <div key={f.q} className="border-b border-ink/40 py-5">
-                <dt className="text-[clamp(18px,1.6vw,22px)] leading-snug">{f.q.replace(/Darling/g, name)}</dt>
-                <dd className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">{f.a.replace(/Darling/g, name)}</dd>
+                <dt className="text-[clamp(18px,1.6vw,22px)] leading-snug">{f.q.replace(/Laazizi/g, name)}</dt>
+                <dd className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">{f.a.replace(/Laazizi/g, name)}</dd>
               </div>
             ))}
           </dl>

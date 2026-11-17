@@ -9,7 +9,7 @@ type Item = { id: string; kind: string; title: string; body: string; url: string
 
 /**
  * Lives in the app layout: keeps the service worker registered, checks for new notifications
- * (every 15 s while visible, at once when a push arrives), shows toasts with Darling's sounds,
+ * (every 15 s while visible, at once when a push arrives), shows toasts with Laazizi's sounds,
  * and keeps the unread count on the sidebar and the app icon.
  */
 export function NotificationCenter() {

@@ -2,7 +2,7 @@
 import type { Hit } from "./score";
 
 export type ReelConfig = {
-  name: string; // platform name (DARLING)
+  name: string; // platform name (LAAZIZI)
   domain: string; // shown on the last card
   currency: string;
   price: number;
@@ -256,7 +256,7 @@ function scenes(cfg: ReelConfig): Scene[] {
         const s = phone(c, st, lt);
         const bubbles: [number, string[], boolean][] = [
           [0.45, ["Reminder: Akinyi, see you", "tomorrow 10:00 for knotless", "braids at Glow Studio."], false],
-          [1.35, ["Can't make it? Change it", "in one tap: darling/b/…"], false],
+          [1.35, ["Can't make it? Change it", "in one tap: laazizi/b/…"], false],
           [2.3, ["Moved to Saturday 11:00 ✓"], true],
         ];
         let y = s.y + 70 * u;
@@ -399,7 +399,7 @@ function scenes(cfg: ReelConfig): Scene[] {
       const [sx, sy] = shake(lt, 0.05, 22 * u);
       c.save(); c.translate(sx, sy + (1 - p) * 80 * u); c.globalAlpha = p;
       font(c, size, 700);
-      const head = name.slice(0, 3), tail = name.slice(3);
+      const head = name.slice(0, 2), tail = name.slice(2);
       const hw = c.measureText(head).width;
       const y = tall ? H * 0.42 : H * 0.45;
       text(c, head, x, y, size, { weight: 700, color: BLUE });

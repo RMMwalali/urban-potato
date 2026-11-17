@@ -36,7 +36,7 @@ const P = "phone" as const;
 
 export const REELS: ReelDef[] = [
   {
-    id: "landing", title: "Why Darling", problem: "The website: what Darling does for a salon, the prices, and starting a free trial.", start: "/",
+    id: "landing", title: "Why Laazizi", problem: "The website: what Laazizi does for a salon, the prices, and starting a free trial.", start: "/",
     look: { bg: "#ededed", light: true, entry: "rise", tilt: 0.8 },
     steps: [
       { do: "wait", ms: 1600 },
@@ -155,7 +155,7 @@ export const REELS: ReelDef[] = [
     ],
   },
   {
-    id: "clients", title: "Returning clients, remembered", problem: "Type a number and Darling knows the client: allergies, last stylist, usual service.", start: "/app",
+    id: "clients", title: "Returning clients, remembered", problem: "Type a number and Laazizi knows the client: allergies, last stylist, usual service.", start: "/app",
     look: { bg: "#d9468a", entry: "spin", tilt: 1.2 },
     steps: [
       { do: "nav", label: "Calendar" },

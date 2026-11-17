@@ -12,7 +12,7 @@ export const KINDS = {
   payment: { label: "M-Pesa payments received", tone: "payment" },
   deposit: { label: "Deposits paid", tone: "payment" },
   alert: { label: "Problems (e.g. a reminder failed to send)", tone: "alert" },
-  news: { label: "Messages from the Darling team", tone: "booking" },
+  news: { label: "Messages from the Laazizi team", tone: "booking" },
 } as const;
 export type Kind = keyof typeof KINDS | "test";
 
@@ -57,7 +57,7 @@ export async function rotateVapidKeys() {
 
 export async function pushSubject() {
   const { getCredential } = await import("./platform");
-  return (await getCredential("VAPID_SUBJECT")) || (appUrl().startsWith("https://") ? appUrl() : "https://darling.app");
+  return (await getCredential("VAPID_SUBJECT")) || (appUrl().startsWith("https://") ? appUrl() : "https://laazizi.app");
 }
 
 /** Who should see a notification: owners and managers, plus (optionally) one specific person. */
