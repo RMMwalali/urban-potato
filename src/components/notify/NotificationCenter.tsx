@@ -31,7 +31,8 @@ export function NotificationCenter() {
     const prefs = readPrefs();
     if (prefs.sound && playTone(fresh[0].kind as Tone, prefs.volume)) document.documentElement.dataset.lastTone = fresh[0].kind;
     setToasts((t) => [...fresh.slice(0, 3).reverse(), ...t].slice(0, 4));
-    fresh.forEach((i) => setTimeout(() => setToasts((t) => t.filter((x) => x.id !== i.id)), 7000));
+    // (while the reel studio films, a toast stays until it's clicked)
+    if (!(window as Window & { __reelHold?: boolean }).__reelHold) fresh.forEach((i) => setTimeout(() => setToasts((t) => t.filter((x) => x.id !== i.id)), 7000));
   }, []);
 
   const check = useCallback(async () => {
@@ -49,13 +50,15 @@ export function NotificationCenter() {
     const unlock = () => { unlockAudio(); };
     window.addEventListener("pointerdown", unlock, { once: true });
     window.addEventListener("keydown", unlock, { once: true });
-    const onMsg = (e: MessageEvent) => { if (e.data?.type === "darling:notification") check(); };
+    const onMsg = (e: MessageEvent) => { if (e.data?.type === "darling:notification" && !(window as Window & { __reelHold?: boolean }).__reelHold) check(); };
     navigator.serviceWorker?.addEventListener("message", onMsg);
     check();
     let timer: ReturnType<typeof setTimeout>;
-    const loop = () => { timer = setTimeout(async () => { await check(); loop(); }, document.visibilityState === "visible" ? 15000 : 60000); };
+    // The reel studio films this page and decides itself when news arrives (it sets __reelHold).
+    const held = () => !!(window as Window & { __reelHold?: boolean }).__reelHold;
+    const loop = () => { timer = setTimeout(async () => { if (!held()) await check(); loop(); }, document.visibilityState === "visible" ? 15000 : 60000); };
     loop();
-    const onVis = () => { if (document.visibilityState === "visible") check(); };
+    const onVis = () => { if (document.visibilityState === "visible" && !held()) check(); };
     document.addEventListener("visibilitychange", onVis);
     const onRead = () => check();
     window.addEventListener("darling:read", onRead);

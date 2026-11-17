@@ -46,7 +46,8 @@ function nominal(st: Step): number {
     case "submit": return 1500;
     case "scroll": return st.ms ?? 1100;
     case "swipe": return 1300;
-    case "focus": return (st.ms ?? 1500) + 900;
+    case "focus": return (st.ms ?? 2200) + 1300;
+    case "read": return (st.ms ?? 3800) + 1700;
     case "shot": return st.ms ?? 1000;
     case "notify": return 2600;
     case "wait": return st.ms;
@@ -302,8 +303,8 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
   // Inside the demo: "Are you sure?" is always yes, and printing doesn't open a dialog.
   const tame = (d: Dev = active.current) => {
     try {
-      const w = win(d) as (Window & { __reel?: boolean }) | null;
-      if (w && !w.__reel) { w.confirm = () => true; w.alert = () => {}; w.print = () => {}; w.__reel = true; }
+      const w = win(d) as (Window & { __reel?: boolean; __reelHold?: boolean }) | null;
+      if (w && !w.__reel) { w.confirm = () => true; w.alert = () => {}; w.print = () => {}; w.__reel = true; w.__reelHold = true; }
     } catch {}
   };
   const syncUrl = () => { try { if (urlRef.current) urlRef.current.textContent = `${host}${win("desktop")?.location.pathname ?? ""}${win("desktop")?.location.search ?? ""}`; } catch {} };
@@ -330,8 +331,69 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     sfx.current.whoosh(0.5);
   };
 
+  // wait until an element stops moving or growing (a slip still printing, a panel still opening)
+  const still = async (el: Element, max = 3500) => {
+    let last = "", still = 0;
+    const end = performance.now() + max;
+    while (performance.now() < end && still < 4) {
+      const r = el.getBoundingClientRect(), k = `${Math.round(r.top)},${Math.round(r.width)},${Math.round(r.height)}`;
+      still = k === last ? still + 1 : 0; last = k;
+      await sleep(100);
+    }
+  };
+
+  // dim the page around an element without touching the element itself (safe inside any stacking context)
+  const cutout = (target: HTMLElement) => {
+    const dc = target.ownerDocument, r = target.getBoundingClientRect();
+    const hole = dc.createElement("div");
+    hole.style.cssText = `position:fixed;left:${r.left - 8}px;top:${r.top - 8}px;width:${r.width + 16}px;height:${r.height + 16}px;z-index:2147483000;pointer-events:none;border-radius:6px;box-shadow:0 0 0 200vmax rgba(18,20,24,0.42);opacity:0;transition:opacity .45s ease`;
+    dc.body.appendChild(hole);
+    requestAnimationFrame(() => { hole.style.opacity = "1"; });
+    return async () => { hole.style.opacity = "0"; await sleep(450); hole.remove(); };
+  };
+
+  /**
+   * Give the viewer time to take something in: wait for it to finish appearing, frame the whole of it as
+   * large as it will go, put the pointer away, and hold. Anything taller than the frame is read top to bottom.
+   */
+  const readOn = async (el: Element, ms: number) => {
+    const d = active.current, o = DEV[d], w = win(d);
+    if (shot.current !== d) { frameShot(d); sfx.current.whoosh(0.5); blur.current = 2; await sleep(500); }
+    await still(el);
+    // bring it into the page's viewport: the top of it when it's tall, the middle otherwise
+    if (w) {
+      const r = el.getBoundingClientRect();
+      const want = r.height > o.vh * 0.8 ? r.top - 24 : r.top + r.height / 2 - o.vh / 2;
+      if (r.top < 0 || r.bottom > o.vh || r.height > o.vh * 0.8) { w.scrollTo({ top: w.scrollY + want, behavior: "smooth" }); await sleep(800); }
+    }
+    cur.current.show = 0;
+    follow.current = false;
+    const b = box(el, d);
+    const cap = o.base * o.zoom * 1.4;
+    const fitW = (W * 0.86) / b.w, fitH = (H * 0.78) / b.h;
+    const s = Math.max(o.base * 0.9, Math.min(cap, fitW, Math.max(fitH, o.base)));
+    const viewH = (H * 0.86) / s;
+    const tall = b.h > viewH;
+    goal.current = { s, fx: b.cx, fy: tall ? b.y + viewH / 2 : b.cy };
+    const restore = cutout(el as HTMLElement);
+    sfx.current.pop();
+    await sleep(900);
+    if (tall) {
+      // a slow, even scan down the content, with a moment at the top and at the bottom
+      const from = b.y + viewH / 2, to = b.y + b.h - viewH / 2, t0 = performance.now(), dur = ms * 0.7;
+      await sleep(ms * 0.15);
+      while (performance.now() - t0 < dur) { goal.current.fy = from + (to - from) * ease((performance.now() - t0) / dur); await sleep(16); }
+      goal.current.fy = to;
+      await sleep(ms * 0.15);
+    } else await sleep(ms);
+    await restore();
+    cur.current = { ...cur.current, x: b.cx, y: b.y + b.h + 40 };
+    follow.current = true;
+  };
+
   const focusOn = async (el: Element, ms: number) => {
     const d = active.current, dc = doc();
+    await still(el, 2500);
     await reveal(el);
     const vwPx = dc?.defaultView?.innerWidth ?? DEV[d].w;
     let target = el as HTMLElement;
@@ -346,23 +408,10 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     goal.current = { s: DEV[d].base * DEV[d].zoom * 1.12, fx: b.cx, fy: b.cy };
     await glide({ x: Math.min(b.cx + 40, b.x + b.w - 10), y: b.cy + Math.min(30, b.h / 2) }, 600);
     if (!dc) return;
-    const veil = dc.createElement("div");
-    veil.style.cssText = "position:fixed;inset:0;z-index:2147483000;backdrop-filter:blur(5px) brightness(0.82);-webkit-backdrop-filter:blur(5px) brightness(0.82);opacity:0;transition:opacity .45s ease;pointer-events:none";
-    dc.body.appendChild(veil);
-    const prev = { pos: target.style.position, z: target.style.zIndex, tr: target.style.transform, sh: target.style.boxShadow, tn: target.style.transition, bg: target.style.backgroundColor };
-    const bgc = dc.defaultView?.getComputedStyle(target).backgroundColor;
-    target.style.transition = "transform .6s cubic-bezier(0.19,1,0.22,1), box-shadow .6s ease";
-    if (dc.defaultView?.getComputedStyle(target).position === "static") target.style.position = "relative";
-    target.style.zIndex = "2147483001";
-    if (!bgc || bgc === "rgba(0, 0, 0, 0)" || bgc === "transparent") target.style.backgroundColor = "#ffffff";
-    requestAnimationFrame(() => { veil.style.opacity = "1"; target.style.transform = "scale(1.05)"; target.style.boxShadow = "0 24px 60px rgba(0,0,0,0.28)"; });
+    const restore = cutout(target);
     sfx.current.pop();
     await sleep(ms);
-    veil.style.opacity = "0";
-    target.style.transform = prev.tr; target.style.boxShadow = prev.sh;
-    await sleep(450);
-    veil.remove();
-    Object.assign(target.style, { position: prev.pos, zIndex: prev.z, transition: prev.tn, backgroundColor: prev.bg });
+    await restore();
     follow.current = true;
   };
 
@@ -561,7 +610,8 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
         await waitFind({ sel: ".grid-cols-4 button" }, 3000);
         return;
       }
-      case "focus": { await focusOn(await waitFind(fillTarget(st.to, v)), st.ms ?? 1500); return; }
+      case "focus": { await focusOn(await waitFind(fillTarget(st.to, v)), st.ms ?? 2200); return; }
+      case "read": { await readOn(await waitFind(fillTarget(st.to, v), 12000), st.ms ?? 3800); return; }
     }
   }
 
@@ -596,18 +646,24 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     sfx.current.whoosh(0.8);
     setTimeout(() => sfx.current.hit(), ENTER * 450);
     await at(ENTER * 0.7);
+    let late = 0; // seconds the steps have run over; holds that follow are never shortened to make up for it
     for (let i = 0; i < r.steps.length && !stopRef.current; i++) {
+      const t1 = performance.now();
       await runStep(r.steps[i], v);
-      await at(plan[i]);
+      const took = (performance.now() - t1) / 1000, budget = nominal(r.steps[i]) / 1000;
+      if (took > budget + 1.5) console.info(`reel ${r.id}: step ${i} (${r.steps[i].do}) took ${took.toFixed(1)}s, planned ${budget.toFixed(1)}s`);
+      late = Math.max(late, (performance.now() - start) / 1000 - plan[i]);
+      await at(plan[i] + late);
     }
-    await at(acc + HOLD_END);
+    console.info(`reel ${r.id}: planned ${acc.toFixed(1)}s, ran ${late.toFixed(1)}s over`);
+    await at(acc + late + HOLD_END);
     const out = ENTRIES[r.look.entry];
     poseTw.current = { from: { ...pose.current }, to: { x: -out.x * 0.6, y: -out.y * 0.6, z: out.z * 0.8, rx: -out.rx * 0.6, ry: -out.ry * 0.6, rz: -out.rz }, t0: performance.now(), ms: EXIT * 1000, ease: (x) => x * x * x };
     sfx.current.whoosh(0.6);
     follow.current = false;
     cur.current.show = 0;
     curtain.style.transition = `opacity ${EXIT * 0.8}s ease ${EXIT * 0.2}s`; curtain.style.opacity = "1";
-    await at(length);
+    await at(length + late);
     pose.current = { ...REST };
   }
 
@@ -628,7 +684,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     musicBus.connect(out);
     sfx.current = sound ? await makeSfx(actx, out, typing) : silentSfx;
     try {
-      await fn((len) => { if (music) scheduleScore(actx, musicBus, actx.currentTime + 0.02, [], len, len - 2.4); }, dest);
+      await fn((len) => { if (music) scheduleScore(actx, musicBus, actx.currentTime + 0.02, [], len * 1.06 + 1, len * 1.06 - 1.4); }, dest);
     } finally {
       sfx.current = silentSfx;
       await actx.close();
