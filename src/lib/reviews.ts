@@ -2,7 +2,7 @@ import "server-only";
 import type { Business } from "@prisma/client";
 import { db } from "./db";
 
-/** A salon is asked for a review once it has really used Laazizi: a week in, or 10+ bookings. */
+/** A salon is asked for a review once it has really used Laazizi HQ: a week in, or 10+ bookings. */
 export async function reviewEligible(b: Pick<Business, "id" | "createdAt" | "isShowcase">) {
   if (b.isShowcase) return false;
   const existing = await db.review.findUnique({ where: { businessId: b.id }, select: { id: true } });

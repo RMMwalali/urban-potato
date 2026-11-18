@@ -70,7 +70,7 @@ export async function submitComplaint(_: ComplaintState, fd: FormData): Promise<
     text: [
       `Hi ${first},`,
       ``,
-      `Thank you for telling us. We take complaints seriously, and yours has reached the Laazizi team. Someone will read it and get back to you as soon as possible.`,
+      `Thank you for telling us. We take complaints seriously, and yours has reached the Laazizi HQ team. Someone will read it and get back to you as soon as possible.`,
       ``,
       `Your reference: ${ref}`,
       `About: ${label}`,
@@ -81,7 +81,7 @@ export async function submitComplaint(_: ComplaintState, fd: FormData): Promise<
       ``,
       `If there's anything to add, just reply to this email and keep the reference in the subject.`,
       ``,
-      `The Laazizi team`,
+      `The Laazizi HQ team`,
     ].join("\n"),
   });
 
@@ -112,7 +112,7 @@ export async function resendComplaint(id: string) {
   const ref = complaintRef(c.number), inbox = await complaintsInbox();
   const label = COMPLAINT_CATEGORIES.find((x) => x.id === c.category)?.label ?? c.category;
   const team = c.emailedAt ? { ok: true as const } : await sendMail({ to: inbox, replyTo: c.email, subject: `[${ref}] ${label}: ${c.subject} (${c.business.name})`, text: `${c.name} <${c.email}> · ${c.business.name}\n\n${c.message}\n\n${appUrl()}/admin/complaints/${c.id}` });
-  const reply = c.repliedAt ? { ok: true as const } : await sendMail({ to: c.email, replyTo: inbox, subject: `We've received your complaint (${ref})`, text: `Hi ${c.name.split(" ")[0]},\n\nThank you for telling us. We take complaints seriously, and yours has reached the Laazizi team. Someone will read it and get back to you as soon as possible.\n\nYour reference: ${ref}\nSubject: ${c.subject}\n\nIf there's anything to add, just reply to this email.\n\nThe Laazizi team` });
+  const reply = c.repliedAt ? { ok: true as const } : await sendMail({ to: c.email, replyTo: inbox, subject: `We've received your complaint (${ref})`, text: `Hi ${c.name.split(" ")[0]},\n\nThank you for telling us. We take complaints seriously, and yours has reached the Laazizi HQ team. Someone will read it and get back to you as soon as possible.\n\nYour reference: ${ref}\nSubject: ${c.subject}\n\nIf there's anything to add, just reply to this email.\n\nThe Laazizi HQ team` });
   const errors = [!team.ok && `team: ${"error" in team ? team.error : ""}`, !reply.ok && `reply: ${"error" in reply ? reply.error : ""}`].filter(Boolean).join(" · ");
   await db.complaint.update({ where: { id }, data: { emailedAt: c.emailedAt ?? (team.ok ? new Date() : null), repliedAt: c.repliedAt ?? (reply.ok ? new Date() : null), emailError: errors || null } });
   revalidatePath(`/admin/complaints/${id}`);

@@ -666,7 +666,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       { text: r.title, size: Math.round(base * 0.34), caps: true, tone: "pink", track: 0.06 },
       { text: r.hook, size: Math.round(base * 1.02), weight: 500, gap: Math.round(base * 0.35) },
     ], { light, W, H, hold: HOOK_HOLD, sfx: sfx.current });
-    // 3. what Laazizi does about it, which is what the demo shows
+    // 3. what Laazizi HQ does about it, which is what the demo shows
     await at(ABOUT_AT);
     if (card) void playCard(card, [
       { text: fill(r.about, { ...v }).replace(/\{name\}/g, name), size: Math.round(base * 0.74), tone: "ink" },

@@ -11,7 +11,7 @@ export async function mailConfig() {
   const [host, port, user, pass, from] = await Promise.all(["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "MAIL_FROM"].map(getCredential));
   if (!user || !pass) return null;
   const p = Number(port) || 465;
-  return { host: host || "smtp.gmail.com", port: p, secure: p === 465, auth: { user, pass }, from: from || `Laazizi <${user}>` };
+  return { host: host || "smtp.gmail.com", port: p, secure: p === 465, auth: { user, pass }, from: from || `Laazizi HQ <${user}>` };
 }
 
 const oneLine = (s: string) => s.replace(/[\r\n]+/g, " ").trim();

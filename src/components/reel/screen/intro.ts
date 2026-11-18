@@ -19,7 +19,7 @@ function shade(hex: string, k: number) {
 export function playIntro(host: HTMLElement, o: Opts): Promise<void> {
   host.innerHTML = "";
   const blue = o.light ? "#1f5277" : "#4f9cf0", pink = o.light ? "#d9468a" : "#f06fae";
-  const size = Math.round(Math.min(o.W * 0.19, o.H * 0.24));
+  const size = Math.round(Math.min(o.W * (/\sHQ$/i.test(o.name.trim()) ? 0.162 : 0.19), o.H * 0.24)); // room for the HQ mark
   const STEP = 1.5;
   const depth = Math.max(16, Math.round((size * 0.26) / STEP)); // a deep, solid extrusion, in layers of 1.5px
 
@@ -42,7 +42,9 @@ export function playIntro(host: HTMLElement, o: Opts): Promise<void> {
   const word = document.createElement("div");
   word.style.cssText = `position:absolute;left:0;top:0;display:flex;transform-style:preserve-3d;font-weight:600;font-size:${size}px;line-height:1;letter-spacing:-0.02em;text-transform:uppercase;white-space:pre`;
   word.className = "font-sans";
-  const chars = [...o.name.toUpperCase()];
+  const m = o.name.trim().match(/^(.*?)\s+(HQ)$/i);
+  const chars = [...(m ? m[1] : o.name).toUpperCase()];
+  const mark = m ? "HQ" : "";
   const letters = chars.map((ch, i) => {
     const col = i < 3 ? blue : pink;
     const L = document.createElement("span");
@@ -62,6 +64,21 @@ export function playIntro(host: HTMLElement, o: Opts): Promise<void> {
     word.appendChild(L);
     return { L, face };
   });
+  // the small HQ, extruded like the letters, sitting at the top right of the wordmark
+  let hq: HTMLElement | null = null;
+  if (mark) {
+    hq = document.createElement("span");
+    hq.style.cssText = `position:relative;display:inline-block;align-self:flex-start;margin-left:${size * 0.07}px;margin-top:${size * 0.12}px;font-size:${size * 0.34}px;letter-spacing:0;transform-style:preserve-3d;opacity:0`;
+    const ink = o.light ? "#1c1f24" : "#ededed";
+    for (let k = Math.round(depth * 0.6); k >= 1; k--) {
+      const s2 = document.createElement("span"); s2.textContent = mark;
+      s2.style.cssText = `position:absolute;left:0;top:0;color:${shade(o.light ? "#1c1f24" : "#9aa0a8", o.light ? 1.6 : 0.7)};transform:translateZ(${-k * STEP}px)`;
+      hq.appendChild(s2);
+    }
+    const f = document.createElement("span"); f.textContent = mark; f.style.cssText = `position:relative;color:${ink}`;
+    hq.appendChild(f);
+    word.appendChild(hq);
+  }
   orbit.appendChild(word);
   const floor = document.createElement("div");
   const fw = size * chars.length * 0.62;
@@ -96,6 +113,8 @@ export function playIntro(host: HTMLElement, o: Opts): Promise<void> {
     ], { duration: 900, delay: 80 + i * 75, easing: EASE_OUT });
   });
   const landed = 80 + (letters.length - 1) * 75 + 900;
+  // HQ pops in last, once the wordmark has landed
+  if (hq) run(hq, [{ transform: "translate3d(0, -40%, 220px) scale(0.4) rotateX(-70deg)", opacity: 0 }, { transform: "translate3d(0,0,0) scale(1) rotateX(0deg)", opacity: 1 }], { duration: 520, delay: landed - 200, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" });
 
   run(floor, [{ opacity: 0 }, { opacity: 1, offset: 0.45 }, { opacity: 1, offset: 0.75 }, { opacity: 0 }], { duration: ms(INTRO) });
 

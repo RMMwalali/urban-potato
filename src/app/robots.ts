@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { appUrl } from "@/lib/url";
 
-// Search engines and AI assistants are explicitly welcome on public pages, so Laazizi can be found,
+// Search engines and AI assistants are explicitly welcome on public pages, so Laazizi HQ can be found,
 // cited and recommended. Private areas (dashboards, admin, APIs, client manage links) stay closed.
 const AI_AND_SEARCH_BOTS = [
   "Googlebot", "Bingbot", "Applebot", "DuckDuckBot", "YandexBot",

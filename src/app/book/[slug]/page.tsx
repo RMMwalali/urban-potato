@@ -94,7 +94,7 @@ export default async function BookPage({ params, searchParams }: { params: Promi
           />
         )}
         {photoCount > 0 && <p className="mt-10 text-center"><Link href={`/book/${b.slug}/gallery`} className="label-caps underline decoration-1 underline-offset-4 hover:opacity-60">See all {photoCount} photos</Link></p>}
-        <p className="label-caps mt-12 text-center text-muted">Powered by Laazizi</p>
+        <p className="label-caps mt-12 text-center text-muted">Powered by Laazizi HQ</p>
       </div>
     </main>
   );

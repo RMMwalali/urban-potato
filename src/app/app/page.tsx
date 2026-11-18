@@ -85,8 +85,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       {askReview && (
         <Link href="/app/review" className="group flex flex-wrap items-center justify-between gap-4 border-y border-ink py-4 transition-colors hover:bg-panel">
-          <span><span className="label-caps block text-muted">Two minutes</span><span className="text-[clamp(18px,1.8vw,24px)]">How is Laazizi working for you?</span></span>
-          <span className="btn-secondary btn-sm">Rate Laazizi</span>
+          <span><span className="label-caps block text-muted">Two minutes</span><span className="text-[clamp(18px,1.8vw,24px)]">How is Laazizi HQ working for you?</span></span>
+          <span className="btn-secondary btn-sm">Rate Laazizi HQ</span>
         </Link>
       )}
 

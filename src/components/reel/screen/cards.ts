@@ -1,4 +1,4 @@
-// Text cards around each demo: what Laazizi is and what this video shows (after the 3D logo), and where to
+// Text cards around each demo: what Laazizi HQ is and what this video shows (after the 3D logo), and where to
 // find it (at the end). Lines swing up out of the depth one after another, hold, then tip away.
 
 type Line = { brand?: boolean; text: string; size: number; weight?: number; caps?: boolean; tone?: "ink" | "muted" | "blue" | "pink"; gap?: number; track?: number };
@@ -27,9 +27,11 @@ export function playCard(host: HTMLElement, lines: Line[], o: CardOpts): Promise
     const el = document.createElement("div");
     if (l.brand) {
       // the wordmark's colours: first three letters blue, the rest pink
-      const a = document.createElement("span"); a.textContent = l.text.slice(0, 3); a.style.color = col.blue;
-      const b = document.createElement("span"); b.textContent = l.text.slice(3); b.style.color = col.pink;
+      const m = l.text.trim().match(/^(.*?)\s+(HQ)$/i), word = m ? m[1] : l.text;
+      const a = document.createElement("span"); a.textContent = word.slice(0, 3); a.style.color = col.blue;
+      const b = document.createElement("span"); b.textContent = word.slice(3); b.style.color = col.pink;
       el.append(a, b);
+      if (m) { const q = document.createElement("span"); q.textContent = "HQ"; q.style.cssText = `font-size:0.34em;vertical-align:top;margin-left:0.07em;letter-spacing:0;color:${col.ink}`; el.append(q); }
     } else el.textContent = l.text;
     el.style.cssText = `font-size:${l.size}px;line-height:1.08;font-weight:${l.weight ?? 400};color:${col[l.tone ?? "ink"]};${l.caps ? "text-transform:uppercase;" : ""}letter-spacing:${l.track ?? (l.caps ? -0.01 : 0)}em;transform-origin:50% 100%;opacity:0;backface-visibility:hidden`;
     wrap.appendChild(el);

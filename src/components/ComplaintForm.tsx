@@ -13,7 +13,7 @@ export function ComplaintForm({ name, email, phone }: { name: string; email: str
         <p className="label-caps text-pink">Reference {state.done.ref}</p>
         <p className="text-[clamp(26px,3vw,40px)] leading-tight">Thank you. We&apos;ve got it.</p>
         <p className="text-[15px] text-muted">
-          Your complaint is with the Laazizi team and someone will get back to you as soon as possible.
+          Your complaint is with the Laazizi HQ team and someone will get back to you as soon as possible.
           {state.done.replied ? <> We&apos;ve emailed a copy to <b className="text-ink">{state.done.email}</b>; reply to that email to add anything.</> : <> Keep the reference above in case you need to follow up.</>}
         </p>
         <a href="/app/complaints" className="btn-secondary btn-sm">Send another</a>
@@ -42,7 +42,7 @@ export function ComplaintForm({ name, email, phone }: { name: string; email: str
         <div><label className="label" htmlFor="phone">Phone (optional, if you&apos;d like a call)</label><input id="phone" name="phone" defaultValue={phone ?? ""} inputMode="tel" className="input" placeholder="0712 345 678" /></div>
       </div>
       {state?.error && <p className="border-l-2 border-pink bg-panel px-3 py-2 text-[14px] text-pink">{state.error}</p>}
-      <button className="btn-primary" disabled={pending}>{pending ? "Sending…" : "Send to the Laazizi team"}</button>
+      <button className="btn-primary" disabled={pending}>{pending ? "Sending…" : "Send to the Laazizi HQ team"}</button>
     </form>
   );
 }

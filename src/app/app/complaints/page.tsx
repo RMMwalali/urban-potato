@@ -15,7 +15,7 @@ export default async function ComplaintsPage() {
   return (
     <div>
       <PageHeader title="We take complaints seriously" label="Complaints & feedback"
-        sub="Something not working, a payment that looks wrong, or something we could do better? Tell us here. It goes straight to the Laazizi team, and you'll get an email confirming we've received it." />
+        sub="Something not working, a payment that looks wrong, or something we could do better? Tell us here. It goes straight to the Laazizi HQ team, and you'll get an email confirming we've received it." />
       <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_320px]">
         <ComplaintForm name={user.name} email={user.email} phone={user.phone} />
         {mine.length > 0 && (

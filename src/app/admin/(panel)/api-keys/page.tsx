@@ -18,7 +18,7 @@ const HELP: Record<string, string> = {
   SMTP_PORT: "465 (SSL) or 587",
   SMTP_USER: "The sending address, e.g. darlingheadq@gmail.com",
   SMTP_PASS: "Gmail: an app password (Google account → Security → 2-Step Verification → App passwords), not your normal password",
-  MAIL_FROM: "Optional, e.g. Laazizi <darlingheadq@gmail.com>",
+  MAIL_FROM: "Optional, e.g. Laazizi HQ <darlingheadq@gmail.com>",
 };
 
 export default async function ApiKeysPage({ searchParams }: { searchParams: Promise<{ rotated?: string; pushed?: string; failed?: string }> }) {

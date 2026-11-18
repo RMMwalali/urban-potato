@@ -45,7 +45,7 @@ export async function deleteReview(id: string) {
 export async function askForReview(businessId: string) {
   await requireAdmin();
   const { notify } = await import("@/lib/notify");
-  await notify({ businessId, kind: "news", title: "How is Laazizi working for you?", body: "Two minutes: rate Laazizi and tell us what to improve. Your words help other salons decide.", url: "/app/review" });
+  await notify({ businessId, kind: "news", title: "How is Laazizi HQ working for you?", body: "Two minutes: rate Laazizi HQ and tell us what to improve. Your words help other salons decide.", url: "/app/review" });
   redirect("/admin/reviews?asked=1");
 }
 

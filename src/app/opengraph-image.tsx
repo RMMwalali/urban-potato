@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 // Text-only social preview card in the brand style (no photos).
-export const alt = "Laazizi: not a website, a booking engine";
+export const alt = "Laazizi HQ: not a website, a booking engine";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
