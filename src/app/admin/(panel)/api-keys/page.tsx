@@ -14,6 +14,11 @@ const HELP: Record<string, string> = {
   VAPID_PUBLIC_KEY: "Optional: leave empty to use the automatic keys",
   VAPID_PRIVATE_KEY: "Optional: must pair with the public key",
   VAPID_SUBJECT: "Contact for push services, e.g. mailto:you@yourdomain.com",
+  SMTP_HOST: "Gmail: smtp.gmail.com (leave empty for Gmail)",
+  SMTP_PORT: "465 (SSL) or 587",
+  SMTP_USER: "The sending address, e.g. darlingheadq@gmail.com",
+  SMTP_PASS: "Gmail: an app password (Google account → Security → 2-Step Verification → App passwords), not your normal password",
+  MAIL_FROM: "Optional, e.g. Laazizi <darlingheadq@gmail.com>",
 };
 
 export default async function ApiKeysPage({ searchParams }: { searchParams: Promise<{ rotated?: string; pushed?: string; failed?: string }> }) {
@@ -29,7 +34,7 @@ export default async function ApiKeysPage({ searchParams }: { searchParams: Prom
   const find = (p: string, n: string) => creds.find((c) => c.provider === p && c.name === n);
   return (
     <div className="max-w-5xl">
-      <PageHeader title="Connections" sub="Keys for SMS, WhatsApp, M-Pesa and push notifications. Encrypted at rest (AES-256-GCM); secret values are never shown again after saving." />
+      <PageHeader title="Connections" sub="Keys for SMS, WhatsApp, M-Pesa, email and push notifications. Encrypted at rest (AES-256-GCM); secret values are never shown again after saving." />
       {sp.rotated && <p className="mb-6 border-l-2 border-ink bg-panel px-4 py-3 text-[14px]">New push keys generated. {sp.rotated} device(s) were signed out of push and need to turn notifications on again.</p>}
       {sp.pushed && <p className="mb-6 border-l-2 border-ink bg-panel px-4 py-3 text-[14px]">Test sent to {sp.pushed} device(s){Number(sp.failed) ? `, ${sp.failed} failed` : ""}.</p>}
 

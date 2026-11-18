@@ -64,6 +64,7 @@ export const PROVIDERS = {
   mpesa: { label: "M-Pesa Daraja", fields: ["MPESA_CONSUMER_KEY", "MPESA_CONSUMER_SECRET", "MPESA_SHORTCODE", "MPESA_PASSKEY", "MPESA_ENV"] },
   messaging: { label: "Messaging provider", fields: ["MESSAGE_PROVIDER"] },
   webpush: { label: "Web Push notifications (VAPID)", fields: ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT"] },
+  email: { label: "Email (SMTP): complaints and automatic replies", fields: ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "MAIL_FROM"] },
 } as const;
 
 export async function getCredential(name: string): Promise<string | undefined> {

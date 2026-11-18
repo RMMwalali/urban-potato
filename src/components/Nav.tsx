@@ -18,6 +18,7 @@ const items = [
   { href: "/app/reports", label: "Reports", manager: true },
   { href: "/app/settings", label: "Settings", manager: true },
   { href: "/app/billing", label: "Plan & billing", manager: true },
+  { href: "/app/complaints", label: "Complaints & feedback" },
 ];
 
 export function Nav({ isManager }: { isManager: boolean }) {

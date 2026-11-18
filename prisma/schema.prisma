@@ -9,78 +9,79 @@ datasource db {
 
 // A Business is a tenant: one salon/spa account. Every record below is scoped to one.
 model Business {
-  id                String   @id @default(cuid())
-  name              String
-  slug              String   @unique // public booking link: /book/<slug>
-  phone             String?
-  email             String?
-  address           String?
-  currency          String   @default("KES")
-  timezone          String   @default("Africa/Nairobi")
-  countryCode       String   @default("254") // used to normalise local phone numbers
-  openTime          String   @default("08:00")
-  closeTime         String   @default("19:00")
-  openDays          Int[]    @default([1, 2, 3, 4, 5, 6]) // ISO weekdays, 1 = Monday
-  slotMinutes       Int      @default(15)
-  reminderHours     Int      @default(24)
-  bookingEnabled    Boolean  @default(true)
-  messageChannel    Channel  @default(SMS)
+  id                   String         @id @default(cuid())
+  name                 String
+  slug                 String         @unique // public booking link: /book/<slug>
+  phone                String?
+  email                String?
+  address              String?
+  currency             String         @default("KES")
+  timezone             String         @default("Africa/Nairobi")
+  countryCode          String         @default("254") // used to normalise local phone numbers
+  openTime             String         @default("08:00")
+  closeTime            String         @default("19:00")
+  openDays             Int[]          @default([1, 2, 3, 4, 5, 6]) // ISO weekdays, 1 = Monday
+  slotMinutes          Int            @default(15)
+  reminderHours        Int            @default(24)
+  bookingEnabled       Boolean        @default(true)
+  messageChannel       Channel        @default(SMS)
   // Subscription / trial
-  status            BusinessStatus @default(TRIAL)
-  trialEndsAt       DateTime
-  paidUntil         DateTime?
-  plan              String   @default("standard")
-  adminNotes        String?
+  status               BusinessStatus @default(TRIAL)
+  trialEndsAt          DateTime
+  paidUntil            DateTime?
+  plan                 String         @default("standard")
+  adminNotes           String?
   // Booking policies
-  depositPercent    Int      @default(0) // 0 = no deposit asked
-  cancelPolicyHours Int      @default(24) // client self-cancel allowed until N hours before
-  cancelPolicyText  String?
-  bufferMinutes     Int      @default(0) // clean-up time after each appointment
-  mpesaType         String?  // TILL | PAYBILL | POCHI | PHONE
-  mpesaNumber       String?
-  mpesaAccount      String?  // paybill account number
-  onboardingDone    Boolean  @default(false)
+  depositPercent       Int            @default(0) // 0 = no deposit asked
+  cancelPolicyHours    Int            @default(24) // client self-cancel allowed until N hours before
+  cancelPolicyText     String?
+  bufferMinutes        Int            @default(0) // clean-up time after each appointment
+  mpesaType            String? // TILL | PAYBILL | POCHI | PHONE
+  mpesaNumber          String?
+  mpesaAccount         String? // paybill account number
+  onboardingDone       Boolean        @default(false)
   // Payments & M-Pesa verification
-  paymentMethods    String[] @default(["CASH", "MPESA", "CARD"])
-  requireVerifiedMpesa Boolean @default(false) // only accept codes Safaricom has confirmed (C2B)
-  darajaShortcode   String?
-  darajaKeyEnc      String? // encrypted consumer key
-  darajaSecretEnc   String? // encrypted consumer secret
-  darajaEnv         String   @default("production")
-  c2bToken          String   @unique @default(cuid()) // secret part of the callback URL
-  c2bRegisteredAt   DateTime?
+  paymentMethods       String[]       @default(["CASH", "MPESA", "CARD"])
+  requireVerifiedMpesa Boolean        @default(false) // only accept codes Safaricom has confirmed (C2B)
+  darajaShortcode      String?
+  darajaKeyEnc         String? // encrypted consumer key
+  darajaSecretEnc      String? // encrypted consumer secret
+  darajaEnv            String         @default("production")
+  c2bToken             String         @unique @default(cuid()) // secret part of the callback URL
+  c2bRegisteredAt      DateTime?
   // Founding offer: first N paying salons get a discount for M months
-  foundingMember    Boolean  @default(false)
-  discountPercent   Int      @default(0)
-  discountUntil     DateTime?
-  payrollConfig     Json? // statutory deduction rules, see src/lib/payroll.ts
+  foundingMember       Boolean        @default(false)
+  discountPercent      Int            @default(0)
+  discountUntil        DateTime?
+  payrollConfig        Json? // statutory deduction rules, see src/lib/payroll.ts
   // Location: typed at sign-up (country/region/city + address), with coordinates for the admin map
-  country           String? // ISO 3166-1 alpha-2, e.g. "KE"
-  region            String? // county / state
-  city              String? // town or neighbourhood
-  latitude          Float?
-  longitude         Float?
-  locationSource    String? // "county" (typed county centre) | "ip" (network location at sign-up)
-  signupGeo         Json? // network location seen at sign-up: { country, region, city, latitude, longitude }
-  isShowcase        Boolean  @default(false) // admin-created salon used only to film reels; excluded from stats and maps
+  country              String? // ISO 3166-1 alpha-2, e.g. "KE"
+  region               String? // county / state
+  city                 String? // town or neighbourhood
+  latitude             Float?
+  longitude            Float?
+  locationSource       String? // "county" (typed county centre) | "ip" (network location at sign-up)
+  signupGeo            Json? // network location seen at sign-up: { country, region, city, latitude, longitude }
+  isShowcase           Boolean        @default(false) // admin-created salon used only to film reels; excluded from stats and maps
   // Brand and homepage features
-  logoId            String? // Media id of the salon's uploaded logo
-  featureConsent    Boolean  @default(false) // salon allows Darling to show its logo and service photos on darling's website
-  homeLogo          Boolean  @default(false) // admin: show this salon's logo in "Salons on Darling"
-  homeServices      Boolean  @default(false) // admin: show this salon's service photos in the homepage carousel
-  createdAt         DateTime @default(now())
+  logoId               String? // Media id of the salon's uploaded logo
+  featureConsent       Boolean        @default(false) // salon allows Darling to show its logo and service photos on darling's website
+  homeLogo             Boolean        @default(false) // admin: show this salon's logo in "Salons on Darling"
+  homeServices         Boolean        @default(false) // admin: show this salon's service photos in the homepage carousel
+  createdAt            DateTime       @default(now())
 
-  users        User[]
-  clients      Client[]
-  services     Service[]
-  appointments Appointment[]
-  sales        Sale[]
-  messages     MessageLog[]
-  mpesaTxns    MpesaTransaction[]
-  payRuns      PayRun[]
-  advances     StaffAdvance[]
+  users         User[]
+  clients       Client[]
+  services      Service[]
+  appointments  Appointment[]
+  sales         Sale[]
+  messages      MessageLog[]
+  mpesaTxns     MpesaTransaction[]
+  payRuns       PayRun[]
+  advances      StaffAdvance[]
   notifications Notification[]
-  media        Media[]
+  media         Media[]
+  complaints    Complaint[]
 }
 
 enum BusinessStatus {
@@ -99,37 +100,38 @@ enum Role {
 
 // Staff members. Anyone who can be booked or can log in.
 model User {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   businessId     String
-  business       Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business       Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
   name           String
-  email          String   @unique
+  email          String    @unique
   phone          String?
   passwordHash   String
-  role           Role     @default(STAFF)
+  role           Role      @default(STAFF)
   title          String? // e.g. "Senior stylist"
-  bookable       Boolean  @default(true)
-  commissionRate Decimal  @default(0) @db.Decimal(5, 2) // percent of service revenue
-  color          String   @default("#c084fc")
-  active         Boolean  @default(true)
-  createdAt      DateTime @default(now())
+  bookable       Boolean   @default(true)
+  commissionRate Decimal   @default(0) @db.Decimal(5, 2) // percent of service revenue
+  color          String    @default("#c084fc")
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
   // Payroll
-  payType        PayType  @default(COMMISSION)
-  baseSalary     Decimal  @default(0) @db.Decimal(12, 2) // per month
-  chairRent      Decimal  @default(0) @db.Decimal(12, 2) // per pay run, chair-rental stylists pay the salon
+  payType        PayType   @default(COMMISSION)
+  baseSalary     Decimal   @default(0) @db.Decimal(12, 2) // per month
+  chairRent      Decimal   @default(0) @db.Decimal(12, 2) // per pay run, chair-rental stylists pay the salon
   payoutPhone    String? // M-Pesa number for pay
-  statutory      Boolean  @default(false) // apply PAYE/SHIF/NSSF/levy rules (employees, not casual/commission-only)
+  statutory      Boolean   @default(false) // apply PAYE/SHIF/NSSF/levy rules (employees, not casual/commission-only)
   tourDoneAt     DateTime? // product tour finished or skipped
 
   appointments Appointment[]
   saleItems    SaleItem[]
   payslips     Payslip[]
   advances     StaffAdvance[]
-  services     Service[] @relation("StaffServices") // empty = can perform every service
+  services     Service[]      @relation("StaffServices") // empty = can perform every service
 
-  notifyMuted    String[] @default([]) // notification kinds this person turned off
-  notifications  Notification[]
-  pushSubs       PushSubscription[]
+  notifyMuted   String[]           @default([]) // notification kinds this person turned off
+  notifications Notification[]
+  pushSubs      PushSubscription[]
+
   @@index([businessId])
 }
 
@@ -155,24 +157,24 @@ model Client {
 }
 
 model Service {
-  id          String   @id @default(cuid())
-  businessId  String
-  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  name        String
-  category    String   @default("General")
-  description String?
-  durationMin Int
-  price       Decimal  @db.Decimal(10, 2)
-  active      Boolean  @default(true)
-  onlineBooking Boolean @default(true)
-  createdAt   DateTime @default(now())
+  id            String   @id @default(cuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name          String
+  category      String   @default("General")
+  description   String?
+  durationMin   Int
+  price         Decimal  @db.Decimal(10, 2)
+  active        Boolean  @default(true)
+  onlineBooking Boolean  @default(true)
+  createdAt     DateTime @default(now())
 
   appointments Appointment[]
   saleItems    SaleItem[]
-  staff        User[] @relation("StaffServices")
+  staff        User[]        @relation("StaffServices")
 
-  styles       ServiceStyle[]
-  media        Media[]
+  styles ServiceStyle[]
+  media  Media[]
 
   @@index([businessId])
 }
@@ -198,30 +200,30 @@ enum BookingSource {
 }
 
 model Appointment {
-  id         String            @id @default(cuid())
-  businessId String
-  business   Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  clientId   String
-  client     Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  staffId    String?
-  staff      User?             @relation(fields: [staffId], references: [id], onDelete: SetNull)
-  serviceId  String
-  service    Service           @relation(fields: [serviceId], references: [id])
-  startAt    DateTime
-  endAt      DateTime
-  status     AppointmentStatus @default(BOOKED)
-  source     BookingSource     @default(WALK_IN)
-  price      Decimal           @db.Decimal(10, 2) // price at time of booking
-  notes      String?
-  styleId    String?
-  styleName  String? // the style chosen, kept even if the style is later renamed or removed
-  reminderSentAt DateTime?
-  depositAmount Decimal          @default(0) @db.Decimal(10, 2)
-  depositRef    String? // M-Pesa code supplied by client
-  depositVerified Boolean        @default(false)
-  manageToken   String           @unique @default(cuid()) // client self-service link
-  cancelledBy   String? // CLIENT | STAFF
-  createdAt  DateTime          @default(now())
+  id              String            @id @default(cuid())
+  businessId      String
+  business        Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  clientId        String
+  client          Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  staffId         String?
+  staff           User?             @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  serviceId       String
+  service         Service           @relation(fields: [serviceId], references: [id])
+  startAt         DateTime
+  endAt           DateTime
+  status          AppointmentStatus @default(BOOKED)
+  source          BookingSource     @default(WALK_IN)
+  price           Decimal           @db.Decimal(10, 2) // price at time of booking
+  notes           String?
+  styleId         String?
+  styleName       String? // the style chosen, kept even if the style is later renamed or removed
+  reminderSentAt  DateTime?
+  depositAmount   Decimal           @default(0) @db.Decimal(10, 2)
+  depositRef      String? // M-Pesa code supplied by client
+  depositVerified Boolean           @default(false)
+  manageToken     String            @unique @default(cuid()) // client self-service link
+  cancelledBy     String? // CLIENT | STAFF
+  createdAt       DateTime          @default(now())
 
   sale Sale?
 
@@ -240,24 +242,24 @@ enum PaymentMethod {
 }
 
 model Sale {
-  id            String        @id @default(cuid())
-  businessId    String
-  business      Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  number        Int // receipt number, sequential per business
-  clientId      String?
-  client        Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  appointmentId String?       @unique
-  appointment   Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
-  subtotal      Decimal       @db.Decimal(10, 2)
-  discount      Decimal       @default(0) @db.Decimal(10, 2)
-  tip           Decimal       @default(0) @db.Decimal(10, 2)
-  tipStaffId    String?
-  depositApplied Decimal      @default(0) @db.Decimal(10, 2)
-  total         Decimal       @db.Decimal(10, 2)
-  method        PaymentMethod
-  reference     String? // M-Pesa code, card ref, etc.
-  createdById   String?
-  createdAt     DateTime      @default(now())
+  id             String        @id @default(cuid())
+  businessId     String
+  business       Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  number         Int // receipt number, sequential per business
+  clientId       String?
+  client         Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  appointmentId  String?       @unique
+  appointment    Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  subtotal       Decimal       @db.Decimal(10, 2)
+  discount       Decimal       @default(0) @db.Decimal(10, 2)
+  tip            Decimal       @default(0) @db.Decimal(10, 2)
+  tipStaffId     String?
+  depositApplied Decimal       @default(0) @db.Decimal(10, 2)
+  total          Decimal       @db.Decimal(10, 2)
+  method         PaymentMethod
+  reference      String? // M-Pesa code, card ref, etc.
+  createdById    String?
+  createdAt      DateTime      @default(now())
 
   items    SaleItem[]
   payments Payment[]
@@ -267,17 +269,17 @@ model Sale {
 }
 
 model SaleItem {
-  id        String   @id @default(cuid())
-  saleId    String
-  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  serviceId String?
-  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  staffId   String?
-  staff     User?    @relation(fields: [staffId], references: [id], onDelete: SetNull)
-  name      String
-  quantity  Int      @default(1)
-  unitPrice Decimal  @db.Decimal(10, 2)
-  commission Decimal @default(0) @db.Decimal(10, 2)
+  id         String   @id @default(cuid())
+  saleId     String
+  sale       Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  serviceId  String?
+  service    Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  staffId    String?
+  staff      User?    @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  name       String
+  quantity   Int      @default(1)
+  unitPrice  Decimal  @db.Decimal(10, 2)
+  commission Decimal  @default(0) @db.Decimal(10, 2)
 }
 
 enum Channel {
@@ -292,19 +294,19 @@ enum MessageStatus {
 }
 
 model MessageLog {
-  id         String        @id @default(cuid())
-  businessId String
-  business   Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  clientId   String?
+  id            String        @id @default(cuid())
+  businessId    String
+  business      Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  clientId      String?
   appointmentId String?
-  channel    Channel
-  to         String
-  kind       String // CONFIRMATION, REMINDER, CANCELLATION, CUSTOM
-  body       String
-  status     MessageStatus @default(QUEUED)
-  providerRef String?
-  error      String?
-  createdAt  DateTime      @default(now())
+  channel       Channel
+  to            String
+  kind          String // CONFIRMATION, REMINDER, CANCELLATION, CUSTOM
+  body          String
+  status        MessageStatus @default(QUEUED)
+  providerRef   String?
+  error         String?
+  createdAt     DateTime      @default(now())
 
   @@index([businessId, createdAt])
 }
@@ -367,18 +369,18 @@ model AuditLog {
 
 // One row per tender on a sale: a sale can be part cash, part M-Pesa.
 model Payment {
-  id         String           @id @default(cuid())
-  saleId     String
-  sale       Sale             @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  method     PaymentMethod
-  amount     Decimal          @db.Decimal(10, 2) // amount applied to the bill
-  tendered   Decimal?         @db.Decimal(10, 2) // cash handed over (change = tendered - amount)
-  reference  String?
-  payerName  String?
-  verified   Boolean          @default(false) // true when matched to a Safaricom-confirmed transaction
-  mpesaTxId  String?          @unique
-  mpesaTx    MpesaTransaction? @relation(fields: [mpesaTxId], references: [id])
-  createdAt  DateTime         @default(now())
+  id        String            @id @default(cuid())
+  saleId    String
+  sale      Sale              @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  method    PaymentMethod
+  amount    Decimal           @db.Decimal(10, 2) // amount applied to the bill
+  tendered  Decimal?          @db.Decimal(10, 2) // cash handed over (change = tendered - amount)
+  reference String?
+  payerName String?
+  verified  Boolean           @default(false) // true when matched to a Safaricom-confirmed transaction
+  mpesaTxId String?           @unique
+  mpesaTx   MpesaTransaction? @relation(fields: [mpesaTxId], references: [id])
+  createdAt DateTime          @default(now())
 }
 
 enum MpesaSource {
@@ -444,25 +446,25 @@ model PayRun {
 }
 
 model Payslip {
-  id              String    @id @default(cuid())
+  id              String         @id @default(cuid())
   payRunId        String
-  payRun          PayRun    @relation(fields: [payRunId], references: [id], onDelete: Cascade)
+  payRun          PayRun         @relation(fields: [payRunId], references: [id], onDelete: Cascade)
   userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   payType         PayType
-  base            Decimal   @default(0) @db.Decimal(12, 2)
-  commission      Decimal   @default(0) @db.Decimal(12, 2)
-  services        Int       @default(0)
-  serviceRevenue  Decimal   @default(0) @db.Decimal(12, 2)
-  tips            Decimal   @default(0) @db.Decimal(12, 2)
-  bonus           Decimal   @default(0) @db.Decimal(12, 2)
-  otherDeductions Decimal   @default(0) @db.Decimal(12, 2)
-  advances        Decimal   @default(0) @db.Decimal(12, 2)
-  statutory       Decimal   @default(0) @db.Decimal(12, 2)
+  base            Decimal        @default(0) @db.Decimal(12, 2)
+  commission      Decimal        @default(0) @db.Decimal(12, 2)
+  services        Int            @default(0)
+  serviceRevenue  Decimal        @default(0) @db.Decimal(12, 2)
+  tips            Decimal        @default(0) @db.Decimal(12, 2)
+  bonus           Decimal        @default(0) @db.Decimal(12, 2)
+  otherDeductions Decimal        @default(0) @db.Decimal(12, 2)
+  advances        Decimal        @default(0) @db.Decimal(12, 2)
+  statutory       Decimal        @default(0) @db.Decimal(12, 2)
   statutoryLines  Json?
-  chairRent       Decimal   @default(0) @db.Decimal(12, 2)
-  gross           Decimal   @default(0) @db.Decimal(12, 2)
-  net             Decimal   @default(0) @db.Decimal(12, 2) // negative = stylist owes the salon (chair rent)
+  chairRent       Decimal        @default(0) @db.Decimal(12, 2)
+  gross           Decimal        @default(0) @db.Decimal(12, 2)
+  net             Decimal        @default(0) @db.Decimal(12, 2) // negative = stylist owes the salon (chair rent)
   note            String?
   paidAt          DateTime?
   paidMethod      PaymentMethod?
@@ -575,15 +577,15 @@ model Notification {
 
 // A browser or installed app (PWA) that receives push notifications for one person.
 model PushSubscription {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   businessId String
-  endpoint   String   @unique
+  endpoint   String    @unique
   p256dh     String
   auth       String
   device     String? // short description from the user agent, shown in settings
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
   lastOkAt   DateTime?
 
   @@index([userId])
@@ -591,7 +593,7 @@ model PushSubscription {
 
 // Sales leads: salons Darling's team reaches out to. Public business contact details only.
 model Lead {
-  id            String   @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
   type          String? // hair | barber | nails | spa | lashes | braids | mixed
   city          String?
@@ -605,15 +607,15 @@ model Lead {
   email         String?
   bookingMethod String?
   fitNote       String?
-  sources       String[] @default([])
+  sources       String[]       @default([])
   confidence    String?
-  status        String   @default("NEW") // NEW | CONTACTED | REPLIED | DEMO | TRIAL | PAYING | NOT_INTERESTED | DO_NOT_CONTACT
+  status        String         @default("NEW") // NEW | CONTACTED | REPLIED | DEMO | TRIAL | PAYING | NOT_INTERESTED | DO_NOT_CONTACT
   notes         String?
   followUpAt    DateTime?
   lastContactAt DateTime?
   businessId    String? // set when the lead signs up
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   activity      LeadActivity[]
 
   @@index([status])
@@ -635,18 +637,42 @@ model LeadActivity {
 // Reviews of Darling from salons that use it. Only published with the salon's explicit consent
 // and the admin's approval; the average shown publicly counts every review.
 model Review {
-  id          String    @id @default(cuid())
-  businessId  String    @unique // one review per salon (they can update it)
-  userId      String
-  rating      Int // 1-5
-  body        String
-  authorName  String
-  authorRole  String?
-  salonName   String
-  city        String?
-  consent     Boolean   @default(false) // may show name, salon and words on Darling's website
-  status      String    @default("PENDING") // PENDING | APPROVED | HIDDEN
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  approvedAt  DateTime?
+  id         String    @id @default(cuid())
+  businessId String    @unique // one review per salon (they can update it)
+  userId     String
+  rating     Int // 1-5
+  body       String
+  authorName String
+  authorRole String?
+  salonName  String
+  city       String?
+  consent    Boolean   @default(false) // may show name, salon and words on Darling's website
+  status     String    @default("PENDING") // PENDING | APPROVED | HIDDEN
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  approvedAt DateTime?
+}
+
+/// Complaints and feedback a salon's users send to the Laazizi team (emailed to the team inbox, with an automatic reply).
+model Complaint {
+  id         String    @id @default(cuid())
+  number     Int       @unique @default(autoincrement()) // shown as the reference, e.g. C-0007
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  userId     String?
+  name       String
+  email      String
+  phone      String?
+  category   String
+  subject    String
+  message    String
+  status     String    @default("NEW") // NEW | IN_PROGRESS | RESOLVED
+  emailedAt  DateTime? // when the team inbox got it
+  repliedAt  DateTime? // when the automatic reply went out
+  emailError String?
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([businessId, createdAt])
+  @@index([status, createdAt])
 }
