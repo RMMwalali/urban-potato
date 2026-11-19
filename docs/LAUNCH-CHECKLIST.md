@@ -19,12 +19,12 @@ What's already built into the site (nothing to do, just know it exists):
 
 ## 0. Before anything else (once)
 
-- [ ] **Buy your domain** (for example a `.co.ke` or `.com`). Search engines and AI assistants trust a real domain far more than `*.vercel.app`.
-- [ ] **Vercel → Project → Settings → Domains:** add the domain and follow the DNS instructions. Add both `yourdomain.com` and `www.yourdomain.com`, and redirect one to the other.
-- [ ] **Vercel → Settings → Environment Variables:** set `APP_URL=https://yourdomain.com` (no trailing slash), plus `AUTH_SECRET`, `ENCRYPTION_KEY` and `CRON_SECRET` if not set yet. **Redeploy.**
-- [ ] **Admin → SEO & meta:** set *Canonical site URL* to the same `https://yourdomain.com`.
+- [ ] **Buy `darlinghq.co.ke`** from a KENIC-accredited registrar (also consider `darlinghq.ke` and `darlingheadq.com`, pointed at it). Search engines and AI assistants trust a real domain far more than `*.vercel.app`.
+- [ ] **Vercel → Project → Settings → Domains:** add the domain and follow the DNS instructions. Add both `darlinghq.co.ke` and `www.darlinghq.co.ke`, and redirect one to the other.
+- [ ] **Vercel → Settings → Environment Variables:** set `APP_URL=https://darlinghq.co.ke` (no trailing slash), plus `AUTH_SECRET`, `ENCRYPTION_KEY` and `CRON_SECRET` if not set yet. **Redeploy.**
+- [ ] **Admin → SEO & meta:** set *Canonical site URL* to the same `https://darlinghq.co.ke`.
 - [ ] **Admin → Platform settings:** fill in support email, phone and WhatsApp. They appear in the footer and in the Organization data that AI assistants read.
-- [ ] Open `https://yourdomain.com/robots.txt`, `/sitemap.xml` and `/llms.txt` in a browser and check they show your real domain, not `localhost` or `vercel.app`.
+- [ ] Open `https://darlinghq.co.ke/robots.txt`, `/sitemap.xml` and `/llms.txt` in a browser and check they show your real domain, not `localhost` or `vercel.app`.
 
 ## 1. Cloudflare (if your domain's DNS is on Cloudflare) (once)
 
@@ -39,7 +39,7 @@ What's already built into the site (nothing to do, just know it exists):
 
 - [ ] Go to **search.google.com/search-console** → *Add property* → **Domain** property → verify with the **DNS TXT record** (add it in Cloudflare or your registrar). This covers every subdomain and http/https.
   - Alternative: URL-prefix property → *HTML tag* → paste only the `content="…"` value into **Admin → SEO & meta → Google Search Console verification**.
-- [ ] **Sitemaps** → submit `https://yourdomain.com/sitemap.xml`.
+- [ ] **Sitemaps** → submit `https://darlinghq.co.ke/sitemap.xml`.
 - [ ] **URL Inspection** → inspect the home page, `/guides` and 3–4 guides → *Request indexing*.
 - [ ] **Rich results test** (search.google.com/test/rich-results): test the home page and one guide. You should see FAQ, Article, Breadcrumb and Software App items.
 - [ ] (monthly) Check *Pages* for "Crawled – currently not indexed" and *Performance* for which questions bring people in. Write new guides for the gaps.
@@ -49,16 +49,16 @@ What's already built into the site (nothing to do, just know it exists):
 - [ ] Go to **bing.com/webmasters** → sign in → **Import from Google Search Console** (fastest), or add the site and verify:
   - DNS CNAME, or
   - *Meta tag*: paste the `content` value of `msvalidate.01` into **Admin → SEO & meta → Bing Webmaster verification**.
-- [ ] **Sitemaps** → submit `https://yourdomain.com/sitemap.xml`.
+- [ ] **Sitemaps** → submit `https://darlinghq.co.ke/sitemap.xml`.
 - [ ] **URL Submission / IndexNow**: Bing supports IndexNow natively (next step).
 - [ ] Check **AI Performance** or **Copilot** reports if available. Bing has been adding visibility data for AI answers.
 
 ## 4. IndexNow: instant indexing for Bing, Yandex, Seznam and others (every time you publish)
 
-- [ ] After the domain is live, open `https://yourdomain.com/99d7ba8d2f6002740db36b2ab1a23df1.txt`. It should show the key.
+- [ ] After the domain is live, open `https://darlinghq.co.ke/99d7ba8d2f6002740db36b2ab1a23df1.txt`. It should show the key.
 - [ ] From the project folder on your computer:
   ```bash
-  npm run indexnow -- https://yourdomain.com
+  npm run indexnow -- https://darlinghq.co.ke
   ```
   Run it again whenever you publish or update guides.
 
@@ -70,7 +70,7 @@ What's already built into the site (nothing to do, just know it exists):
 ## 6. Social profiles (once)
 
 - [ ] Create or claim the same handle everywhere: **TikTok, Instagram, Facebook, LinkedIn (company page), X, YouTube**.
-- [ ] Put `https://yourdomain.com` in every bio.
+- [ ] Put `https://darlinghq.co.ke` in every bio.
 - [ ] Paste all profile URLs into **Admin → SEO & meta → Social profiles** (one per line). They become `sameAs` links in the Organization data, which is how search engines and AI connect your brand across sites.
 - [ ] **TikTok Business account:** business accounts can only use sounds from TikTok's **Commercial Music Library** in organic posts. Use the reel engine's built-in score or a licensed track, or add a CML sound inside TikTok.
 
@@ -114,7 +114,7 @@ There is no "submit" form for ChatGPT, Claude, Gemini or Perplexity. They recomm
 
 ## 10. Monthly routine
 
-- [ ] Publish 2–4 guides and run `npm run indexnow -- https://yourdomain.com`.
+- [ ] Publish 2–4 guides and run `npm run indexnow -- https://darlinghq.co.ke`.
 - [ ] Update the `updated` date on any guide you revise.
 - [ ] Post 8–12 short videos (reel engine + real salon clips).
 - [ ] Ask 3–5 happy salons for a review on Capterra/G2/Trustpilot/Google.

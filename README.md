@@ -43,7 +43,7 @@ Feature choices are based on real complaints about existing salon software; see 
 
 ### Growth & marketing
 - **Guides** (`/guides`): 13 practical articles for salon, barbershop and spa owners (pricing and profit, no-shows, M-Pesa, clients, staff, choosing software), each with key points, FAQs and Article/FAQ/Breadcrumb structured data. Content lives in `src/content/guides/`.
-- **SEO & AI discovery:** sitemap with all guides, robots.txt that explicitly allows search and AI crawlers, `/llms.txt` + `/llms-full.txt`, Organization/WebSite/SoftwareApplication/FAQ schema on the home page, a text-only social card, Google + Bing verification and social `sameAs` links in Admin → SEO, and an IndexNow script (`npm run indexnow -- https://yourdomain.com`).
+- **SEO & AI discovery:** sitemap with all guides, robots.txt that explicitly allows search and AI crawlers, `/llms.txt` + `/llms-full.txt`, Organization/WebSite/SoftwareApplication/FAQ schema on the home page, a text-only social card, Google + Bing verification and social `sameAs` links in Admin → SEO, and an IndexNow script (`npm run indexnow -- https://darlinghq.co.ke`).
 - **Launch checklist:** step-by-step submissions for Cloudflare, Vercel, Google Search Console, Bing, IndexNow, Business Profile, directories and AI assistants. See [`docs/LAUNCH-CHECKLIST.md`](docs/LAUNCH-CHECKLIST.md).
 - **Founding offer:** the first N salons that actually subscribe get X% off for M months (default 50 places, 50%, 6 months; editable in Admin → Settings). Applied automatically when an admin activates a salon; places-left counter on the pricing section and billing page.
 - **Plans:** Monthly (KES 2,500), Annual (KES 25,000, two months free) and Lifetime (KES 75,000 once, limited to 25 salons), all editable in Admin → Settings. Shown on the pricing section (with Offer schema), billing page and llms.txt. The founding discount applies to monthly and annual (pro-rated over the discounted months of the year) but not to lifetime.
@@ -115,7 +115,7 @@ npx prisma migrate deploy
 Create your platform admin account. Credentials come from the environment and are never stored in code:
 
 ```bash
-ADMIN_EMAIL=you@yourdomain.com ADMIN_PASSWORD='a-long-unique-password' ADMIN_NAME='Your Name' npm run admin:create
+ADMIN_EMAIL=you@darlinghq.co.ke ADMIN_PASSWORD='a-long-unique-password' ADMIN_NAME='Your Name' npm run admin:create
 ```
 
 ```bash
@@ -130,7 +130,7 @@ The database starts empty: no demo salons, clients or bookings.
 Call every 10–15 minutes:
 
 ```bash
-curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain/api/cron/reminders
+curl -H "Authorization: Bearer $CRON_SECRET" https://darlinghq.co.ke/api/cron/reminders
 ```
 
 ## Notes and next steps

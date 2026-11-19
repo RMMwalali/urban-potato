@@ -1,12 +1,12 @@
 // Tell Bing, Yandex, Seznam and other IndexNow engines about every public URL.
-// Usage: npm run indexnow -- https://yourdomain.com
-// The key file public/99d7ba8d2f6002740db36b2ab1a23df1.txt must be live at https://yourdomain.com/99d7ba8d2f6002740db36b2ab1a23df1.txt first.
+// Usage: npm run indexnow -- https://darlinghq.co.ke
+// The key file public/99d7ba8d2f6002740db36b2ab1a23df1.txt must be live at https://darlinghq.co.ke/99d7ba8d2f6002740db36b2ab1a23df1.txt first.
 import { GUIDES } from "../src/content/guides";
 
 const KEY = "99d7ba8d2f6002740db36b2ab1a23df1";
 const base = (process.argv[2] || process.env.APP_URL || "").replace(/\/$/, "");
 if (!base.startsWith("https://")) {
-  console.error("Pass your live https URL, e.g. npm run indexnow -- https://your-domain.co.ke");
+  console.error("Pass your live https URL, e.g. npm run indexnow -- https://darlinghq.co.ke");
   process.exit(1);
 }
 const host = new URL(base).host;

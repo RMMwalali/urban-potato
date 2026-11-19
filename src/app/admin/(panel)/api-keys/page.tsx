@@ -13,7 +13,7 @@ const HELP: Record<string, string> = {
   WHATSAPP_TEMPLATE_LANG: "e.g. en or en_US",
   VAPID_PUBLIC_KEY: "Optional: leave empty to use the automatic keys",
   VAPID_PRIVATE_KEY: "Optional: must pair with the public key",
-  VAPID_SUBJECT: "Contact for push services, e.g. mailto:you@yourdomain.com",
+  VAPID_SUBJECT: "Contact for push services, e.g. mailto:you@darlinghq.co.ke",
   SMTP_HOST: "Gmail: smtp.gmail.com (leave empty for Gmail)",
   SMTP_PORT: "465 (SSL) or 587",
   SMTP_USER: "The sending address, e.g. darlingheadq@gmail.com",

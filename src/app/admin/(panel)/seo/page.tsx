@@ -39,7 +39,7 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
             <div><label className="label">Google Search Console verification</label><input name="googleVerification" defaultValue={seo.googleVerification} className="input" /></div>
             <div><label className="label">Bing Webmaster verification (msvalidate.01)</label><input name="bingVerification" defaultValue={seo.bingVerification} className="input" /></div>
             <div><label className="label">Social profiles (one URL per line)</label><textarea name="sameAs" defaultValue={seo.sameAs} rows={3} className="input" placeholder={"https://instagram.com/yourbrand\nhttps://www.tiktok.com/@yourbrand"} /></div>
-            <div><label className="label">Canonical site URL</label><input name="canonicalUrl" defaultValue={seo.canonicalUrl} className="input" placeholder="https://yourdomain.com" /></div>
+            <div><label className="label">Canonical site URL</label><input name="canonicalUrl" defaultValue={seo.canonicalUrl} className="input" placeholder="https://darlinghq.co.ke" /></div>
             <SeoPreview url={base} title={seo.defaultTitle} description={seo.description} />
           </div>
           <div className="lg:col-span-2"><button className="btn-primary">Save defaults</button></div>
