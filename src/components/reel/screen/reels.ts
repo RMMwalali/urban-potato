@@ -43,7 +43,7 @@ const VIEW = (v: string): Target => ({ text: v, sel: 'nav[aria-label="Calendar v
 
 export const REELS: ReelDef[] = [
   {
-    id: "landing", title: "Why Laazizi HQ", problem: "The website: what Laazizi HQ does for a salon, how it compares, the prices, and starting a free trial.", hook: "Your salon deserves better than a notebook and a full DM inbox.", about: "{name} is the booking engine for salons, barbershops and spas. Here's the tour.", start: "/",
+    id: "landing", title: "Why Darling HQ", problem: "The website: what Darling HQ does for a salon, how it compares, the prices, and starting a free trial.", hook: "Your salon deserves better than a notebook and a full DM inbox.", about: "{name} is the booking engine for salons, barbershops and spas. Here's the tour.", start: "/",
     look: { bg: "#ededed", light: true, entry: "rise", tilt: 0.8 },
     steps: [
       { do: "wait", ms: 2200 },
@@ -181,7 +181,7 @@ export const REELS: ReelDef[] = [
     ],
   },
   {
-    id: "clients", title: "Returning clients, remembered", problem: "Type a number and Laazizi HQ knows the client: allergies, preferences, what she spends and how often she comes.", hook: "Remember every client like she's your only one.", about: "{name} recalls her allergies, favourite stylist and what she spends, from just her phone number.", start: "/app",
+    id: "clients", title: "Returning clients, remembered", problem: "Type a number and Darling HQ knows the client: allergies, preferences, what she spends and how often she comes.", hook: "Remember every client like she's your only one.", about: "{name} recalls her allergies, favourite stylist and what she spends, from just her phone number.", start: "/app",
     look: { bg: "#d9468a", entry: "spin", tilt: 1.2 },
     steps: [
       { do: "nav", label: "Calendar" },

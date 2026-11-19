@@ -8,7 +8,7 @@ import type { Business } from "@prisma/client";
 
 export const SETTING_DEFAULTS = {
   general: {
-    siteName: "Laazizi HQ",
+    siteName: "Darling HQ",
     supportEmail: "",
     supportPhone: "",
     supportWhatsApp: "",
@@ -31,8 +31,8 @@ export const SETTING_DEFAULTS = {
     foundingMonths: 6,
   },
   seo: {
-    defaultTitle: "Laazizi HQ: booking engine and client management for salons and spas",
-    titleTemplate: "%s · Laazizi HQ",
+    defaultTitle: "Darling HQ: booking engine and client management for salons and spas",
+    titleTemplate: "%s · Darling HQ",
     description: "You don't need a website, you need a booking engine. Online booking, client records, M-Pesa checkout and reminders for salons, barbershops and spas. Free 14-day trial.",
     keywords: "salon software, spa booking, salon booking app Kenya, M-Pesa salon POS, beauty parlour management",
     ogImage: "",

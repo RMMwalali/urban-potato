@@ -79,7 +79,7 @@ export async function saveServiceFull(_: ServiceFormState, fd: FormData): Promis
   redirect("/app/services?saved=1");
 }
 
-/** Salon logo and permission for Laazizi HQ to feature the salon on its own website. */
+/** Salon logo and permission for Darling HQ to feature the salon on its own website. */
 export async function saveBrand(fd: FormData) {
   const user = await requireUser(MANAGERS);
   const b = user.business;

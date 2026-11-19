@@ -2,7 +2,7 @@
 import type { Hit } from "./score";
 
 export type ReelConfig = {
-  name: string; // platform name (LAAZIZI)
+  name: string; // platform name (DARLING)
   domain: string; // shown on the last card
   currency: string;
   price: number;
@@ -256,7 +256,7 @@ function scenes(cfg: ReelConfig): Scene[] {
         const s = phone(c, st, lt);
         const bubbles: [number, string[], boolean][] = [
           [0.45, ["Reminder: Akinyi, see you", "tomorrow 10:00 for knotless", "braids at Glow Studio."], false],
-          [1.35, ["Can't make it? Change it", "in one tap: laazizi/b/…"], false],
+          [1.35, ["Can't make it? Change it", "in one tap: darling/b/…"], false],
           [2.3, ["Moved to Saturday 11:00 ✓"], true],
         ];
         let y = s.y + 70 * u;

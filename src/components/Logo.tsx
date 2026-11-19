@@ -1,10 +1,10 @@
-/** "Laazizi HQ" -> the wordmark ("LAAZIZI") and its mark ("HQ"); a name without HQ keeps no mark. */
+/** "Darling HQ" -> the wordmark ("DARLING") and its mark ("HQ"); a name without HQ keeps no mark. */
 export function splitBrand(name: string) {
   const m = name.trim().match(/^(.*?)\s+(HQ)$/i);
   return m ? { word: m[1], mark: m[2].toUpperCase() } : { word: name.trim(), mark: "" };
 }
 
-/** Wordmark: name in capitals, first three letters blue, the rest pink (LAA + ZIZI), with a small HQ at the top right. */
+/** Wordmark: name in capitals, first three letters blue, the rest pink (DAR + LING), with a small HQ at the top right. */
 export function Logo({ name, className = "" }: { name: string; className?: string }) {
   const { word, mark } = splitBrand(name);
   return (

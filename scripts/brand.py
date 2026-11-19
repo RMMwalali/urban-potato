@@ -1,5 +1,5 @@
-"""Builds the LAAZIZI HQ logo set from the Geist font: the one-line wordmark exactly as in the site header
-(Geist SemiBold, capitals, -0.02em tracking, LAA blue / ZIZI pink) with a small "HQ" at its top right,
+"""Builds the DARLING HQ logo set from the Geist font: the one-line wordmark exactly as in the site header
+(Geist SemiBold, capitals, -0.02em tracking, DAR blue / LING pink) with a small "HQ" at its top right,
 as vector outlines. The favicon leaves the HQ out (it would be unreadable at tab size).
 
 Run:  python3 scripts/brand.py      (needs: pip install fonttools brotli uharfbuzz)
@@ -16,7 +16,7 @@ import uharfbuzz as hb
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WOFF2 = os.path.join(ROOT, "node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2")
 OUT = os.path.join(ROOT, "public/brand")
-NAME, SPLIT = "LAAZIZI", 3
+NAME, SPLIT = "DARLING", 3
 BLUE, PINK = "#1f5277", "#d9468a"           # header colours (on light)
 BLUE_DARK, PINK_DARK = "#4f9cf0", "#f06fae"  # same hues lifted for dark backgrounds
 INK, PAPER, WHITE = "#1c1f24", "#ededed", "#ffffff"
@@ -72,7 +72,7 @@ def group(c1, c2, dx=0.0, dy=0.0, scale=1.0, c3=None, with_hq=True):
 
 def svg(w, h, body, bg=None, rx=0):
     rect = f'<rect width="{w}" height="{h}" rx="{rx}" fill="{bg}"/>' if bg else ""
-    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w:.0f} {h:.0f}" width="{w:.0f}" height="{h:.0f}" role="img" aria-label="LAAZIZI HQ">{rect}{body}</svg>'
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w:.0f} {h:.0f}" width="{w:.0f}" height="{h:.0f}" role="img" aria-label="DARLING HQ">{rect}{body}</svg>'
 
 def write(name, content):
     with open(os.path.join(OUT, name), "w") as f: f.write(content)
@@ -82,10 +82,10 @@ _, _, W, H = frame(True)
 pad = CAP * 0.25
 ww, wh = W + 2 * pad, H + 2 * pad
 # 1. wordmarks (transparent): colour, for dark backgrounds, one-colour ink, one-colour white
-write("laazizi-wordmark.svg", svg(ww, wh, group(BLUE, PINK, pad, pad, c3=INK)))
-write("laazizi-wordmark-on-dark.svg", svg(ww, wh, group(BLUE_DARK, PINK_DARK, pad, pad, c3=PAPER)))
-write("laazizi-wordmark-ink.svg", svg(ww, wh, group(INK, INK, pad, pad)))
-write("laazizi-wordmark-white.svg", svg(ww, wh, group(WHITE, WHITE, pad, pad)))
+write("darling-wordmark.svg", svg(ww, wh, group(BLUE, PINK, pad, pad, c3=INK)))
+write("darling-wordmark-on-dark.svg", svg(ww, wh, group(BLUE_DARK, PINK_DARK, pad, pad, c3=PAPER)))
+write("darling-wordmark-ink.svg", svg(ww, wh, group(INK, INK, pad, pad)))
+write("darling-wordmark-white.svg", svg(ww, wh, group(WHITE, WHITE, pad, pad)))
 
 def centred(size_w, size_h, width_frac, c1, c2, bg, rx=0, c3=INK, with_hq=True):
     _, _, w, h = frame(with_hq)
@@ -94,13 +94,13 @@ def centred(size_w, size_h, width_frac, c1, c2, bg, rx=0, c3=INK, with_hq=True):
     return svg(size_w, size_h, group(c1, c2, dx, dy, s, c3, with_hq), bg, rx)
 
 # 2. square marks: app icon (paper), dark variant, maskable (inside the 80% safe circle)
-write("laazizi-icon.svg", centred(1024, 1024, 0.80, BLUE, PINK, PAPER))
-write("laazizi-icon-dark.svg", centred(1024, 1024, 0.80, BLUE_DARK, PINK_DARK, INK, c3=PAPER))
-write("laazizi-icon-maskable.svg", centred(1024, 1024, 0.62, BLUE, PINK, PAPER))
+write("darling-icon.svg", centred(1024, 1024, 0.80, BLUE, PINK, PAPER))
+write("darling-icon-dark.svg", centred(1024, 1024, 0.80, BLUE_DARK, PINK_DARK, INK, c3=PAPER))
+write("darling-icon-maskable.svg", centred(1024, 1024, 0.62, BLUE, PINK, PAPER))
 # 3. favicon: the text logo in blue and pink, as big as a tab icon allows, on a soft paper tile
-write("laazizi-favicon.svg", centred(64, 64, 0.94, BLUE, PINK, PAPER, rx=12, with_hq=False))
+write("darling-favicon.svg", centred(64, 64, 0.94, BLUE, PINK, PAPER, rx=12, with_hq=False))
 # 4. social: share card and profile picture, email header
-write("laazizi-social-1200x630.svg", centred(1200, 630, 0.62, BLUE, PINK, PAPER))
-write("laazizi-profile-1080.svg", centred(1080, 1080, 0.78, BLUE, PINK, PAPER))
-write("laazizi-email-header-1200x240.svg", centred(1200, 240, 0.36, BLUE, PINK, WHITE))
+write("darling-social-1200x630.svg", centred(1200, 630, 0.62, BLUE, PINK, PAPER))
+write("darling-profile-1080.svg", centred(1080, 1080, 0.78, BLUE, PINK, PAPER))
+write("darling-email-header-1200x240.svg", centred(1200, 240, 0.36, BLUE, PINK, WHITE))
 print("wordmark", round(W), "x", round(H), "units; files in public/brand")

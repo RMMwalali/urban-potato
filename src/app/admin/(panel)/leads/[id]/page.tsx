@@ -16,7 +16,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
   const lead = await db.lead.findUnique({ where: { id }, include: { activity: { orderBy: { at: "desc" }, take: 50 } } });
   if (!lead) notFound();
   const t = await getTemplates();
-  const sender = admin.name || "the Laazizi HQ team";
+  const sender = admin.name || "the Darling HQ team";
   const [whatsapp, instagram, emailSubject, email, followUp] = await Promise.all([render(t.whatsapp, lead, sender), render(t.instagram, lead, sender), render(t.emailSubject, lead, sender), render(t.email, lead, sender), render(t.followUp, lead, sender)]);
   const wa = digits(lead.whatsapp || lead.phone) || null;
   const business = lead.businessId ? await db.business.findUnique({ where: { id: lead.businessId }, select: { id: true, name: true, status: true } }) : null;

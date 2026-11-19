@@ -42,7 +42,7 @@ export function NotifySettings() {
       const r = await fetch("/api/push/subscribe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...sub.toJSON(), standalone: env.standalone }) });
       if (!r.ok) throw new Error("Couldn't save this device.");
       setSubscribed(true);
-      setMsg(`On. This ${env.standalone ? "app" : "browser"} will get notifications even when ${env.standalone ? "it's" : "Laazizi HQ is"} closed.`);
+      setMsg(`On. This ${env.standalone ? "app" : "browser"} will get notifications even when ${env.standalone ? "it's" : "Darling HQ is"} closed.`);
     } catch (e) {
       setMsg((e as Error).message || "Couldn't turn on notifications.");
     } finally { setBusy(false); }
@@ -70,16 +70,16 @@ export function NotifySettings() {
         <p className="label-caps">This device</p>
         {iosNeedsInstall ? (
           <div className="mt-4 space-y-2 text-[15px]">
-            <p>On iPhone and iPad, notifications work once Laazizi HQ is on your Home Screen:</p>
+            <p>On iPhone and iPad, notifications work once Darling HQ is on your Home Screen:</p>
             <ol className="list-decimal space-y-1 pl-5 text-[14px] text-muted">
               <li>Tap the Share button in Safari.</li>
               <li>Choose <b>Add to Home Screen</b>, then <b>Add</b>.</li>
-              <li>Open Laazizi HQ from your Home Screen and come back to this page to turn notifications on.</li>
+              <li>Open Darling HQ from your Home Screen and come back to this page to turn notifications on.</li>
             </ol>
-            <p className="text-[13px] text-muted">While Laazizi HQ is open you&apos;ll still see and hear every notification here.</p>
+            <p className="text-[13px] text-muted">While Darling HQ is open you&apos;ll still see and hear every notification here.</p>
           </div>
         ) : !env.supported ? (
-          <p className="mt-4 text-[14px] text-muted">This browser can&apos;t receive notifications when Laazizi HQ is closed. You&apos;ll still see and hear them while it&apos;s open.</p>
+          <p className="mt-4 text-[14px] text-muted">This browser can&apos;t receive notifications when Darling HQ is closed. You&apos;ll still see and hear them while it&apos;s open.</p>
         ) : (
           <div className="mt-4 flex flex-wrap items-center gap-3">
             {subscribed ? (
@@ -94,7 +94,7 @@ export function NotifySettings() {
           </div>
         )}
         {install && !env.standalone && (
-          <button onClick={async () => { await install.prompt(); setInstall(null); }} className="btn-secondary btn-sm mt-4">Install the Laazizi HQ app</button>
+          <button onClick={async () => { await install.prompt(); setInstall(null); }} className="btn-secondary btn-sm mt-4">Install the Darling HQ app</button>
         )}
         {msg && <p className="mt-3 border-l-2 border-ink bg-panel px-3 py-2 text-[14px]">{msg}</p>}
       </section>
@@ -111,7 +111,7 @@ export function NotifySettings() {
             <button key={t} type="button" onClick={async () => { await unlockAudio(); playTone(t, prefs.volume); }} className="btn btn-sm border-ink/30">Play: {TONE_LABEL[t]}</button>
           ))}
         </div>
-        <p className="mt-3 text-[12px] text-muted">These sounds play while Laazizi HQ is open. When it&apos;s closed, your phone or computer uses its own notification sound.</p>
+        <p className="mt-3 text-[12px] text-muted">These sounds play while Darling HQ is open. When it&apos;s closed, your phone or computer uses its own notification sound.</p>
       </section>
     </div>
   );

@@ -19,7 +19,7 @@ export function ServiceMarquee({ cards }: { cards: HomeCard[] }) {
     );
   const row = cards.length < 8 ? [...cards, ...cards, ...cards].slice(0, Math.max(8, cards.length)) : cards;
   return (
-    <section aria-label="Services booked on Laazizi HQ" className="mq -mx-5 sm:-mx-8">
+    <section aria-label="Services booked on Darling HQ" className="mq -mx-5 sm:-mx-8">
       <ul className="mq-track gap-4 px-2" style={{ ["--mq-dur" as string]: `${Math.max(36, row.length * 5)}s` }}>
         {[...row, ...row].map((c, i) => (
           <li key={`${c.id}-${i}`} aria-hidden={i >= row.length || undefined} className="w-[150px] shrink-0 sm:w-[200px]">

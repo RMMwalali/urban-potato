@@ -94,7 +94,7 @@ export function ReelStudio({ base }: { base: ReelConfig }) {
         const type = mime.split(";")[0];
         const blob = new Blob(chunks, { type });
         const ext = type.includes("mp4") ? "mp4" : "webm";
-        const name = `${base.name.toLowerCase()}-reel-${format}-${new Date().toISOString().slice(0, 10)}.${ext}`;
+        const name = `${base.name.toLowerCase().replace(/\s+/g, "-")}-reel-${format}-${new Date().toISOString().slice(0, 10)}.${ext}`;
         const url = URL.createObjectURL(blob);
         setResult({ url, name, size: blob.size, mime: mime });
         const a = document.createElement("a"); a.href = url; a.download = name; a.click();

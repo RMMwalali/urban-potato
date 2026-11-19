@@ -27,7 +27,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <ImagePicker name="logo" max={1} transparent label="Logo" existing={logo ? [{ id: logo.id, url: mediaUrl(logo, "thumb") }] : []} />
       <div className="space-y-4">
         <p className="text-[14px] text-muted">Your logo appears on your booking page and on the booking slip clients get. A PNG with a transparent background looks best.</p>
-        <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="featureConsent" defaultChecked={b.featureConsent} className="mt-1" /> <span>Laazizi HQ may feature my salon on its website: my logo, and photos of my services, linking to my booking page. You can untick this at any time.</span></label>
+        <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="featureConsent" defaultChecked={b.featureConsent} className="mt-1" /> <span>Darling HQ may feature my salon on its website: my logo, and photos of my services, linking to my booking page. You can untick this at any time.</span></label>
         <button className="btn-secondary btn-sm">Save logo &amp; sharing</button>
       </div>
     </form>

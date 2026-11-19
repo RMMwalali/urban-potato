@@ -8,20 +8,20 @@ const { chromium } = require("playwright");
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const brand = path.join(root, "public/brand");
 const jobs = [
-  ["laazizi-wordmark.svg", "laazizi-wordmark.png", 3000],
-  ["laazizi-wordmark-on-dark.svg", "laazizi-wordmark-on-dark.png", 3000],
-  ["laazizi-wordmark-ink.svg", "laazizi-wordmark-ink.png", 3000],
-  ["laazizi-wordmark-white.svg", "laazizi-wordmark-white.png", 3000],
-  ["laazizi-icon.svg", "laazizi-icon-1024.png", 1024],
-  ["laazizi-icon-dark.svg", "laazizi-icon-dark-1024.png", 1024],
-  ["laazizi-profile-1080.svg", "laazizi-profile-1080.png", 1080],
-  ["laazizi-social-1200x630.svg", "laazizi-social-1200x630.png", 1200],
-  ["laazizi-email-header-1200x240.svg", "laazizi-email-header-1200x240.png", 1200],
-  ["laazizi-icon.svg", "../icons/icon-512.png", 512],
-  ["laazizi-icon.svg", "../icons/icon-192.png", 192],
-  ["laazizi-icon-maskable.svg", "../icons/maskable-512.png", 512],
-  ["laazizi-icon.svg", "../../src/app/apple-icon.png", 180],
-  ["laazizi-favicon.svg", "../../src/app/icon2.png", 64],
+  ["darling-wordmark.svg", "darling-wordmark.png", 3000],
+  ["darling-wordmark-on-dark.svg", "darling-wordmark-on-dark.png", 3000],
+  ["darling-wordmark-ink.svg", "darling-wordmark-ink.png", 3000],
+  ["darling-wordmark-white.svg", "darling-wordmark-white.png", 3000],
+  ["darling-icon.svg", "darling-icon-1024.png", 1024],
+  ["darling-icon-dark.svg", "darling-icon-dark-1024.png", 1024],
+  ["darling-profile-1080.svg", "darling-profile-1080.png", 1080],
+  ["darling-social-1200x630.svg", "darling-social-1200x630.png", 1200],
+  ["darling-email-header-1200x240.svg", "darling-email-header-1200x240.png", 1200],
+  ["darling-icon.svg", "../icons/icon-512.png", 512],
+  ["darling-icon.svg", "../icons/icon-192.png", 192],
+  ["darling-icon-maskable.svg", "../icons/maskable-512.png", 512],
+  ["darling-icon.svg", "../../src/app/apple-icon.png", 180],
+  ["darling-favicon.svg", "../../src/app/icon2.png", 64],
 ];
 const b = await chromium.launch();
 const p = await b.newPage();
@@ -34,5 +34,5 @@ for (const [src, out, width] of jobs) {
   await p.locator("svg").screenshot({ path: path.join(brand, out), omitBackground: true });
   console.log(out, `${width}x${height}`);
 }
-fs.copyFileSync(path.join(brand, "laazizi-favicon.svg"), path.join(root, "src/app/icon1.svg"));
+fs.copyFileSync(path.join(brand, "darling-favicon.svg"), path.join(root, "src/app/icon1.svg"));
 await b.close();

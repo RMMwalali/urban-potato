@@ -19,10 +19,10 @@ export default async function ReviewsAdmin({ searchParams }: { searchParams: Pro
   ]);
   const reviewed = new Set(reviews.map((r) => r.businessId));
   const toAsk = salons.filter((s) => !reviewed.has(s.id) && accessState(s).ok && (s._count.appointments >= 10 || Date.now() - s.createdAt.getTime() > 7 * 86400_000));
-  const wa = (phone: string, name: string) => `https://wa.me/${phone.replace(/\D/g, "").replace(/^0/, "254")}?text=${encodeURIComponent(`Hi ${name} team, it's the Laazizi HQ team. Could you spare two minutes to rate Laazizi HQ? Honest feedback, good or bad, helps us improve: ${appUrl()}/app/review`)}`;
+  const wa = (phone: string, name: string) => `https://wa.me/${phone.replace(/\D/g, "").replace(/^0/, "254")}?text=${encodeURIComponent(`Hi ${name} team, it's the Darling HQ team. Could you spare two minutes to rate Darling HQ? Honest feedback, good or bad, helps us improve: ${appUrl()}/app/review`)}`;
   return (
     <div className="max-w-5xl space-y-12">
-      <PageHeader title="Reviews" label={stats.count ? `${stats.count} review${stats.count === 1 ? "" : "s"} · average ${stats.average}/5` : "No reviews yet"} sub="Reviews come only from salons using Laazizi HQ. They appear on the website only with the salon's consent and your approval; the average shown counts every review." />
+      <PageHeader title="Reviews" label={stats.count ? `${stats.count} review${stats.count === 1 ? "" : "s"} · average ${stats.average}/5` : "No reviews yet"} sub="Reviews come only from salons using Darling HQ. They appear on the website only with the salon's consent and your approval; the average shown counts every review." />
       {sp.asked && <p className="border-l-2 border-ink bg-panel px-4 py-3 text-[14px]">Asked. They&apos;ll see it in their notifications.</p>}
       {sp.saved && <p className="border-l-2 border-ink bg-panel px-4 py-3 text-[14px]">Saved.</p>}
       {sp.error && <p className="border-l-2 border-pink bg-panel px-4 py-3 text-[14px]">The Google link must start with https://</p>}
@@ -30,7 +30,7 @@ export default async function ReviewsAdmin({ searchParams }: { searchParams: Pro
       <section>
         <p className="label-caps mb-4">All reviews</p>
         <ul className="border-t-2 border-ink">
-          {reviews.length === 0 && <li className="py-5 text-[14px] text-muted">None yet. Ask salons below once they&apos;ve used Laazizi HQ for a while.</li>}
+          {reviews.length === 0 && <li className="py-5 text-[14px] text-muted">None yet. Ask salons below once they&apos;ve used Darling HQ for a while.</li>}
           {reviews.map((r) => (
             <li key={r.id} className="grid gap-3 border-b border-ink/20 py-4 sm:grid-cols-[64px_1fr_auto]">
               <span className="text-[32px] leading-none tabular-nums">{r.rating}<span className="text-[14px] text-muted">/5</span></span>
@@ -51,7 +51,7 @@ export default async function ReviewsAdmin({ searchParams }: { searchParams: Pro
       <section>
         <p className="label-caps mb-4">Ask for a review · {toAsk.length} salon{toAsk.length === 1 ? "" : "s"} ready</p>
         <ul className="border-t-2 border-ink">
-          {toAsk.length === 0 && <li className="py-5 text-[14px] text-muted">No salons are ready yet. Salons can be asked once they&apos;ve used Laazizi HQ for a week or taken 10 bookings.</li>}
+          {toAsk.length === 0 && <li className="py-5 text-[14px] text-muted">No salons are ready yet. Salons can be asked once they&apos;ve used Darling HQ for a week or taken 10 bookings.</li>}
           {toAsk.map((s) => (
             <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-ink/20 py-3 text-[14px]">
               <span>{s.name}<span className="block text-[12px] text-muted">{s._count.appointments} bookings</span></span>

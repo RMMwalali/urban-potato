@@ -1,4 +1,4 @@
-// Text cards around each demo: what Laazizi HQ is and what this video shows (after the 3D logo), and where to
+// Text cards around each demo: what Darling HQ is and what this video shows (after the 3D logo), and where to
 // find it (at the end). Lines swing up out of the depth one after another, hold, then tip away.
 
 type Line = { brand?: boolean; text: string; size: number; weight?: number; caps?: boolean; tone?: "ink" | "muted" | "blue" | "pink"; gap?: number; track?: number };

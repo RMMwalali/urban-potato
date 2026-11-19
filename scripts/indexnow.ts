@@ -6,7 +6,7 @@ import { GUIDES } from "../src/content/guides";
 const KEY = "99d7ba8d2f6002740db36b2ab1a23df1";
 const base = (process.argv[2] || process.env.APP_URL || "").replace(/\/$/, "");
 if (!base.startsWith("https://")) {
-  console.error("Pass your live https URL, e.g. npm run indexnow -- https://laazizihq.com");
+  console.error("Pass your live https URL, e.g. npm run indexnow -- https://your-domain.co.ke");
   process.exit(1);
 }
 const host = new URL(base).host;
