@@ -30,6 +30,10 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         <h1 className="page-title mt-3">{lead.name}</h1>
         <p className="label-caps mt-2 text-muted">{[lead.type, lead.area, lead.city].filter(Boolean).join(" · ")} · {statusLabel(lead.status)}</p>
         {lead.fitNote && <p className="mt-4 border-l-2 border-pink bg-panel px-3 py-2 text-[14px]">{lead.fitNote}</p>}
+        <p className="mt-4 text-[14px]">
+          Their booking page preview: <a href={`/try/${lead.id}`} target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-4 hover:opacity-60">open</a>
+          {lead.activity.some((a) => a.kind === "viewed") ? <span className="label-caps ml-3 text-pink">Opened by them {lead.activity.filter((a) => a.kind === "viewed").length}×</span> : <span className="label-caps ml-3 text-muted">Not opened yet</span>}
+        </p>
         <dl className="mt-6 border-t-2 border-ink text-[14px]">
           {row("Books via", lead.bookingMethod)}
           {row("Phone", lead.phone && ext(`tel:${lead.phone}`, lead.phone))}

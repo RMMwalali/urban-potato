@@ -19,7 +19,7 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
   return (
     <form action={saveTemplates} className="max-w-3xl space-y-6">
       <Link href="/admin/leads" className="label-caps text-muted hover:text-ink">← Leads</Link>
-      <PageHeader title="Message templates" sub="Placeholders: {name} salon, {area}, {how} (how they book today), {sender} your first name, {brand}, {price}, {trial} days, {offer} (founding offer, live), {link} their own sign-up link." />
+      <PageHeader title="Message templates" sub="Placeholders: {name} salon, {area}, {how} (how they book today), {sender} your first name, {brand}, {price}, {trial} days, {offer} (founding offer, live), {link} their own sign-up link, {preview} the booking page made for them (start with this)." />
       {saved && <p className="border-l-2 border-ink bg-panel px-4 py-3 text-[14px]">Saved.</p>}
       {FIELDS.map((f) => (
         <div key={f.k}>

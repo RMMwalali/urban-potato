@@ -11,9 +11,10 @@ type Props = {
   defaultRegion?: string;
   defaultCity?: string;
   refCode?: string;
+  defaultBusinessName?: string;
 };
 
-export function SignupForm({ action, countries, counties, defaultCountry, defaultRegion, defaultCity, refCode }: Props) {
+export function SignupForm({ action, countries, counties, defaultCountry, defaultRegion, defaultCity, refCode, defaultBusinessName }: Props) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const [country, setCountry] = useState(defaultCountry);
   const [tz, setTz] = useState("");
@@ -40,7 +41,7 @@ export function SignupForm({ action, countries, counties, defaultCountry, defaul
     <form onSubmit={keepValues(formAction)} className="space-y-8">
       <input type="hidden" name="tz" value={tz} />
       {refCode && <input type="hidden" name="ref" value={refCode} />}
-      {field("businessName", "Salon / spa name")}
+      {field("businessName", "Salon / spa name", { defaultValue: defaultBusinessName })}
       {field("name", "Your name", { autoComplete: "name" })}
       {field("email", "Email", { type: "email", autoComplete: "email" })}
       {field("password", "Password (8+ characters)", { type: "password", autoComplete: "new-password" })}

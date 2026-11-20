@@ -2,7 +2,10 @@
 // find it (at the end). Lines swing up out of the depth one after another, hold, then tip away.
 
 type Line = { brand?: boolean; text: string; size: number; weight?: number; caps?: boolean; tone?: "ink" | "muted" | "blue" | "pink"; gap?: number; track?: number };
-type CardOpts = { light: boolean; W: number; H: number; hold: number; align?: "left" | "center"; sfx?: { pop(): void } };
+import { tile as makeTile, type IconName } from "./icons";
+
+export type CardTile = { icon: IconName; title: string; sub: string; accent: string };
+type CardOpts = { light: boolean; W: number; H: number; hold: number; align?: "left" | "center"; sfx?: { pop(): void }; tile?: CardTile; white?: boolean };
 
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 const EASE_IN = "cubic-bezier(0.7, 0, 0.84, 0)";
@@ -38,6 +41,19 @@ export function playCard(host: HTMLElement, lines: Line[], o: CardOpts): Promise
     card.appendChild(wrap);
     return el;
   });
+  // (the stage behind the cards is the white curtain)
+  // a 3D UI tile that illustrates the line (beside it on landscape, under it on portrait)
+  let tileEl: HTMLElement | null = null;
+  if (o.tile) {
+    const portrait = o.H > o.W;
+    const tw = portrait ? o.W * 0.62 : o.W * 0.27;
+    tileEl = makeTile(host.ownerDocument, { ...o.tile, w: tw });
+    tileEl.style.left = portrait ? `${(o.W - tw) / 2}px` : `${o.W * 0.66}px`;
+    tileEl.style.top = portrait ? `${o.H * 0.71}px` : `${o.H * 0.42}px`;
+    tileEl.style.opacity = "0";
+    scene.appendChild(tileEl);
+    if (!portrait) card.style.maxWidth = `${o.W * 0.52}px`;
+  }
   host.appendChild(scene);
 
   const anims: Animation[] = [];
@@ -58,6 +74,17 @@ export function playCard(host: HTMLElement, lines: Line[], o: CardOpts): Promise
       { transform: "translate3d(0, -0.6em, -120px) rotateX(70deg)", opacity: 0 },
     ], { duration: outMs, delay: outAt + i * 60, easing: EASE_IN, fill: "forwards" }));
   });
+  if (tileEl) {
+    anims.push(tileEl.animate([
+      { transform: "translateZ(-600px) rotateY(-60deg) rotateX(18deg)", opacity: 0 },
+      { opacity: 1, offset: 0.35 },
+      { transform: "translateZ(0) rotateY(-12deg) rotateX(4deg)", opacity: 1 },
+    ], { duration: 1000, delay: 260, easing: EASE_OUT, fill: "forwards" }));
+    anims.push(tileEl.animate([
+      { transform: "translateZ(0) rotateY(-12deg) rotateX(4deg)", opacity: 1 },
+      { transform: "translateZ(-200px) rotateY(40deg) rotateX(-20deg)", opacity: 0 },
+    ], { duration: outMs, delay: outAt, easing: EASE_IN, fill: "forwards" }));
+  }
   o.sfx?.pop();
   // remove only this card: the next one may already be on its way in
   return new Promise((res) => setTimeout(() => { anims.forEach((a) => a.cancel()); scene.remove(); res(); }, total + 30));

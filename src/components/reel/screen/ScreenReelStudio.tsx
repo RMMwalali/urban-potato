@@ -6,7 +6,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { scheduleScore } from "../score";
 import { INTRO_HANDOFF, playIntro } from "./intro";
-import { cardLength, playCard } from "./cards";
+import { cardLength, playCard, type CardTile } from "./cards";
+
+// The 3D tile shown beside each reel's hook: the moment that reel is about, as the product shows it.
+const HOOK_TILE: Record<string, CardTile> = {
+  landing: { icon: "sparkle", title: "Darling HQ", sub: "Booking · M-Pesa · Payroll", accent: "#e24a92" },
+  booking: { icon: "calendar", title: "New booking", sub: "Sat · 2:30 pm · Box braids", accent: "#e24a92" },
+  deposits: { icon: "wallet", title: "Deposit paid", sub: "KES 600 · M-Pesa", accent: "#22a06b" },
+  checkout: { icon: "check", title: "M-Pesa confirmed", sub: "KES 4,500 · Safaricom", accent: "#22a06b" },
+  clients: { icon: "users", title: "Returning client", sub: "Allergic to latex", accent: "#2b74c4" },
+  dayend: { icon: "chart", title: "Today's takings", sub: "KES 18,300 · all matched", accent: "#2b74c4" },
+  calendar: { icon: "calendar", title: "This week", sub: "36 bookings · 4 stylists", accent: "#2b74c4" },
+  setup: { icon: "store", title: "Booking link", sub: "Live in minutes", accent: "#e24a92" },
+  walkin: { icon: "receipt", title: "Walk-in · paid", sub: "Cash KES 1,200 · change 300", accent: "#1c1f24" },
+  reminders: { icon: "bell", title: "Reminder sent", sub: "WhatsApp · tomorrow 10:00", accent: "#22a06b" },
+  noshows: { icon: "x", title: "Cancelled in time", sub: "Slot free for someone else", accent: "#e24a92" },
+  money: { icon: "wallet", title: "Pochi la Biashara", sub: "KES 2,300 · added from SMS", accent: "#22a06b" },
+  team: { icon: "users", title: "Payslips ready", sub: "Commission + advances", accent: "#2b74c4" },
+  phone: { icon: "phone", title: "On your phone", sub: "Bookings · checkout · alerts", accent: "#e24a92" },
+  shopwindow: { icon: "store", title: "Your booking page", sub: "Photos · styles · prices", accent: "#e24a92" },
+};
 import { fill, fillTarget, REELS, type Dev, type Entry, type ReelDef, type ReelVars, type Step, type Target } from "./reels";
 import { makeSfx, silentSfx, type Sfx, type TypingStyle } from "./sfx";
 import { startFilming, stopFilming } from "@/app/actions/showcase";
@@ -633,7 +652,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     lastTyped.current = null;
     const curtain = curtainRef.current!;
     curtain.style.transition = "none"; curtain.style.opacity = "1";
-    curtain.style.backgroundColor = r.look.bg;
+    curtain.style.backgroundColor = "#ffffff"; // the opening and the end card are always on white
     if (fxLayer.current) fxLayer.current.innerHTML = "";
     // the app's own notification sounds stay off while filming (the demo plays recorded ones)
     try { localStorage.setItem("darling.sound", JSON.stringify({ sound: false, volume: 0.8 })); } catch {}
@@ -656,7 +675,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
 
     // 1. the 3D wordmark
     pose.current = { ...ENTRIES[r.look.entry] };
-    const light = !!r.look.light;
+    const light = true; // cards are on white
     const base = Math.min(W * 0.092, H * 0.11);
     const intro = introRef.current ? playIntro(introRef.current, { name, light, W, H, spin: r.look.entry === "swing-left" || r.look.entry === "spin" ? -1 : 1, sfx: sfx.current }) : Promise.resolve();
     // 2. the hook: the problem, in the owner's words, under the video's title
@@ -665,12 +684,12 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     if (card) void playCard(card, [
       { text: r.title, size: Math.round(base * 0.34), caps: true, tone: "pink", track: 0.06 },
       { text: r.hook, size: Math.round(base * 1.02), weight: 500, gap: Math.round(base * 0.35) },
-    ], { light, W, H, hold: HOOK_HOLD, sfx: sfx.current });
+    ], { light, W, H, hold: HOOK_HOLD, sfx: sfx.current, tile: HOOK_TILE[r.id], white: true });
     // 3. what Darling HQ does about it, which is what the demo shows
     await at(ABOUT_AT);
     if (card) void playCard(card, [
       { text: fill(r.about, { ...v }).replace(/\{name\}/g, name), size: Math.round(base * 0.74), tone: "ink" },
-    ], { light, W, H, hold: ABOUT_HOLD });
+    ], { light, W, H, hold: ABOUT_HOLD, white: true });
     // 4. the screens come through
     await at(OPEN);
     poseTw.current = { from: { ...pose.current }, to: { ...REST }, t0: performance.now(), ms: ENTER * 1000, ease: outExpo };
@@ -702,7 +721,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       { text: name, brand: true, size: Math.round(base * 0.9), caps: true, weight: 600, track: -0.02 },
       { text: site, size: Math.round(Math.min(base * 1.1, (W * 0.84) / Math.max(8, site.length) * 1.75)), weight: 500, gap: Math.round(base * 0.45) },
       { text: "Try it free for 14 days", size: Math.round(base * 0.46), tone: "muted", gap: Math.round(base * 0.3) },
-    ], { light, W, H, hold: URL_HOLD, align: "center", sfx: sfx.current });
+    ], { light, W, H, hold: URL_HOLD, align: "center", sfx: sfx.current, white: true });
     await at(length + late);
     pose.current = { ...REST };
   }

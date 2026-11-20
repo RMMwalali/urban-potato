@@ -1,3 +1,4 @@
+import { db } from "@/lib/db";
 import Link from "next/link";
 import { signup } from "@/app/actions/auth";
 import { headers } from "next/headers";
@@ -14,6 +15,9 @@ export async function generateMetadata() {
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
   const { ref } = await searchParams;
   const [{ general }, h] = await Promise.all([getSettings(), headers()]);
+  // coming from a lead's preview page: start with their salon's name and area filled in
+  const leadId = ref && /^lead_[\w-]{5,40}$/.test(ref) ? ref.slice(5) : null;
+  const lead = leadId ? await db.lead.findUnique({ where: { id: leadId }, select: { name: true, area: true } }).catch(() => null) : null;
   const net = geoFromHeaders(h);
   const country = COUNTRIES.some((c) => c.code === net.country) ? net.country! : "KE";
   // Vercel reports Kenyan regions as ISO codes (e.g. "30" = Nairobi), so only prefill a county from a matching city name.
@@ -30,7 +34,8 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           defaultCountry={country}
           refCode={ref && /^lead_[\w-]{5,40}$/.test(ref) ? ref : undefined}
           defaultRegion={county}
-          defaultCity={county ? undefined : country === net.country ? net.city : undefined}
+          defaultCity={lead?.area?.replace(/\s*\(.*?\)/g, "") || (county ? undefined : country === net.country ? net.city : undefined)}
+          defaultBusinessName={lead?.name}
         />
       ) : (
         <p className="rounded-none bg-amber-50 p-4 text-sm text-amber-900">New sign-ups are paused right now. Please check back soon.</p>

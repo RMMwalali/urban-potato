@@ -39,7 +39,7 @@ export async function removeShowcase() {
  * Sign this browser into the showcase salon so the studio's iframe shows its real screens.
  * Your own salon session (if any) is kept aside and restored by stopFilming().
  */
-export type FilmVars = { slug: string; manage: string; mpesaCode: string; depositCode: string; finCode: string; smsCode: string; checkoutAppt: string; freeDate: string; smsDate: string; stamp: string };
+export type FilmVars = { slug: string; manage: string; mpesaCode: string; depositCode: string; finCode: string; smsCode: string; checkoutAppt: string; noshowAppt: string; freeDate: string; smsDate: string; stamp: string };
 
 export async function startFilming(): Promise<FilmVars | { error: string }> {
   await requireAdmin();
@@ -68,6 +68,8 @@ export async function startFilming(): Promise<FilmVars | { error: string }> {
     db.payRun.deleteMany({ where: { businessId: s.id, note: "November pay" } }),
     db.staffAdvance.deleteMany({ where: { businessId: s.id, note: "Transport" } }),
   ]);
+  // clients added by earlier takes (e.g. a walk-in), once nothing points to them any more
+  await db.client.deleteMany({ where: { businessId: s.id, createdAt: { gt: s.createdAt }, appointments: { none: {} }, sales: { none: {} } } }).catch(() => {});
   const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   // shaped like real M-Pesa codes: 10 characters, letters and digits mixed
   const code = () => {
@@ -85,7 +87,7 @@ export async function startFilming(): Promise<FilmVars | { error: string }> {
     ],
   });
   // Settings the demos change are put back first, so every take starts from the same place.
-  await db.business.update({ where: { id: s.id }, data: { depositPercent: 0, messageChannel: "SMS", reminderHours: 12 } });
+  await db.business.update({ where: { id: s.id }, data: { depositPercent: 0, messageChannel: "SMS", reminderHours: 12, cancelPolicyHours: 12, cancelPolicyText: "Free rescheduling up to 12 hours before your appointment." } });
   const next = await db.appointment.findFirst({ where: { businessId: s.id, startAt: { gt: new Date(Date.now() + 24 * 3600_000) }, status: { in: ["BOOKED", "CONFIRMED"] } }, orderBy: { startAt: "asc" }, select: { manageToken: true } });
   // A client sitting in the chair right now, ready to check out (Box braids, matching the M-Pesa payment).
   const now = DateTime.now().setZone(s.timezone);
@@ -102,7 +104,24 @@ export async function startFilming(): Promise<FilmVars | { error: string }> {
     });
     checkoutAppt = a.id;
   }
-  return { slug: s.slug, manage: next?.manageToken ?? "", mpesaCode, depositCode, finCode, smsCode, checkoutAppt, freeDate: now.plus({ days: 9 }).toISODate()!, smsDate: now.toFormat("d/L/yy 'at' h:mm a"), stamp: Date.now().toString(36) };
+  // A client who keeps not turning up: two missed visits in the last month, and one due an hour ago today.
+  // (created now, so the next take's clean-up removes them again)
+  let noshowAppt = "";
+  const [ns, cut] = await Promise.all([
+    db.client.findFirst({ where: { businessId: s.id, name: "Collins Odhiambo" } }),
+    db.service.findFirst({ where: { businessId: s.id, name: { contains: "Haircut" } }, orderBy: { name: "asc" } }),
+  ]);
+  if (ns && cut) {
+    const barber = await db.user.findFirst({ where: { businessId: s.id, role: "STAFF", services: { some: { id: cut.id } } } });
+    for (const days of [9, 23]) {
+      const at = now.minus({ days }).startOf("day").set({ hour: 11 });
+      await db.appointment.create({ data: { businessId: s.id, clientId: ns.id, serviceId: cut.id, staffId: barber?.id, startAt: at.toJSDate(), endAt: at.plus({ minutes: cut.durationMin }).toJSDate(), status: "NO_SHOW", source: "WHATSAPP", price: cut.price } });
+    }
+    const due = DateTime.max(now.startOf("day").set({ hour: 8, minute: 30 }), now.minus({ minutes: 70 })).startOf("minute");
+    const a = await db.appointment.create({ data: { businessId: s.id, clientId: ns.id, serviceId: cut.id, staffId: barber?.id, startAt: due.toJSDate(), endAt: due.plus({ minutes: cut.durationMin }).toJSDate(), status: "BOOKED", source: "WHATSAPP", price: cut.price, reminderSentAt: due.minus({ hours: 12 }).toJSDate() } });
+    noshowAppt = a.id;
+  }
+  return { slug: s.slug, manage: next?.manageToken ?? "", mpesaCode, depositCode, finCode, smsCode, checkoutAppt, noshowAppt, freeDate: now.plus({ days: 9 }).toISODate()!, smsDate: now.toFormat("d/L/yy 'at' h:mm a"), stamp: Date.now().toString(36) };
 }
 
 export async function stopFilming() {
