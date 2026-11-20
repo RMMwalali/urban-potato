@@ -55,8 +55,21 @@ const outExpo = (x: number) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
 const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// Short cuts run brisker: less travel time, faster typing (results still hold long enough to read).
+let FAST = false;
 function nominal(st: Step): number {
+  if (FAST) {
+    if (st.do === "cap") return 150;
+    if (st.do === "wait") return st.ms;
+    if (st.do === "read") return (st.ms ?? 2400) + 1000;
+    if (st.do === "type") return (850 + (st.text.length * 1000) / ((st.cps ?? 13) * 2.2) + 250) * 0.75;
+    return base(st) * 0.72;
+  }
+  return base(st);
+}
+function base(st: Step): number {
   switch (st.do) {
+    case "cap": return 150;
     case "url": return 900 + 700 + (st.path.length + 20) * 55 + 1400;
     case "go": return 1500;
     case "nav": return 2400;
@@ -114,13 +127,15 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
   const curtainRef = useRef<HTMLDivElement>(null);
   const introRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const capRef = useRef<HTMLDivElement>(null);
+  const [cut, setCut] = useState<"short" | "full">("short");
   // How far the captured picture trails real time (seconds). Sounds go straight into the file, so they're
   // delayed by this much to land exactly on the click, keystroke or toast they belong to.
   const captureLag = useRef(0);
   const stopRef = useRef(false);
 
   const reel = REELS.find((r) => r.id === reelId) ?? REELS[0];
-  const usesPhone = !!reel.phone || reel.steps.some((s) => s.on === "phone");
+  const usesPhone = !!reel.phone || reel.steps.some((s) => s.on === "phone") || !!reel.short?.phone || !!reel.short?.steps.some((s) => s.on === "phone");
   const tiltRef = useRef(reel.look.tilt);
   tiltRef.current = reel.look.tilt;
   const F = FORMATS[format];
@@ -301,7 +316,8 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     goal.current = { s: o.base * (zoomed ? o.zoom : 1), fx: o.x + o.w / 2, fy: o.y + o.h * 0.45 };
   };
 
-  const moveTo = async (el: Element, ms = 950) => {
+  const moveTo = async (el: Element, ms0 = 950) => {
+    const ms = FAST ? ms0 * 0.7 : ms0;
     const d = active.current;
     if (shot.current !== d) { sfx.current.swap(d === "phone" ? "in" : "out"); frameShot(d); blur.current = 2; await sleep(500); }
     await reveal(el);
@@ -410,7 +426,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     goal.current = { s, fx: b.cx, fy: tall ? b.y + viewH / 2 : b.cy };
     const restore = cutout(el as HTMLElement);
     sfx.current.pop();
-    await sleep(900);
+    await sleep(FAST ? 450 : 900);
     if (tall) {
       // a slow, even scan down the content, with a moment at the top and at the bottom
       const from = b.y + viewH / 2, to = b.y + b.h - viewH / 2, t0 = performance.now(), dur = ms * 0.7;
@@ -520,7 +536,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
         const el = await waitFind(fillTarget(st.to, v));
         await moveTo(el, 800);
         await press();
-        await typeInto(el, fill(st.text, v), st.cps ?? (active.current === "phone" ? 9 : 13));
+        await typeInto(el, fill(st.text, v), (st.cps ?? (active.current === "phone" ? 9 : 13)) * (FAST ? 2.2 : 1));
         return;
       }
       case "set": {
@@ -644,11 +660,106 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
         return;
       }
       case "focus": { await focusOn(await waitFind(fillTarget(st.to, v)), st.ms ?? 2200); return; }
+      case "cap": { caption(fill(st.text, v).replace(/\{name\}/g, name)); return; }
       case "read": { await readOn(await waitFind(fillTarget(st.to, v), 12000), st.ms ?? 3800); return; }
     }
   }
 
+  /**
+   * Burned-in caption in the platforms' safe zone (clear of TikTok/Reels buttons): bold words that pop in one
+   * after another on a white pill. *word* is pink. An empty text clears it.
+   */
+  const caption = (text: string, o: { brand?: boolean } = {}) => {
+    const host = capRef.current;
+    if (!host) return;
+    for (const old of [...host.children] as HTMLElement[]) {
+      old.animate([{ opacity: 1, transform: "translateY(0) scale(1)" }, { opacity: 0, transform: "translateY(-12%) scale(0.96)" }], { duration: 180, fill: "forwards" });
+      setTimeout(() => old.remove(), 200);
+    }
+    if (!text) return;
+    const portrait = H > W;
+    const size = Math.round(portrait ? W * 0.064 : H * 0.062);
+    const box = document.createElement("div");
+    box.style.cssText = `position:absolute;left:${W * 0.08}px;right:${W * 0.08}px;top:${portrait ? H * 0.155 : H * 0.085}px;display:flex;flex-wrap:wrap;justify-content:center;gap:${size * 0.18}px ${size * 0.22}px;font-size:${size}px;line-height:1.12;font-weight:700;letter-spacing:-0.01em;text-align:center;pointer-events:none`;
+    const words = o.brand ? [text] : text.split(/\s+/);
+    words.forEach((w, i) => {
+      const pink = /^\*.*\*[.,!?]?$/.test(w);
+      const span = document.createElement("span");
+      if (o.brand) {
+        const m = w.match(/^(.*?)\s+(HQ)$/i), word = (m ? m[1] : w).toUpperCase();
+        span.innerHTML = `<span style="color:#1f5277">${word.slice(0, 3)}</span><span style="color:#d9468a">${word.slice(3)}</span>${m ? '<span style="font-size:.34em;vertical-align:top;margin-left:.07em;color:#1c1f24">HQ</span>' : ""}`;
+        span.style.cssText = `font-size:1.5em;font-weight:600;letter-spacing:-0.02em;background:#ffffff;padding:0.12em 0.4em;border-radius:0.28em;box-shadow:0 0.18em 0.6em rgba(0,0,0,0.18)`;
+      } else {
+        span.textContent = w.replace(/\*/g, "");
+        span.style.cssText = `display:inline-block;background:#ffffff;color:${pink ? "#d9468a" : "#1c1f24"};padding:0.08em 0.28em;border-radius:0.22em;box-shadow:0 0.14em 0.45em rgba(0,0,0,0.16)`;
+      }
+      span.style.opacity = "0";
+      box.appendChild(span);
+      span.animate([{ opacity: 0, transform: "translateY(40%) scale(0.6)" }, { opacity: 1, transform: "translateY(0) scale(1)" }], { duration: 360, delay: i * 70, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)", fill: "forwards" });
+    });
+    host.appendChild(box);
+    sfx.current.pop();
+  };
+
+  /** The TikTok/Reels cut: no intro or cards; frame one is the result with the hook as a caption; loops at the end. */
+  async function playShort(r: ReelDef, v: ReelVars, onStart: (len: number) => void) {
+    const sc = r.short!;
+    FAST = true;
+    try {
+      lastTyped.current = null;
+      const curtain = curtainRef.current!;
+      curtain.style.transition = "none"; curtain.style.opacity = "1"; curtain.style.backgroundColor = "#ffffff";
+      if (fxLayer.current) fxLayer.current.innerHTML = "";
+      caption("");
+      try { localStorage.setItem("darling.sound", JSON.stringify({ sound: false, volume: 0.8 })); } catch {}
+      const phonePath = sc.phone ?? r.phone;
+      await Promise.all([load("desktop", fill(sc.start ?? r.start, v)), phonePath ? load("phone", fill(phonePath, v)) : Promise.resolve()]);
+      active.current = "desktop"; shot.current = "desktop";
+      const first = sc.steps.find((x) => x.do === "shot") as { view: Dev | "both" } | undefined;
+      const firstView = first && sc.steps.indexOf(first as Step) <= 1 ? first.view : "desktop";
+      frameShot(firstView);
+      if (firstView === "phone") useDevice("phone");
+      cam.current = { ...goal.current };
+      follow.current = false;
+      pose.current = { ...REST };
+      cur.current = { x: DW * 0.62, y: DH * 0.55, press: 0, show: 0, touch: false };
+      await sleep(300);
+      const END = 2.4;
+      const plan: number[] = [];
+      let acc = 0.1;
+      for (const st of sc.steps) { acc += nominal(st) / 1000; plan.push(acc); }
+      const length = acc + 0.4 + END;
+      const start = performance.now();
+      const at = (t: number) => sleep(Math.max(0, start + t * 1000 - performance.now()));
+      onStart(length);
+      curtain.style.opacity = "0"; // frame one is the product, straight away
+      let late = 0;
+      for (let i = 0; i < sc.steps.length && !stopRef.current; i++) {
+        await runStep(sc.steps[i], v);
+        late = Math.max(late, (performance.now() - start) / 1000 - plan[i]);
+        await at(plan[i] + late);
+      }
+      console.info(`reel ${r.id} (short): planned ${acc.toFixed(1)}s, ran ${late.toFixed(1)}s over`);
+      await at(acc + late + 0.4);
+      // the ending: brand + where to go, while the camera returns to the opening shot so the video loops
+      cur.current.show = 0;
+      frameShot(firstView);
+      caption(name, { brand: true });
+      const sub = document.createElement("div");
+      const portrait = H > W, size = Math.round(portrait ? W * 0.05 : H * 0.05);
+      sub.style.cssText = `position:absolute;left:0;right:0;top:${portrait ? H * 0.155 + size * 2.9 : H * 0.085 + size * 2.9}px;text-align:center;font-size:${size}px;font-weight:700;pointer-events:none`;
+      sub.innerHTML = `<span style="background:#1c1f24;color:#ffffff;padding:0.2em 0.6em;border-radius:99px">Try it free · link in bio</span>`;
+      capRef.current?.appendChild(sub);
+      sub.animate([{ opacity: 0, transform: "translateY(30%)" }, { opacity: 1, transform: "translateY(0)" }], { duration: 400, delay: 250, fill: "both", easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" });
+      await at(length + late);
+    } finally {
+      FAST = false;
+    }
+  }
+
   async function play(r: ReelDef, v: ReelVars, onStart: (len: number) => void) {
+    if (cut === "short" && r.short) return playShort(r, v, onStart);
+    caption("");
     lastTyped.current = null;
     const curtain = curtainRef.current!;
     curtain.style.transition = "none"; curtain.style.opacity = "1";
@@ -852,7 +963,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
             const type = mime.split(";")[0];
             const a = document.createElement("a");
             a.href = URL.createObjectURL(new Blob(chunks, { type }));
-            a.download = `${name.toLowerCase().replace(/\s+/g, "-")}-${r.id}-${format}.${type.includes("mp4") ? "mp4" : "webm"}`;
+            a.download = `${name.toLowerCase().replace(/\s+/g, "-")}-${r.id}-${cut}-${format}.${type.includes("mp4") ? "mp4" : "webm"}`;
             a.click();
             setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
           }
@@ -902,6 +1013,7 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
             </div>
           </div>
         </div>
+        <div ref={capRef} className="pointer-events-none absolute inset-0" />
         <div ref={curtainRef} className="absolute inset-0" style={{ opacity: 1, backgroundColor: reel.look.bg }} />
         <div ref={introRef} className="pointer-events-none absolute inset-0" />
         <div ref={cardRef} className="pointer-events-none absolute inset-0" />
@@ -913,6 +1025,10 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
         <div className="mt-4 space-y-3">
           <select value={reelId} onChange={(e) => setReelId(e.target.value)} disabled={busy} className="w-full border border-white/30 bg-black px-3 py-2">
             {REELS.map((r, i) => <option key={r.id} value={r.id}>{String(i + 1).padStart(2, "0")} · {r.title} (~{Math.round(reelLength(r))}s)</option>)}
+          </select>
+          <select value={cut} onChange={(e) => setCut(e.target.value as "short" | "full")} disabled={busy} className="w-full border border-white/30 bg-black px-3 py-2">
+            <option value="short">Cut: short for TikTok / Reels (25–45 s, captions)</option>
+            <option value="full">Cut: full walkthrough (60 s+, 3D opening)</option>
           </select>
           <select value={format} onChange={(e) => setFormat(e.target.value as Format)} disabled={busy} className="w-full border border-white/30 bg-black px-3 py-2">
             {Object.entries(FORMATS).map(([k, f]) => <option key={k} value={k}>{f.label}</option>)}

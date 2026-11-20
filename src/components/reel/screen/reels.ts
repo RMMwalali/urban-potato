@@ -23,13 +23,16 @@ type S =
   | { do: "wait"; ms: number }
   | { do: "waitFor"; to: Target; ms?: number }
   | { do: "day"; from: number }
-  | { do: "file"; to: Target; count?: number };
+  | { do: "file"; to: Target; count?: number }
+  | { do: "cap"; text: string }; // a burned-in caption (stays until the next one; "" clears it). *word* = pink
 export type Step = S & { on?: Dev };
 
 export type Entry = "rise" | "drop" | "swing-left" | "swing-right" | "push" | "spin";
 export type Look = { bg: string; light?: boolean; entry: Entry; tilt: number };
 // hook: the line that makes an owner feel the problem. about: how {name} solves it (what the video then shows).
-export type ReelDef = { id: string; title: string; problem: string; hook: string; about: string; start: string; phone?: string; look: Look; steps: Step[] };
+// short: the TikTok/Reels cut (25–45 s): opens on the result with the hook as a caption, captions carry the story.
+export type ShortCut = { start?: string; phone?: string; steps: Step[] };
+export type ReelDef = { id: string; title: string; problem: string; hook: string; about: string; start: string; phone?: string; look: Look; steps: Step[]; short?: ShortCut };
 export type ReelVars = { slug: string; manage: string; mpesaCode: string; depositCode: string; finCode: string; smsCode: string; checkoutAppt: string; noshowAppt: string; freeDate: string; smsDate: string; stamp: string };
 
 const btn = (text: string): Target => ({ text, sel: "button" });
@@ -45,6 +48,18 @@ export const REELS: ReelDef[] = [
   {
     id: "landing", title: "Why Darling HQ", problem: "The website: what Darling HQ does for a salon, how it compares, the prices, and starting a free trial.", hook: "Your salon deserves better than a notebook and a full DM inbox.", about: "{name} is the booking engine for salons, barbershops and spas. Here's the tour.", start: "/",
     look: { bg: "#ededed", light: true, entry: "rise", tilt: 0.8 },
+    short: { start: "/", steps: [
+      { do: "cap", text: "Running a salon from *DMs* and a notebook?" }, { do: "wait", ms: 1800 },
+      { do: "scroll", to: { sel: "#compare" }, ms: 1000 },
+      { do: "read", to: { sel: "#compare .mt-16" }, ms: 3400 },
+      { do: "cap", text: "One app: bookings, *M-Pesa*, payroll" },
+      { do: "scroll", to: { sel: "#features" }, ms: 1000 },
+      { do: "click", to: { sel: "#features li button", nth: 1 } },
+      { do: "read", to: { sel: "#features .bg-panel" }, ms: 2200 },
+      { do: "cap", text: "Free for *14 days*" },
+      { do: "scroll", to: { sel: "#pricing" }, ms: 1000 },
+      { do: "read", to: { sel: "#pricing .mt-14.grid" }, ms: 2600 },
+    ] },
     steps: [
       { do: "wait", ms: 2200 },
       { do: "move", to: { sel: ".mq" }, ms: 1400 },
@@ -77,6 +92,26 @@ export const REELS: ReelDef[] = [
   {
     id: "booking", title: "A client books, you're notified", problem: "No more DMs: a client books from the link in your bio, gets a booking slip and a confirmation, and the salon hears it straight away.", hook: "Stop answering “are you free on Saturday?” at midnight.", about: "{name} lets clients book themselves from your Instagram link, and tells you the moment they do.", start: "/app", phone: "/book/{slug}",
     look: { bg: "#f5d6e4", light: true, entry: "push", tilt: 1 },
+    short: { start: "/app/calendar?view=week", phone: "/book/{slug}", steps: [
+      { do: "cap", text: "POV: clients *book themselves* while you work" }, { do: "wait", ms: 2200 },
+      { do: "shot", view: "phone", ms: 600 },
+      { do: "cap", text: "They pick the style" },
+      { on: P, do: "click", to: btn("Box braids") },
+      { on: P, do: "click", to: btn("Knotless") },
+      { do: "cap", text: "and a free time" },
+      { on: P, do: "day", from: 2 },
+      { on: P, do: "click", to: { sel: ".grid-cols-4 button", nth: 1 } },
+      { on: P, do: "type", to: { field: "Full name" }, text: "Naomi Wangari" },
+      { on: P, do: "type", to: { field: "Phone number" }, text: "0700 000 113" },
+      { on: P, do: "click", to: btn("Confirm booking") },
+      { on: P, do: "wait", ms: 2400 },
+      { do: "cap", text: "Booked. *No DMs.*" },
+      { on: P, do: "read", to: { sel: ".bk-paper" }, ms: 2600 },
+      { do: "shot", view: "desktop", ms: 500 },
+      { do: "notify", kind: "booking" },
+      { do: "cap", text: "Your phone pings *instantly*" },
+      { do: "read", to: { sel: ".toast-in" }, ms: 1900 },
+    ] },
     steps: [
       { do: "shot", view: "both", ms: 2000 },
       // the client, on her phone, from the link in the salon's Instagram bio
@@ -114,6 +149,29 @@ export const REELS: ReelDef[] = [
   {
     id: "deposits", title: "Deposits stop no-shows", problem: "Clients pay a small M-Pesa deposit to hold the slot, and move the booking themselves if plans change.", hook: "Every no-show is money walking out of your salon.", about: "{name} takes an M-Pesa deposit to hold the slot, and lets clients move the booking themselves.", start: "/app", phone: "/book/{slug}",
     look: { bg: "#1f5277", entry: "swing-left", tilt: 1.1 },
+    short: { start: "/app", phone: "/book/{slug}", steps: [
+      { do: "cap", text: "No-shows cost you *a full chair*" }, { do: "wait", ms: 1600 },
+      { do: "nav", label: "Settings" },
+      { do: "scroll", to: { field: "Online booking deposit" } },
+      { do: "select", to: { field: "Online booking deposit" }, option: "30%" },
+      { do: "click", to: btn("Save settings"), nav: true },
+      { do: "cap", text: "Clients pay a deposit *to book*" },
+      { do: "shot", view: "phone", ms: 500 },
+      { on: P, do: "go", path: "/book/{slug}" },
+      { on: P, do: "click", to: btn("Silk press") },
+      { on: P, do: "day", from: 3 },
+      { on: P, do: "click", to: { sel: ".grid-cols-4 button", nth: 2 } },
+      { on: P, do: "type", to: { field: "Full name" }, text: "Naomi Wangari" },
+      { on: P, do: "type", to: { field: "Phone number" }, text: "0700 000 113" },
+      { on: P, do: "type", to: { sel: 'input[name="depositRef"]' }, text: "{depositCode}", cps: 9 },
+      { on: P, do: "click", to: btn("Confirm booking") },
+      { on: P, do: "wait", ms: 2400 },
+      { do: "cap", text: "Paid by *M-Pesa*. Slot held." },
+      { on: P, do: "read", to: { sel: ".bk-paper" }, ms: 2400 },
+      { do: "shot", view: "desktop", ms: 500 },
+      { do: "notify", kind: "payment" },
+      { do: "read", to: { sel: ".toast-in" }, ms: 1800 },
+    ] },
     steps: [
       { do: "nav", label: "Settings" },
       { do: "scroll", to: { field: "Online booking deposit" } },
@@ -156,6 +214,20 @@ export const REELS: ReelDef[] = [
   {
     id: "checkout", title: "Checkout: M-Pesa, verified", problem: "Type the M-Pesa code and Safaricom confirms who paid and how much. Then a receipt, printed or on WhatsApp.", hook: "Stop recording payments on paper.", about: "{name} confirms every M-Pesa payment with Safaricom and prints the receipt.", start: "/app",
     look: { bg: "#14171c", entry: "push", tilt: 1 },
+    short: { start: "/app/appointments/{checkoutAppt}", steps: [
+      { do: "cap", text: "Stop recording payments *on paper*" }, { do: "wait", ms: 1700 },
+      { do: "click", to: link("Check out"), nav: true },
+      { do: "cap", text: "Type the M-Pesa code" },
+      { do: "scroll", to: { sel: '[data-tour="payment"]' } },
+      { do: "click", to: { text: "M-Pesa", sel: '[data-tour="payment"] button' } },
+      { do: "type", to: { sel: 'input[aria-label="M-Pesa code"]' }, text: "{mpesaCode}", cps: 9 },
+      { do: "waitFor", to: { text: "Confirmed by Safaricom" } },
+      { do: "cap", text: "*Safaricom* confirms who paid" },
+      { do: "read", to: { sel: '[data-tour="payment"]' }, ms: 2600 },
+      { do: "click", to: btn("Record payment"), nav: true },
+      { do: "cap", text: "Receipt, ready to print" },
+      { do: "read", to: { sel: ".rcpt" }, ms: 3200 },
+    ] },
     steps: [
       { do: "read", to: { text: "Today's schedule", sel: ".label-caps" }, ms: 300 },
       { do: "click", to: { sel: 'a[href="/app/appointments/{checkoutAppt}"]' }, nav: true },
@@ -183,6 +255,21 @@ export const REELS: ReelDef[] = [
   {
     id: "clients", title: "Returning clients, remembered", problem: "Type a number and Darling HQ knows the client: allergies, preferences, what she spends and how often she comes.", hook: "Remember every client like she's your only one.", about: "{name} recalls her allergies, favourite stylist and what she spends, from just her phone number.", start: "/app",
     look: { bg: "#d9468a", entry: "spin", tilt: 1.2 },
+    short: { start: "/app/appointments/new", steps: [
+      { do: "cap", text: "Remember every client like *she's your only one*" }, { do: "wait", ms: 1800 },
+      { do: "type", to: { field: "Phone number" }, text: "0700 000 100" },
+      { do: "waitFor", to: { text: "Returning client" } },
+      { do: "cap", text: "Type her number…" },
+      { do: "read", to: { text: "Returning client" }, ms: 2600 },
+      { do: "nav", label: "Clients" },
+      { do: "type", to: { sel: 'input[name="q"]' }, text: "Jane" },
+      { do: "submit", to: { sel: 'input[name="q"]' } },
+      { do: "click", to: link("Jane Wambui"), nav: true },
+      { do: "cap", text: "…her spend, visits and *allergies*" },
+      { do: "read", to: { sel: "main .grid", nth: 0 }, ms: 2200 },
+      { do: "scroll", to: { text: "Profile", sel: "h2" } },
+      { do: "read", to: { sel: "main section.card.text-sm" }, ms: 2800 },
+    ] },
     steps: [
       { do: "nav", label: "Calendar" },
       { do: "click", to: link("+ New"), nav: true },
@@ -215,6 +302,19 @@ export const REELS: ReelDef[] = [
   {
     id: "dayend", title: "Closing the day", problem: "The till sheet, every M-Pesa payment matched, the numbers, and everyone's pay worked out.", hook: "Close the day in minutes, not hours with a calculator.", about: "{name} adds up the till, matches every M-Pesa payment and works out everyone's pay.", start: "/app",
     look: { bg: "#0f2233", entry: "swing-right", tilt: 1 },
+    short: { start: "/app/sales/day", steps: [
+      { do: "cap", text: "Close the day *in minutes*" }, { do: "wait", ms: 1500 },
+      { do: "read", to: { sel: "main .grid", nth: 0 }, ms: 2200 },
+      { do: "cap", text: "Every M-Pesa payment *matched*" },
+      { do: "nav", label: "Finance" },
+      { do: "read", to: { sel: "main section.card", nth: 0 }, ms: 2400 },
+      { do: "cap", text: "Commission and pay, *done*" },
+      { do: "nav", label: "Payroll" },
+      { do: "type", to: { sel: 'input[name="note"]', nth: 0 }, text: "November pay" },
+      { do: "click", to: btn("Calculate pay"), nav: true },
+      { do: "waitFor", to: btn("Approve") },
+      { do: "read", to: { sel: "main ul.border-t-2" }, ms: 2800 },
+    ] },
     steps: [
       { do: "nav", label: "Sales" },
       { do: "click", to: link("Daily summary"), nav: true },
@@ -251,6 +351,21 @@ export const REELS: ReelDef[] = [
   {
     id: "calendar", title: "Your whole week, month, year", problem: "Day, week, month and year views, any date range, one stylist or everyone.", hook: "Know exactly how busy you are, today or all year.", about: "{name} shows your bookings by day, week, month or year, for the whole team or one stylist.", start: "/app",
     look: { bg: "#e3edf7", light: true, entry: "drop", tilt: 0.9 },
+    short: { start: "/app/calendar?view=week", steps: [
+      { do: "cap", text: "Know how busy you are *at a glance*" }, { do: "wait", ms: 1600 },
+      { do: "read", to: { sel: CAL }, ms: 1800 },
+      { do: "cap", text: "Month" },
+      { do: "click", to: VIEW("month"), nav: true },
+      { do: "read", to: { sel: CAL }, ms: 1700 },
+      { do: "cap", text: "Year" },
+      { do: "click", to: VIEW("year"), nav: true },
+      { do: "read", to: { sel: CAL }, ms: 1700 },
+      { do: "cap", text: "Or just *one stylist*" },
+      { do: "click", to: { text: "Wanjiru", sel: "a" }, nav: true },
+      { do: "read", to: { sel: CAL }, ms: 1800 },
+      { do: "click", to: VIEW("day"), nav: true },
+      { do: "read", to: { sel: CAL }, ms: 1700 },
+    ] },
     steps: [
       { do: "nav", label: "Calendar" },
       { do: "read", to: { sel: CAL }, ms: 3000 },
@@ -276,6 +391,27 @@ export const REELS: ReelDef[] = [
   {
     id: "setup", title: "Set up in minutes", problem: "Add a service with photos and styles, and it's on your booking link straight away.", hook: "Your salon online today. No website needed.", about: "{name} puts your services, photos and prices on a booking link in minutes.", start: "/app", phone: "/book/{slug}",
     look: { bg: "#4f9cf0", entry: "swing-right", tilt: 1.2 },
+    short: { start: "/app/services", phone: "/book/{slug}", steps: [
+      { do: "cap", text: "Your salon online *today*" }, { do: "wait", ms: 1400 },
+      { do: "click", to: link("+ Add service"), nav: true },
+      { do: "type", to: { field: "Service name" }, text: "Knotless braids" },
+      { do: "type", to: { field: "Category" }, text: "Braids & locs" },
+      { do: "set", to: { field: "Minutes" }, value: "240" },
+      { do: "type", to: { field: "Price" }, text: "4500" },
+      { do: "cap", text: "Photos, styles and prices" },
+      { do: "file", to: { text: "+ Add photos", sel: "button" }, count: 3 },
+      { do: "waitFor", to: { sel: "figure img" } },
+      { do: "click", to: btn("+ Add style") },
+      { do: "type", to: { field: "Style name" }, text: "Waist length" },
+      { do: "type", to: { field: "Price", nth: 1 }, text: "5500" },
+      { do: "click", to: btn("Save service"), nav: true },
+      { do: "cap", text: "Live on your *booking link*" },
+      { do: "shot", view: "phone", ms: 500 },
+      { on: P, do: "go", path: "/book/{slug}" },
+      { on: P, do: "swipe", to: { sel: ".svc-rail" }, dx: 600 },
+      { on: P, do: "click", to: btn("Knotless braids") },
+      { on: P, do: "read", to: { text: "Waist length", sel: "button" }, ms: 2200 },
+    ] },
     steps: [
       { do: "nav", label: "Services" },
       { do: "click", to: link("+ Add service"), nav: true },
@@ -316,6 +452,24 @@ export const REELS: ReelDef[] = [
     id: "walkin", title: "Walk-ins and quick sales", problem: "A regular walks in: booked in seconds, paid in cash with change worked out; then a product sold at the till.",
     hook: "A walk-in shouldn't end up as a note on a scrap of paper.", about: "{name} books walk-ins in seconds, takes cash or M-Pesa, and sells your products at the till.", start: "/app",
     look: { bg: "#f6e7ee", light: true, entry: "rise", tilt: 0.9 },
+    short: { start: "/app", steps: [
+      { do: "cap", text: "Walk-in? *Booked and paid* in seconds" }, { do: "wait", ms: 1500 },
+      { do: "click", to: link("Walk-in"), nav: true },
+      { do: "type", to: { field: "Phone number" }, text: "0700 000 103" },
+      { do: "waitFor", to: { text: "Returning client" } },
+      { do: "select", to: { field: "Service" }, option: "Gel manicure" },
+      { do: "select", to: { field: "Staff" }, option: "Achieng Atieno" },
+      { do: "click", to: btn("Book appointment"), nav: true },
+      { do: "click", to: { text: "Grace", sel: `${CAL} a` }, nav: true },
+      { do: "click", to: link("Check out"), nav: true },
+      { do: "scroll", to: { sel: '[data-tour="payment"]' } },
+      { do: "click", to: { text: "Cash", sel: '[data-tour="payment"] button' } },
+      { do: "type", to: { field: "Cash received" }, text: "1500" },
+      { do: "cap", text: "Change worked out *for you*" },
+      { do: "read", to: { sel: '[data-tour="payment"]' }, ms: 2200 },
+      { do: "click", to: btn("Record payment"), nav: true },
+      { do: "read", to: { sel: ".rcpt" }, ms: 2600 },
+    ] },
     steps: [
       { do: "read", to: { text: "Today's schedule", sel: ".label-caps" }, ms: 300 },
       { do: "read", to: { sel: "main section", nth: 0 }, ms: 3200 },
@@ -355,6 +509,20 @@ export const REELS: ReelDef[] = [
     id: "reminders", title: "Reminders that actually arrive", problem: "WhatsApp or SMS reminders at the time you choose, a log of every message, and a quick note to any client.",
     hook: "Clients don't forget on purpose. They just need a nudge.", about: "{name} sends WhatsApp or SMS reminders on time, shows you every message, and lets you text any client.", start: "/app",
     look: { bg: "#123247", entry: "swing-left", tilt: 1 },
+    short: { start: "/app/messages", steps: [
+      { do: "cap", text: "Clients don't forget *on purpose*" }, { do: "wait", ms: 1600 },
+      { do: "read", to: { sel: "main table" }, ms: 2400 },
+      { do: "cap", text: "Reminders go out on *WhatsApp*" },
+      { do: "nav", label: "Settings" },
+      { do: "scroll", to: { field: "Channel" } },
+      { do: "select", to: { field: "Channel" }, option: "WhatsApp" },
+      { do: "select", to: { field: "Send reminder" }, option: "24 hours before" },
+      { do: "read", to: { field: "Send reminder" }, ms: 1600 },
+      { do: "click", to: btn("Save settings"), nav: true },
+      { do: "cap", text: "Every message *logged*" },
+      { do: "nav", label: "Messages" },
+      { do: "focus", to: { sel: "main tbody tr", nth: 0 }, ms: 2200 },
+    ] },
     steps: [
       { do: "nav", label: "Settings" },
       { do: "scroll", to: { field: "Channel" } },
@@ -388,6 +556,22 @@ export const REELS: ReelDef[] = [
     id: "noshows", title: "Cancellations and no-shows", problem: "Your cancellation window and policy, a client cancelling herself in time, and a warning about repeat no-shows.",
     hook: "Late cancellations and no-shows cost you a full chair.", about: "{name} enforces your cancellation policy, lets clients cancel in time, and warns you about repeat no-shows.", start: "/app", phone: "/b/{manage}",
     look: { bg: "#2a1622", entry: "push", tilt: 1.1 },
+    short: { start: "/app/appointments/{noshowAppt}", phone: "/b/{manage}", steps: [
+      { do: "cap", text: "Spot *repeat no-shows* before they cost you" }, { do: "wait", ms: 1600 },
+      { do: "read", to: { sel: "main section.card", nth: 0 }, ms: 2600 },
+      { do: "scroll", to: { text: "Update status", sel: "h2" } },
+      { do: "click", to: btn("No-show") },
+      { do: "wait", ms: 1000 },
+      { do: "cap", text: "Clients cancel *in time*, themselves" },
+      { do: "shot", view: "phone", ms: 500 },
+      { on: P, do: "read", to: { sel: "main" }, ms: 2000 },
+      { on: P, do: "click", to: btn("Cancel appointment") },
+      { on: P, do: "read", to: { text: "Appointment cancelled" }, ms: 1800 },
+      { do: "shot", view: "desktop", ms: 500 },
+      { do: "notify" },
+      { do: "cap", text: "and you know *straight away*" },
+      { do: "read", to: { sel: ".toast-in" }, ms: 1900 },
+    ] },
     steps: [
       { do: "nav", label: "Settings" },
       { do: "scroll", to: { field: "Clients can cancel online until" } },
@@ -420,6 +604,22 @@ export const REELS: ReelDef[] = [
     id: "money", title: "Every shilling accounted for", problem: "Every M-Pesa payment in one list, Pochi la Biashara added from its SMS, takings by method, exports and reports.",
     hook: "Where did today's money actually go?", about: "{name} records every M-Pesa payment, even Pochi la Biashara, shows takings by method, and exports it all.", start: "/app",
     look: { bg: "#e9f1e4", light: true, entry: "drop", tilt: 0.9 },
+    short: { start: "/app/finance", steps: [
+      { do: "cap", text: "Where did today's money *actually go*?" }, { do: "wait", ms: 1500 },
+      { do: "read", to: { sel: "main section.card", nth: 0 }, ms: 2400 },
+      { do: "cap", text: "Pochi la Biashara? *Paste the SMS*" },
+      { do: "scroll", to: { text: "Add from SMS", sel: "h2" } },
+      { do: "type", to: { sel: 'textarea[name="sms"]' }, text: "{smsCode} Confirmed. Ksh2,300.00 received from MERCY ATIENO 0712345678 on {smsDate}. New M-PESA balance is Ksh18,450.00.", cps: 36 },
+      { do: "click", to: btn("Add payment") },
+      { do: "waitFor", to: { text: "{smsCode}" }, ms: 9000 },
+      { do: "focus", to: { text: "{smsCode}" }, ms: 1800 },
+      { do: "cap", text: "Takings by method" },
+      { do: "scroll", to: { text: "Takings by method", sel: "h2" } },
+      { do: "read", to: { sel: "main section.card", nth: 2 }, ms: 2200 },
+      { do: "cap", text: "Your numbers, *every day*" },
+      { do: "nav", label: "Reports" },
+      { do: "read", to: { sel: "main .grid", nth: 0 }, ms: 2400 },
+    ] },
     steps: [
       { do: "nav", label: "Finance" },
       { do: "read", to: { text: "M-Pesa payments received", sel: "h2" }, ms: 300 },
@@ -449,6 +649,19 @@ export const REELS: ReelDef[] = [
     id: "team", title: "Your team, paid right", problem: "Commission, deductions and salary advances worked out for every stylist, with a payslip each.",
     hook: "Payday shouldn't be a weekend with a calculator.", about: "{name} works out commission, deductions and advances for every stylist, and gives each one a payslip.", start: "/app",
     look: { bg: "#1c1f24", entry: "swing-right", tilt: 1 },
+    short: { start: "/app/payroll", steps: [
+      { do: "cap", text: "Payday without *the calculator*" }, { do: "wait", ms: 1500 },
+      { do: "type", to: { sel: 'input[name="note"]', nth: 0 }, text: "November pay" },
+      { do: "click", to: btn("Calculate pay"), nav: true },
+      { do: "waitFor", to: btn("Approve") },
+      { do: "cap", text: "Commission, deductions, *advances*" },
+      { do: "read", to: { sel: "main ul.border-t-2" }, ms: 3000 },
+      { do: "click", to: btn("Approve") },
+      { do: "waitFor", to: link("Payslip") },
+      { do: "click", to: link("Payslip"), nav: true },
+      { do: "cap", text: "A payslip for *every stylist*" },
+      { do: "read", to: { sel: "main div.border-t-2.bg-panel" }, ms: 3200 },
+    ] },
     steps: [
       { do: "nav", label: "Staff" },
       { do: "read", to: { sel: "main table" }, ms: 5000 },
@@ -480,6 +693,21 @@ export const REELS: ReelDef[] = [
     id: "phone", title: "Run it from your phone", problem: "Today's bookings, the calendar, checkout with M-Pesa and a receipt, and notifications, all on a phone.",
     hook: "You're not always at the front desk. Your salon still is.", about: "{name} works on your phone like an app: today's bookings, checkout and receipts, and alerts.", start: "/app", phone: "/app",
     look: { bg: "#d9468a", entry: "spin", tilt: 1.1 },
+    short: { start: "/app", phone: "/app", steps: [
+      { do: "shot", view: "phone", ms: 400 },
+      { do: "cap", text: "Your salon, *in your pocket*" },
+      { on: P, do: "read", to: { sel: "main section", nth: 0 }, ms: 2200 },
+      { on: P, do: "go", path: "/app/appointments/{checkoutAppt}" },
+      { on: P, do: "click", to: link("Check out"), nav: true },
+      { on: P, do: "scroll", to: { sel: '[data-tour="payment"]' } },
+      { on: P, do: "click", to: { text: "M-Pesa", sel: '[data-tour="payment"] button' } },
+      { on: P, do: "type", to: { sel: 'input[aria-label="M-Pesa code"]' }, text: "{mpesaCode}", cps: 9 },
+      { on: P, do: "waitFor", to: { text: "Confirmed by Safaricom" } },
+      { do: "cap", text: "Check out *anywhere*" },
+      { on: P, do: "read", to: { sel: '[data-tour="payment"]' }, ms: 2200 },
+      { on: P, do: "click", to: btn("Record payment"), nav: true },
+      { on: P, do: "read", to: { sel: ".rcpt" }, ms: 2800 },
+    ] },
     steps: [
       { do: "shot", view: "both", ms: 2000 },
       { do: "shot", view: "phone", ms: 1000 },
@@ -508,6 +736,21 @@ export const REELS: ReelDef[] = [
     id: "shopwindow", title: "Your salon's shop window", problem: "A booking page with your photos, styles and prices, a photo gallery, and a link to share everywhere.",
     hook: "Clients judge your salon before they ever walk in.", about: "{name} gives you a booking page with your photos, styles and prices, ready for Instagram and WhatsApp.", start: "/app", phone: "/book/{slug}",
     look: { bg: "#fbefe2", light: true, entry: "rise", tilt: 1 },
+    short: { start: "/app", phone: "/book/{slug}", steps: [
+      { do: "shot", view: "phone", ms: 400 },
+      { do: "cap", text: "Clients judge your salon *before they walk in*" },
+      { on: P, do: "read", to: { sel: "h1" }, ms: 1800 },
+      { on: P, do: "swipe", to: { sel: ".svc-rail" }, dx: 420 },
+      { do: "cap", text: "Your photos, styles and *prices*" },
+      { on: P, do: "click", to: { text: "See all", sel: "a" }, nav: true },
+      { on: P, do: "read", to: { sel: "main" }, ms: 3400 },
+      { on: P, do: "click", to: { text: "Book at", sel: "a" }, nav: true },
+      { on: P, do: "click", to: btn("Box braids") },
+      { on: P, do: "read", to: { text: "Knotless", sel: "button" }, ms: 2000 },
+      { do: "cap", text: "One link for *Instagram* and WhatsApp" },
+      { do: "shot", view: "desktop", ms: 500 },
+      { do: "read", to: { sel: "section.bg-ink" }, ms: 2400 },
+    ] },
     steps: [
       { do: "shot", view: "phone", ms: 1200 },
       { on: P, do: "read", to: { sel: "h1" }, ms: 3000 },
