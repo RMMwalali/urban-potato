@@ -680,23 +680,33 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
     const portrait = H > W;
     const size = Math.round(portrait ? W * 0.064 : H * 0.062);
     const box = document.createElement("div");
-    box.style.cssText = `position:absolute;left:${W * 0.08}px;right:${W * 0.08}px;top:${portrait ? H * 0.155 : H * 0.085}px;display:flex;flex-wrap:wrap;justify-content:center;gap:${size * 0.18}px ${size * 0.22}px;font-size:${size}px;line-height:1.12;font-weight:700;letter-spacing:-0.01em;text-align:center;pointer-events:none`;
-    const words = o.brand ? [text] : text.split(/\s+/);
-    words.forEach((w, i) => {
-      const pink = /^\*.*\*[.,!?]?$/.test(w);
+    box.style.cssText = `position:absolute;left:${W * 0.08}px;right:${W * 0.08}px;top:${portrait ? H * 0.155 : H * 0.085}px;text-align:center;font-size:${size}px;line-height:1.42;font-weight:700;letter-spacing:-0.01em;pointer-events:none`;
+    if (o.brand) {
+      const m = text.match(/^(.*?)\s+(HQ)$/i), word = (m ? m[1] : text).toUpperCase();
       const span = document.createElement("span");
-      if (o.brand) {
-        const m = w.match(/^(.*?)\s+(HQ)$/i), word = (m ? m[1] : w).toUpperCase();
-        span.innerHTML = `<span style="color:#1f5277">${word.slice(0, 3)}</span><span style="color:#d9468a">${word.slice(3)}</span>${m ? '<span style="font-size:.34em;vertical-align:top;margin-left:.07em;color:#1c1f24">HQ</span>' : ""}`;
-        span.style.cssText = `font-size:1.5em;font-weight:600;letter-spacing:-0.02em;background:#ffffff;padding:0.12em 0.4em;border-radius:0.28em;box-shadow:0 0.18em 0.6em rgba(0,0,0,0.18)`;
-      } else {
-        span.textContent = w.replace(/\*/g, "");
-        span.style.cssText = `display:inline-block;background:#ffffff;color:${pink ? "#d9468a" : "#1c1f24"};padding:0.08em 0.28em;border-radius:0.22em;box-shadow:0 0.14em 0.45em rgba(0,0,0,0.16)`;
-      }
-      span.style.opacity = "0";
+      span.innerHTML = `<span style="color:#1f5277">${word.slice(0, 3)}</span><span style="color:#d9468a">${word.slice(3)}</span>${m ? '<span style="font-size:.34em;vertical-align:top;margin-left:.07em;color:#1c1f24">HQ</span>' : ""}`;
+      span.style.cssText = `display:inline-block;font-size:1.5em;line-height:1.1;font-weight:600;letter-spacing:-0.02em;background:#ffffff;padding:0.12em 0.4em;border-radius:0.28em;box-shadow:0 0.18em 0.6em rgba(0,0,0,0.18)`;
+      span.animate([{ opacity: 0, transform: "translateY(30%) scale(0.7)" }, { opacity: 1, transform: "translateY(0) scale(1)" }], { duration: 420, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)", fill: "both" });
       box.appendChild(span);
-      span.animate([{ opacity: 0, transform: "translateY(40%) scale(0.6)" }, { opacity: 1, transform: "translateY(0) scale(1)" }], { duration: 360, delay: i * 70, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)", fill: "forwards" });
-    });
+    } else {
+      // one white highlight behind each line (TikTok-style), words popping in one after another
+      const line = document.createElement("span");
+      line.style.cssText = `background:#ffffff;color:#1c1f24;padding:0.1em 0.32em;border-radius:0.22em;-webkit-box-decoration-break:clone;box-decoration-break:clone;box-shadow:0 0.14em 0.45em rgba(0,0,0,0.16)`;
+      line.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: "both" });
+      let on = false; // inside a *highlighted phrase*
+      text.split(/\s+/).forEach((w, i, all) => {
+        if (w.startsWith("*")) on = true;
+        const pink = on;
+        if (/\*[.,!?…]?$/.test(w)) on = false;
+        const span = document.createElement("span");
+        span.textContent = w.replace(/\*/g, "") + (i < all.length - 1 ? " " : "");
+        span.style.cssText = `display:inline;color:${pink ? "#d9468a" : "#1c1f24"}`;
+        span.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay: 60 + i * 65, fill: "both" });
+        line.appendChild(span);
+      });
+      box.appendChild(line);
+      box.animate([{ transform: "translateY(18%) scale(0.92)" }, { transform: "translateY(0) scale(1)" }], { duration: 380, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" });
+    }
     host.appendChild(box);
     sfx.current.pop();
   };
@@ -731,8 +741,9 @@ export function ScreenReelStudio({ name, initialReel, initialFormat, host }: { n
       const length = acc + 0.4 + END;
       const start = performance.now();
       const at = (t: number) => sleep(Math.max(0, start + t * 1000 - performance.now()));
+      curtain.style.opacity = "0"; // frame one is the product, straight away (cover lifted before recording starts)
+      await sleep(120);
       onStart(length);
-      curtain.style.opacity = "0"; // frame one is the product, straight away
       let late = 0;
       for (let i = 0; i < sc.steps.length && !stopRef.current; i++) {
         await runStep(sc.steps[i], v);
